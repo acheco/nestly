@@ -30,7 +30,7 @@ use Illuminate\Support\Str;
 class TeamInvitation extends Model
 {
     /** @use HasFactory<TeamInvitationFactory> */
-    use HasUuids, HasFactory;
+    use HasFactory, HasUuids;
 
     /**
      * Bootstrap the model and its traits.

@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Budget;
 use App\Http\Requests\StoreBudgetRequest;
 use App\Http\Requests\UpdateBudgetRequest;
+use App\Models\Budget;
 
 class BudgetController extends Controller
 {

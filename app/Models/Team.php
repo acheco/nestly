@@ -31,7 +31,7 @@ use Illuminate\Support\Carbon;
 class Team extends Model
 {
     /** @use HasFactory<TeamFactory> */
-    use GeneratesUniqueTeamSlugs, HasFactory, SoftDeletes, HasUuids;
+    use GeneratesUniqueTeamSlugs, HasFactory, HasUuids, SoftDeletes;
 
     /**
      * Bootstrap the model and its traits.
