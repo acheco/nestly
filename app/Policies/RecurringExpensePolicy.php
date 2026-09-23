@@ -2,7 +2,9 @@
 
 namespace App\Policies;
 
+use App\Enums\TeamRole;
 use App\Models\RecurringExpense;
+use App\Models\Team;
 use App\Models\User;
 
 class RecurringExpensePolicy
@@ -10,9 +12,9 @@ class RecurringExpensePolicy
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user, Team $team): bool
     {
-        return false;
+        return $user->belongsToTeam($team);
     }
 
     /**
@@ -20,15 +22,15 @@ class RecurringExpensePolicy
      */
     public function view(User $user, RecurringExpense $recurringExpense): bool
     {
-        return false;
+        return $user->belongsToTeam($recurringExpense->team);
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user, Team $team): bool
     {
-        return false;
+        return $user->teamRole($team)?->isAtLeast(TeamRole::Member) ?? false;
     }
 
     /**
@@ -36,7 +38,8 @@ class RecurringExpensePolicy
      */
     public function update(User $user, RecurringExpense $recurringExpense): bool
     {
-        return false;
+        return $recurringExpense->created_by === $user->id
+            || ($user->teamRole($recurringExpense->team)?->isAtLeast(TeamRole::Admin) ?? false);
     }
 
     /**
@@ -44,7 +47,7 @@ class RecurringExpensePolicy
      */
     public function delete(User $user, RecurringExpense $recurringExpense): bool
     {
-        return false;
+        return $this->update($user, $recurringExpense);
     }
 
     /**

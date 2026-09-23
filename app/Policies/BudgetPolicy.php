@@ -2,7 +2,10 @@
 
 namespace App\Policies;
 
+use App\Enums\BudgetScope;
+use App\Enums\TeamRole;
 use App\Models\Budget;
+use App\Models\Team;
 use App\Models\User;
 
 class BudgetPolicy
@@ -10,9 +13,9 @@ class BudgetPolicy
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user, Team $team): bool
     {
-        return false;
+        return $user->belongsToTeam($team);
     }
 
     /**
@@ -20,15 +23,17 @@ class BudgetPolicy
      */
     public function view(User $user, Budget $budget): bool
     {
-        return false;
+        return $user->belongsToTeam($budget->team);
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user, Team $team, BudgetScope $scope): bool
     {
-        return false;
+        $minRole = $scope === BudgetScope::Personal ? TeamRole::Member : TeamRole::Admin;
+
+        return $user->teamRole($team)?->isAtLeast($minRole) ?? false;
     }
 
     /**
@@ -36,7 +41,10 @@ class BudgetPolicy
      */
     public function update(User $user, Budget $budget): bool
     {
-        return false;
+        if ($budget->scope === BudgetScope::Personal) {
+            return $budget->owner_id === $user->id || ($user->teamRole($budget->team)?->isAtLeast(TeamRole::Admin) ?? false);
+        }
+        return $user->teamRole($budget->team)?->isAtLeast(TeamRole::Admin) ?? false;
     }
 
     /**
@@ -44,22 +52,6 @@ class BudgetPolicy
      */
     public function delete(User $user, Budget $budget): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Budget $budget): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Budget $budget): bool
-    {
-        return false;
+        return $this->update($user, $budget);
     }
 }

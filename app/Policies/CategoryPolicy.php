@@ -2,7 +2,9 @@
 
 namespace App\Policies;
 
+use App\Enums\TeamRole;
 use App\Models\Category;
+use App\Models\Team;
 use App\Models\User;
 
 class CategoryPolicy
@@ -10,9 +12,9 @@ class CategoryPolicy
     /**
      * Determine whether the user can view any models.
      */
-    public function viewAny(User $user): bool
+    public function viewAny(User $user, Team $team): bool
     {
-        return false;
+        return $user->BelongsToTeam($team);
     }
 
     /**
@@ -20,15 +22,15 @@ class CategoryPolicy
      */
     public function view(User $user, Category $category): bool
     {
-        return false;
+        return $user->BelongsToTeam($category->team);
     }
 
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user): bool
+    public function create(User $user, Team $team): bool
     {
-        return false;
+        return $user->teamRole($team)?->isAtLeast(TeamRole::Admin) ?? false;
     }
 
     /**
@@ -36,7 +38,19 @@ class CategoryPolicy
      */
     public function update(User $user, Category $category): bool
     {
-        return false;
+        if ($category->is_system) {
+            return false;
+        }
+
+        return $user->teamRole($category->team)?->isAtLeast(TeamRole::Admin) ?? false;
+    }
+
+    /**
+     * Determine whether the user can archive the model.
+     */
+    public function archive(User $user, Category $category): bool
+    {
+        return $user->teamRole($category->team)?->isAtLeast(TeamRole::Admin) ?? false;
     }
 
     /**
@@ -44,22 +58,10 @@ class CategoryPolicy
      */
     public function delete(User $user, Category $category): bool
     {
-        return false;
-    }
+        if ($category->is_system) {
+            return false;
+        }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Category $category): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Category $category): bool
-    {
-        return false;
+        return $user->teamRole($category->team)?->isAtLeast(TeamRole::Admin) ?? false;
     }
 }

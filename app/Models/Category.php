@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['team_id', 'name', 'color', 'icon', 'parent_id', 'kind', 'is_system'])]
+#[Fillable(['team_id', 'name', 'color', 'icon', 'parent_id', 'kind', 'archived'])]
 class Category extends Model
 {
     /** @use HasFactory<CategoryFactory> */
@@ -21,6 +21,7 @@ class Category extends Model
         return [
             'kind' => CategoryKind::class,
             'is_system' => 'boolean',
+            'archived' => 'boolean',
         ];
     }
 
