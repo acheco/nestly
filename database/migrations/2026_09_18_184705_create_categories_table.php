@@ -6,9 +6,6 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('categories', function (Blueprint $table) {
@@ -17,16 +14,24 @@ return new class extends Migration
             $table->string('name');
             $table->string('icon');
             $table->string('color');
-            $table->foreignUuid('parent_id')->nullable()->constrained('categories')->restrictOnDelete();
+            $table->uuid('parent_id')->nullable(); // 👈 sin ->constrained() aquí
             $table->string('kind');
             $table->boolean('is_system')->default(false);
             $table->timestamps();
+
+            $table->index(['team_id', 'kind']);
+        });
+
+        // FK autoreferencial: en un paso aparte, después de que la tabla
+        // (y su primary key) ya existen de verdad — Laravel no permite
+        // resolver esto dentro del mismo Schema::create().
+        Schema::table('categories', function (Blueprint $table) {
+            $table->foreign('parent_id')
+                ->references('id')->on('categories')
+                ->restrictOnDelete();
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('categories');
