@@ -44,6 +44,7 @@ class BudgetPolicy
         if ($budget->scope === BudgetScope::Personal) {
             return $budget->owner_id === $user->id || ($user->teamRole($budget->team)?->isAtLeast(TeamRole::Admin) ?? false);
         }
+
         return $user->teamRole($budget->team)?->isAtLeast(TeamRole::Admin) ?? false;
     }
 

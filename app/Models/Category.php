@@ -5,12 +5,14 @@ namespace App\Models;
 use App\Enums\CategoryKind;
 use Database\Factories\CategoryFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['team_id', 'name', 'color', 'icon', 'parent_id', 'kind', 'archived'])]
+#[Fillable(['team_id', 'name', 'color', 'icon', 'parent_id', 'kind', 'archived', 'is_system'])]
+#[Hidden(['is_system'])]
 class Category extends Model
 {
     /** @use HasFactory<CategoryFactory> */

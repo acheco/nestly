@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use App\Enums\TeamRole;
+use App\Models\Membership;
 use App\Models\Team;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -48,7 +49,9 @@ class UserFactory extends Factory
                 'name' => $user->name."'s Team",
             ]);
 
-            $team->members()->attach($user, [
+            Membership::create([
+                'team_id' => $team->id,
+                'user_id' => $user->id,
                 'role' => TeamRole::Owner->value,
             ]);
 

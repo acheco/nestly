@@ -6,6 +6,7 @@ use App\Enums\AccountType;
 use App\Enums\AccountVisibility;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[Fillable(['team_id', 'name', 'type', 'initial_balance', 'visibility', 'owner_id'])]
 class Account extends Model
 {
-    use HasUuids;
+    use HasFactory, HasUuids;
 
     protected static function boot(): void
     {
