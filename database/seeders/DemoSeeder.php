@@ -37,11 +37,11 @@ class DemoSeeder extends Seeder
         // El team personal ya se crea automáticamente al registrar el
         // usuario (comportamiento del starter kit) — lo tomamos tal cual.
         $team = $ana->currentTeam;
-        $team->update(['currency' => 'MXN']);
+        $team->update(['currency' => 'DOP']);
 
         $checking = Account::factory()->create([
             'team_id' => $team->id,
-            'name' => 'BBVA Nómina',
+            'name' => 'BHD Nómina',
             'initial_balance' => 8000,
         ]);
 
@@ -102,7 +102,7 @@ class DemoSeeder extends Seeder
         $team = Team::factory()->create([
             'name' => 'Familia Ramírez',
             'is_personal' => false,
-            'currency' => 'MXN',
+            'currency' => 'DOP',
         ]);
 
         // Membership directo (no ->attach(), ver nota sobre HasUuids arriba).

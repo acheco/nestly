@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\TransactionType;
 use Database\Factories\TransactionFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -13,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Transaction extends Model
 {
     /** @use HasFactory<TransactionFactory> */
-    use HasFactory;
+    use HasFactory, HasUuids;
 
     protected function casts(): array
     {
@@ -47,5 +48,10 @@ class Transaction extends Model
     public function recurring(): BelongsTo
     {
         return $this->belongsTo(RecurringExpense::class, 'recurring_id');
+    }
+
+    public function isTransfer(): bool
+    {
+        return $this->transfer_group_id !== null;
     }
 }

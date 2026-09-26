@@ -96,6 +96,11 @@ class Team extends Model
         return $this->hasMany(TeamInvitation::class);
     }
 
+    public function budgets(): HasMany
+    {
+        return $this->hasMany(Budget::class);
+    }
+
     /**
      * Get the attributes that should be cast.
      *

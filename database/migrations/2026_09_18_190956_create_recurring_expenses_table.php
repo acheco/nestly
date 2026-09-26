@@ -31,6 +31,8 @@ return new class extends Migration
         });
 
         DB::statement('CREATE INDEX idx_recurring_next_run ON recurring_expenses (next_run_date) WHERE active = true');
+        DB::statement('ALTER TABLE recurring_expenses ADD CONSTRAINT recurring_expenses_amount_positive CHECK (amount > 0)');
+
     }
 
     /**
