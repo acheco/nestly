@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -17,11 +18,13 @@ return new class extends Migration
             $table->string('slug')->unique();
             $table->boolean('is_personal')->default(false);
             $table->string('currency', 3)->default('USD');
-            $table->string('icon')->nullable();
-            $table->string('color')->nullable();
+            $table->string('icon')->default('user-round-group');
+            $table->string('color', 7)->default('#4F7CFF');
             $table->timestamps();
             $table->softDeletes();
         });
+
+        DB::statement('ALTER TABLE teams ADD CONSTRAINT teams_color_hex CHECK (color ~ \'^#[0-9a-fA-F]{6}$\' )');
 
         Schema::create('team_members', function (Blueprint $table) {
             $table->uuid('id')->primary();
