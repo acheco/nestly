@@ -10,9 +10,9 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Carbon;
 
 /**
- * @property int $id
- * @property int $team_id
- * @property int $user_id
+ * @property string $id
+ * @property string $team_id
+ * @property string $user_id
  * @property TeamRole $role
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
