@@ -55,7 +55,6 @@ return new class extends Migration
         DB::statement('CREATE INDEX idx_budget_team_period ON budgets (team_id, start_date, end_date)');
         DB::statement('ALTER TABLE budgets ADD CONSTRAINT budgets_limit_amount_positive CHECK (limit_amount > 0)');
         DB::statement("ALTER TABLE budgets ADD CONSTRAINT budgets_scope_owner_consistent CHECK ((scope = 'personal') = (owner_id IS NOT NULL))");
-        DB::statement('ALTER TABLE budgets ADD CONSTRAINT budgets_end_date_great_or_equal_than_start CHECK (end_date >= start_date)');
     }
 
     public function down(): void
