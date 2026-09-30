@@ -1,5 +1,11 @@
 <?php
 
+use App\DTOs\CreateTransactionData;
+use App\Enums\CategoryKind;
+use App\Enums\TransactionType;
+use App\Models\Category;
+use App\Models\Team;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -44,7 +50,28 @@ expect()->extend('toBeOne', function () {
 |
 */
 
-function something()
+function transactionData(array $overrides = []): CreateTransactionData
 {
-    // ..
+    return new CreateTransactionData(...array_merge([
+        'account_id' => null,
+        'category_id' => null,
+        'type' => TransactionType::Expense,
+        'amount' => '100.00',
+        'date' => CarbonImmutable::parse('2026-09-15'),
+        'description' => null,
+        'notes' => null,
+        'transfer_group_id' => null,
+        'recurring_id' => null,
+    ], $overrides));
+}
+
+function makeCategory(Team $team, CategoryKind $kind): Category
+{
+    return Category::factory()->create([
+        'team_id' => $team->id,
+        'name' => 'Categoría de prueba',
+        'icon' => 'tag',
+        'color' => '#000000',
+        'kind' => $kind,
+    ]);
 }
