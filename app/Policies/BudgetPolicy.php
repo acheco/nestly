@@ -41,7 +41,7 @@ class BudgetPolicy
      */
     public function update(User $user, Budget $budget): bool
     {
-        if ($budget->scope === BudgetScope::Personal) {
+        if ($budget->scope == BudgetScope::Personal) {
             return $budget->owner_id === $user->id || ($user->teamRole($budget->team)?->isAtLeast(TeamRole::Admin) ?? false);
         }
 

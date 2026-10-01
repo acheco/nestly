@@ -6,8 +6,12 @@ namespace Database\Factories;
 
 use App\Enums\BudgetPeriod;
 use App\Enums\BudgetScope;
+use App\Models\Budget;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends Factory<Budget>
+ */
 class BudgetFactory extends Factory
 {
     public function definition(): array

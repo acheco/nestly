@@ -17,7 +17,7 @@ class AccountPolicy
 
     public function view(User $user, Account $account): bool
     {
-        if ($account->visibility === AccountVisibility::Team) {
+        if ($account->visibility == AccountVisibility::Team) {
             return $user->belongsToTeam($account->team);
         }
 
@@ -42,8 +42,8 @@ class AccountPolicy
         return $user->teamRole($account->team)?->isAtLeast(TeamRole::Admin) ?? false;
     }
 
-    public function delete(): bool
+    public function delete(User $user, Account $account): bool
     {
-        //
+        return $user->teamRole($account->team)?->isAtLeast(TeamRole::Admin) ?? false;
     }
 }

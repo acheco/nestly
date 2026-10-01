@@ -20,6 +20,10 @@ enum TransactionType: string
         };
     }
 
+    /**
+     * @param  numeric-string  $amount
+     * @return numeric-string
+     */
     public function signedAmount(string $amount): string
     {
         return match ($this) {

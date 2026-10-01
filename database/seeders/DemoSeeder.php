@@ -28,7 +28,7 @@ class DemoSeeder extends Seeder
         $this->seedAna();
         $this->seedFamiliaRamirez();
 
-        $this->command?->info('Demo sembrada. Password de todos los usuarios: password');
+        $this->command->info('Demo sembrada. Password de todos los usuarios: password');
     }
 
     private function seedAna(): void
@@ -233,7 +233,7 @@ class DemoSeeder extends Seeder
      *     account_id: string,
      *     category_id?: string|null,
      *     type: TransactionType,
-     *     amount: string,
+     *     amount: numeric-string,
      *     date: \DateTimeInterface,
      *     description?: string|null,
      *     notes?: string|null,

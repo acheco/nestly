@@ -51,7 +51,9 @@ class CreateTransactionAction
                 'recurring_id' => $recurringId,
             ]);
 
-            // Actualizar el balance de la cuenta
+            /**
+             * Actualizar el balance de la cuenta
+             */
             $account->current_balance = bcadd($account->current_balance, $data->type->signedAmount($data->amount), 2);
             $account->save();
 

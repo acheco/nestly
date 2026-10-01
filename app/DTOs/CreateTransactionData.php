@@ -7,6 +7,9 @@ use Carbon\CarbonImmutable;
 
 final readonly class CreateTransactionData
 {
+    /**
+     * @param  numeric-string  $amount
+     */
     public function __construct(
         public string $account_id,
         public ?string $category_id,

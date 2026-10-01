@@ -19,6 +19,7 @@ class CategoryPolicy
 
     /**
      * Determine whether the user can view the model.
+     * BelongsToTeam<>
      */
     public function view(User $user, Category $category): bool
     {
