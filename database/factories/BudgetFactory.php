@@ -5,7 +5,6 @@
 namespace Database\Factories;
 
 use App\Enums\BudgetPeriod;
-use App\Enums\BudgetScope;
 use App\Models\Budget;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -22,7 +21,6 @@ class BudgetFactory extends Factory
             'start_date' => now()->startOfMonth(),
             'end_date' => now()->endOfMonth(),
             'rollover' => false,
-            'scope' => BudgetScope::Shared,
         ];
     }
 }

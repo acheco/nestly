@@ -4,7 +4,6 @@ namespace Database\Seeders;
 
 use App\Actions\Transactions\CreateTransactionAction;
 use App\DTOs\CreateTransactionData;
-use App\Enums\BudgetScope;
 use App\Enums\TeamRole;
 use App\Enums\TransactionType;
 use App\Models\Account;
@@ -85,8 +84,7 @@ class DemoSeeder extends Seeder
             'period' => 'monthly',
             'start_date' => now()->startOfMonth(),
             'end_date' => now()->endOfMonth(),
-            'scope' => BudgetScope::Personal,
-            'owner_id' => $ana->id,
+            'created_by' => $ana->id,
         ]);
     }
 
@@ -221,7 +219,7 @@ class DemoSeeder extends Seeder
             'period' => 'monthly',
             'start_date' => now()->startOfMonth(),
             'end_date' => now()->endOfMonth(),
-            'scope' => BudgetScope::Shared,
+            'created_by' => $luis->id,
         ]);
     }
 
