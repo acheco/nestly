@@ -2,6 +2,8 @@
 
 namespace App\Enums;
 
+use App\Support\Money;
+
 enum TransactionType: string
 {
     case Income = 'income';
@@ -28,7 +30,7 @@ enum TransactionType: string
     {
         return match ($this) {
             self::Income => $amount,
-            self::Expense => bcsub('0', $amount, 2),
+            self::Expense => bcsub('0', $amount, Money::SCALE),
         };
     }
 }

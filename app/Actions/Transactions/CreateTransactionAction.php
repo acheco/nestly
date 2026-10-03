@@ -61,8 +61,7 @@ class CreateTransactionAction
             /**
              * Actualizar el balance de la cuenta
              */
-            $account->current_balance = bcadd($account->current_balance, $data->type->signedAmount($data->amount), 2);
-            $account->save();
+            $account->applyTransaction($data->type, $data->amount)->save();
 
             return $transaction;
         });

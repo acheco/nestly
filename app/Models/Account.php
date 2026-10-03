@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Enums\AccountType;
 use App\Enums\AccountVisibility;
+use App\Enums\TransactionType;
+use App\Support\Money;
 use Database\Factories\AccountFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -71,5 +73,21 @@ class Account extends Model
     public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class);
+    }
+
+    /**
+     * Aplica el efecto de un movimiento sobre current_balance (solo en memoria).
+     *
+     * Precondición: la fila debe estar bloqueada con lockForUpdate()
+     * dentro de una transacción de BD; si no, hay riesgo de lost update.
+     * No persiste: quien llama es responsable de save().
+     *
+     * @param  numeric-string  $amount  Siempre positivo; el signo lo da $type.
+     */
+    public function applyTransaction(TransactionType $type, string $amount): static
+    {
+        $this->current_balance = bcadd($this->current_balance, $type->signedAmount($amount), Money::SCALE);
+
+        return $this;
     }
 }
