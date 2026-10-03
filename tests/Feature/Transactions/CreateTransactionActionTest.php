@@ -12,12 +12,18 @@ use Illuminate\Validation\ValidationException;
 
 beforeEach(function () {
     $this->user = User::factory()->create();
+    $this->otherUser = User::factory()->create();
     $this->team = Team::factory()->create();
     $this->account = Account::factory()->create([
         'team_id' => $this->team->id,
         'initial_balance' => '1000.00',
     ]);
     $this->action = app(CreateTransactionAction::class);
+    $this->privateAccount = Account::factory()->private()->create([
+        'team_id' => $this->team->id,
+        'owner_id' => $this->otherUser->id,
+        'initial_balance' => '1000.00',
+    ]);
 });
 
 test('an expense decreases the account balance', function () {
@@ -60,9 +66,9 @@ test('an account from another team is not found', function () {
 
     expect(fn () => $this->action->execute($this->team, $this->user, transactionData([
         'account_id' => $foreignAccount->id,
-    ])))->toThrow(ModelNotFoundException::class);
+    ])))->toThrow(ModelNotFoundException::class)
+        ->and($foreignAccount->fresh()->current_balance)->toBe('500.00');
 
-    expect($foreignAccount->fresh()->current_balance)->toBe('500.00');
     $this->assertDatabaseCount('transactions', 0);
 });
 
@@ -130,5 +136,61 @@ test('a recurring transaction from another team is not found', function () {
     ])))->toThrow(ModelNotFoundException::class)
         ->and($this->account->fresh()->current_balance)->toBe('1000.00');
 
+    $this->assertDatabaseCount('transactions', 0);
+});
+
+test('a transfer to a private account without transfer_group_id dont pass', function () {
+    try {
+        $this->action->execute($this->team, $this->user, transactionData([
+            'account_id' => $this->privateAccount->id,
+            'transfer_group_id' => null,
+        ]));
+
+        $this->fail('Expected a ValidationException to be thrown.');
+    } catch (ValidationException $e) {
+        expect($e->status)->toBe(422)
+            ->and($e->errors())->toHaveKey('account_id');
+    }
+
+    expect($this->privateAccount->fresh()->current_balance)->toBe('1000.00');
+    $this->assertDatabaseCount('transactions', 0);
+});
+
+test('a transfer to a private account with transfer_group_id pass correctly', function () {
+
+    $this->action->execute($this->team, $this->user, transactionData([
+        'account_id' => $this->privateAccount->id,
+        'amount' => '100.00',
+        'type' => TransactionType::Income,
+        'transfer_group_id' => '01a0f9f6-7144-706b-a244-4940b7fa84c5',
+    ]));
+
+    $this->action->execute($this->team, $this->otherUser, transactionData([
+        'account_id' => $this->account->id,
+        'amount' => '100.00',
+        'type' => TransactionType::Expense,
+        'transfer_group_id' => '01a0f9f6-7144-706b-a244-4940b7fa84c5',
+    ]));
+
+    expect($this->privateAccount->fresh()->current_balance)->toBe('1100.00');
+    expect($this->account->fresh()->current_balance)->toBe('900.00');
+    $this->assertDatabaseCount('transactions', 2);
+
+});
+
+test('the owner cannot record a non-transfer transaction on their private account', function () {
+    try {
+        $this->action->execute($this->team, $this->otherUser, transactionData([
+            'account_id' => $this->privateAccount->id,
+            'transfer_group_id' => null,
+        ]));
+
+        $this->fail('Expected a ValidationException to be thrown.');
+    } catch (ValidationException $e) {
+        expect($e->status)->toBe(422)
+            ->and($e->errors())->toHaveKey('account_id');
+    }
+
+    expect($this->privateAccount->fresh()->current_balance)->toBe('1000.00');
     $this->assertDatabaseCount('transactions', 0);
 });

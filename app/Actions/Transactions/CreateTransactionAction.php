@@ -3,6 +3,7 @@
 namespace App\Actions\Transactions;
 
 use App\DTOs\CreateTransactionData;
+use App\Enums\AccountVisibility;
 use App\Models\Team;
 use App\Models\Transaction;
 use App\Models\User;
@@ -21,6 +22,12 @@ class CreateTransactionAction
 
             $account = $team->accounts()->lockForUpdate()->findOrFail($data->account_id);
 
+            if ($account->visibility === AccountVisibility::Private && $data->transfer_group_id === null) {
+                throw ValidationException::withMessages([
+                    'account_id' => 'No puedes registrar transacciones en una cuenta privada sin un grupo de transferencia.', // TODO(i18n)
+                ]);
+            }
+
             $category = null;
 
             if ($data->category_id !== null) {
@@ -28,7 +35,7 @@ class CreateTransactionAction
 
                 if ($category->kind->value !== $data->type->value) {
                     throw ValidationException::withMessages([
-                        'category_id' => 'El tipo de categoría no coincide con la transacción. Selecciona una categoría válida para este registro.',
+                        'category_id' => 'El tipo de categoría no coincide con la transacción. Selecciona una categoría válida para este registro.', // TODO(i18n)
                     ]);
                 }
             }
