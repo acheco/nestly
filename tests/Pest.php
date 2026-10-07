@@ -1,6 +1,7 @@
 <?php
 
 use App\DTOs\CreateTransactionData;
+use App\DTOs\CreateTransferData;
 use App\Enums\CategoryKind;
 use App\Enums\TransactionType;
 use App\Models\Category;
@@ -62,6 +63,17 @@ function transactionData(array $overrides = []): CreateTransactionData
         'notes' => null,
         'transfer_group_id' => null,
         'recurring_id' => null,
+    ], $overrides));
+}
+
+function transferData(array $overrides = []): CreateTransferData
+{
+    return new CreateTransferData(...array_merge([
+        'from_account_id' => null,
+        'to_account_id' => null,
+        'amount' => '100.00',
+        'description' => null,
+        'date' => CarbonImmutable::parse('2026-09-15'),
     ], $overrides));
 }
 

@@ -30,6 +30,11 @@ class CreateTransferAction
 
         return DB::transaction(function () use ($team, $user, $data) {
 
+            /**
+             *  Lock both accounts in a global, deterministic order (by id) to avoid deadlocks
+             *  when two transfers run concurrently in opposite directions (A→B and B→A).
+             *  Not covered by tests: removing this keeps the suite green but breaks under load.
+             */
             $accounts = $team->accounts()
                 ->lockForUpdate()
                 ->whereIn('id', [$data->from_account_id, $data->to_account_id])
