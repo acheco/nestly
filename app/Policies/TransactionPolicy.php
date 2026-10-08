@@ -3,7 +3,6 @@
 namespace App\Policies;
 
 use App\Enums\TeamRole;
-use App\Models\Account;
 use App\Models\Team;
 use App\Models\Transaction;
 use App\Models\User;
@@ -29,11 +28,9 @@ class TransactionPolicy
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user, Account $account): bool
+    public function create(User $user, Team $team): bool
     {
-        $hasRole = $user->teamRole($account->team)?->isAtLeast(TeamRole::Member) ?? false;
-
-        return $hasRole && (new AccountPolicy)->view($user, $account);
+        return $user->teamRole($team)?->isAtLeast(TeamRole::Member) ?? false;
     }
 
     /**
