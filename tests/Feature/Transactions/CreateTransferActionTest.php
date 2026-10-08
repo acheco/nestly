@@ -151,3 +151,49 @@ test('a user can make a transfer to a private account', function () {
         ->and($this->fromAccount->fresh()->current_balance)->toBe('900.00')
         ->and($privateAccount->fresh()->current_balance)->toBe('1100.00');
 });
+
+test('a transfer from an archived account returns a 422 error', function () {
+    $archivedAccount = Account::factory()->archived()->create([
+        'team_id' => $this->team->id,
+        'initial_balance' => '1000.00',
+    ]);
+
+    try {
+        $this->action->execute($this->team, $this->user, transferData([
+            'from_account_id' => $archivedAccount->id,
+            'to_account_id' => $this->toAccount->id,
+        ]));
+
+        $this->fail('Expected a ValidationException to be thrown.');
+    } catch (ValidationException $e) {
+        expect($e->status)->toBe(422)
+            ->and($e->errors())->toHaveKey('from_account_id')
+            ->and($archivedAccount->fresh()->current_balance)->toBe('1000.00')
+            ->and($this->toAccount->fresh()->current_balance)->toBe('1000.00');
+    }
+
+    $this->assertDatabaseCount('transactions', 0);
+});
+
+test('a transfer to an archived account returns a 422 error', function () {
+    $archivedAccount = Account::factory()->archived()->create([
+        'team_id' => $this->team->id,
+        'initial_balance' => '1000.00',
+    ]);
+
+    try {
+        $this->action->execute($this->team, $this->user, transferData([
+            'from_account_id' => $this->fromAccount->id,
+            'to_account_id' => $archivedAccount->id,
+        ]));
+
+        $this->fail('Expected a ValidationException to be thrown.');
+    } catch (ValidationException $e) {
+        expect($e->status)->toBe(422)
+            ->and($e->errors())->toHaveKey('to_account_id')
+            ->and($this->fromAccount->fresh()->current_balance)->toBe('1000.00')
+            ->and($archivedAccount->fresh()->current_balance)->toBe('1000.00');
+    }
+
+    $this->assertDatabaseCount('transactions', 0);
+});

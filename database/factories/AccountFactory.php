@@ -32,4 +32,9 @@ class AccountFactory extends Factory
     {
         return $this->state(fn () => ['visibility' => AccountVisibility::Private]);
     }
+
+    public function archived(): static
+    {
+        return $this->state(fn () => ['archived' => true]);
+    }
 }

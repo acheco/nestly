@@ -1,18 +1,18 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\Transactions;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class UpdateBudgetRequest extends FormRequest
+class StoreTransferRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,7 +23,11 @@ class UpdateBudgetRequest extends FormRequest
     public function rules(): array
     {
         return [
-            //
+            'from_account_id' => 'required|different:to_account_id|uuid',
+            'to_account_id' => 'required|uuid',
+            'amount' => 'required|numeric|decimal:0,2|min:0.01|max:999999999999.99',
+            'description' => 'nullable|string|max:255',
+            'date' => 'required|date',
         ];
     }
 }

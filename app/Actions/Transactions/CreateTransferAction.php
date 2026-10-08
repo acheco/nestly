@@ -56,6 +56,14 @@ class CreateTransferAction
                 throw new AuthorizationException('Solo el dueño puede transferir desde una cuenta privada.'); // TODO(i18n)
             }
 
+            if ($fromAccount->archived) {
+                throw ValidationException::withMessages(['from_account_id' => 'No se puede transferir desde una cuenta archivada.']); // TODO(i18n)
+            }
+
+            if ($toAccount->archived) {
+                throw ValidationException::withMessages(['to_account_id' => 'No se puede transferir a una cuenta archivada.']); // TODO(i18n)
+            }
+
             $transferGroupId = Str::uuid()->toString();
 
             $expenseTransaction = Transaction::create([

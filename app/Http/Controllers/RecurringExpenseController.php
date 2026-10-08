@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreRecurringExpenseRequest;
-use App\Http\Requests\UpdateRecurringExpenseRequest;
+use App\Http\Requests\RecurringExpenses\StoreRecurringExpenseRequest;
+use App\Http\Requests\RecurringExpenses\UpdateRecurringExpenseRequest;
 use App\Models\RecurringExpense;
 
 class RecurringExpenseController extends Controller

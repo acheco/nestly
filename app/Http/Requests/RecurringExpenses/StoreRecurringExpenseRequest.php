@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests;
+namespace App\Http\Requests\RecurringExpenses;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreCategoryRequest extends FormRequest
+class StoreRecurringExpenseRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
