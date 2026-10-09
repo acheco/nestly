@@ -2,12 +2,15 @@
 
 namespace App\Http\Requests\Transactions;
 
+use App\Http\Requests\Concerns\ValidatesTransactionDate;
 use App\Support\Money;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreTransferRequest extends FormRequest
 {
+    use ValidatesTransactionDate;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -28,7 +31,7 @@ class StoreTransferRequest extends FormRequest
             'to_account_id' => 'required|uuid',
             'amount' => 'required|numeric|decimal:0,2|min:0.01|max:'.Money::MAX,
             'description' => 'nullable|string|max:255',
-            'date' => 'required|date',
+            'date' => $this->transactionDateRules(),
         ];
     }
 }

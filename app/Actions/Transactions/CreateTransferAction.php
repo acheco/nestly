@@ -28,6 +28,10 @@ class CreateTransferAction
             throw ValidationException::withMessages(['from_account_id' => 'Las cuentas deben ser diferentes']); // TODO(i18n)
         }
 
+        if ($data->date->toDateString() > $user->localToday()) {
+            throw ValidationException::withMessages(['date' => 'La fecha no puede ser posterior a hoy.']); // TODO(i18n)
+        }
+
         return DB::transaction(function () use ($team, $user, $data) {
 
             /**

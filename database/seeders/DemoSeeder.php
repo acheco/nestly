@@ -247,7 +247,10 @@ class DemoSeeder extends Seeder
             type: $attributes['type'],
             // Normaliza a 2 decimales sin pasar nunca por float.
             amount: bcadd($attributes['amount'], '0', 2),
-            date: CarbonImmutable::instance($attributes['date']),
+            // Las fechas relativas al mes actual (p. ej. "día 14") pueden caer en
+            // el futuro a inicios de mes; la action las rechazaría (no se permiten
+            // fechas futuras), así que se recortan a hoy.
+            date: CarbonImmutable::instance($attributes['date'])->min(CarbonImmutable::now($user->timezone)),
             description: $attributes['description'] ?? null,
             notes: $attributes['notes'] ?? null,
             transfer_group_id: $attributes['transfer_group_id'] ?? null,

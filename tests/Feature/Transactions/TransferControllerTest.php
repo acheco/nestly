@@ -5,6 +5,7 @@ use App\Enums\TransactionType;
 use App\Models\Account;
 use App\Models\Team;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Arr;
 
 beforeEach(function () {
@@ -196,3 +197,31 @@ test('a transfer involving an archived account fails validation', function (stri
     $this->assertDatabaseCount('transactions', 0);
     expect($archivedAccount->fresh()->current_balance)->toBe('1000.00');
 })->with(['from_account_id', 'to_account_id']);
+
+test('a transfer with a future date fails validation', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-10-09 12:00:00', 'UTC'));
+
+    $this->actingAs($this->user)
+        ->post(route('transfers.store', $this->team), ($this->payload)(['date' => '2026-10-10']))
+        ->assertSessionHasErrors('date');
+
+    $this->assertDatabaseCount('transactions', 0);
+    expect($this->fromAccount->fresh()->current_balance)->toBe('1000.00');
+});
+
+test('the transfer date limit uses the user timezone, not the server one', function () {
+    // 02:00 UTC del 10 = 22:00 del 9 en La Paz (UTC-4).
+    $this->travelTo(CarbonImmutable::parse('2026-10-10 02:00:00', 'UTC'));
+    $this->user->timezone = 'America/La_Paz';
+    $this->user->save();
+
+    $this->actingAs($this->user)
+        ->post(route('transfers.store', $this->team), ($this->payload)(['date' => '2026-10-10']))
+        ->assertSessionHasErrors('date');
+
+    $this->actingAs($this->user)
+        ->post(route('transfers.store', $this->team), ($this->payload)(['date' => '2026-10-09']))
+        ->assertSessionHasNoErrors();
+
+    $this->assertDatabaseCount('transactions', 2);
+});

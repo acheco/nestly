@@ -7,6 +7,7 @@ use App\Models\Account;
 use App\Models\RecurringExpense;
 use App\Models\Team;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 
@@ -214,4 +215,41 @@ test('the owner cannot record a non-transfer transaction on their private accoun
 
     expect($this->privateAccount->fresh()->current_balance)->toBe('1000.00');
     $this->assertDatabaseCount('transactions', 0);
+});
+
+test('a future date is rejected', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-10-09 12:00:00', 'UTC'));
+
+    try {
+        $this->action->execute($this->team, $this->user, transactionData([
+            'account_id' => $this->account->id,
+            'date' => CarbonImmutable::parse('2026-10-10'),
+        ]));
+
+        $this->fail('Expected a ValidationException to be thrown.');
+    } catch (ValidationException $e) {
+        expect($e->errors())->toHaveKey('date');
+    }
+
+    expect($this->account->fresh()->current_balance)->toBe('1000.00');
+    $this->assertDatabaseCount('transactions', 0);
+});
+
+test('the date limit uses the user timezone, not the server one', function () {
+    // 02:00 UTC del 10 = 22:00 del 9 en La Paz (UTC-4).
+    $this->travelTo(CarbonImmutable::parse('2026-10-10 02:00:00', 'UTC'));
+    $user = User::factory()->create(['timezone' => 'America/La_Paz']);
+
+    expect(fn () => $this->action->execute($this->team, $user, transactionData([
+        'account_id' => $this->account->id,
+        'date' => CarbonImmutable::parse('2026-10-10'),
+    ])))->toThrow(ValidationException::class);
+
+    $this->action->execute($this->team, $user, transactionData([
+        'account_id' => $this->account->id,
+        'date' => CarbonImmutable::parse('2026-10-09'),
+    ]));
+
+    $this->assertDatabaseCount('transactions', 1);
+    expect($this->account->fresh()->current_balance)->toBe('900.00');
 });

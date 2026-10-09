@@ -18,6 +18,12 @@ class CreateTransactionAction
      */
     public function execute(Team $team, User $user, CreateTransactionData $data): Transaction
     {
+        if ($data->date->toDateString() > $user->localToday()) {
+            throw ValidationException::withMessages([
+                'date' => 'La fecha no puede ser posterior a hoy.', // TODO(i18n)
+            ]);
+        }
+
         return DB::transaction(function () use ($team, $user, $data) {
 
             $account = $team->accounts()->lockForUpdate()->findOrFail($data->account_id);
