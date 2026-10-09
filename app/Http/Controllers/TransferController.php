@@ -7,6 +7,7 @@ use App\DTOs\CreateTransferData;
 use App\Http\Requests\Transactions\StoreTransferRequest;
 use App\Models\Team;
 use App\Models\Transaction;
+use App\Support\Money;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
@@ -22,7 +23,7 @@ class TransferController extends Controller
         $transferData = new CreateTransferData(
             from_account_id: $validated['from_account_id'],
             to_account_id: $validated['to_account_id'],
-            amount: (string) $validated['amount'],
+            amount: Money::fromInput($validated['amount']),
             description: $validated['description'] ?? null,
             date: CarbonImmutable::parse($validated['date']),
         );

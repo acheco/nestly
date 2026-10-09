@@ -92,6 +92,27 @@ test('a category whose kind does not match the transaction type is rejected', fu
     $this->assertDatabaseCount('transactions', 0);
 });
 
+test('an archived account is rejected', function () {
+    $archivedAccount = Account::factory()->archived()->create([
+        'team_id' => $this->team->id,
+        'initial_balance' => '1000.00',
+    ]);
+
+    try {
+        $this->action->execute($this->team, $this->user, transactionData([
+            'account_id' => $archivedAccount->id,
+        ]));
+
+        $this->fail('Expected a ValidationException to be thrown.');
+    } catch (ValidationException $e) {
+        expect($e->status)->toBe(422)
+            ->and($e->errors())->toHaveKey('account_id');
+    }
+
+    expect($archivedAccount->fresh()->current_balance)->toBe('1000.00');
+    $this->assertDatabaseCount('transactions', 0);
+});
+
 test('a transaction can be created without a category', function () {
     $transaction = $this->action->execute($this->team, $this->user, transactionData([
         'account_id' => $this->account->id,

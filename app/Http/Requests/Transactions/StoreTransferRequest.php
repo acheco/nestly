@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Transactions;
 
+use App\Support\Money;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -25,7 +26,7 @@ class StoreTransferRequest extends FormRequest
         return [
             'from_account_id' => 'required|different:to_account_id|uuid',
             'to_account_id' => 'required|uuid',
-            'amount' => 'required|numeric|decimal:0,2|min:0.01|max:999999999999.99',
+            'amount' => 'required|numeric|decimal:0,2|min:0.01|max:'.Money::MAX,
             'description' => 'nullable|string|max:255',
             'date' => 'required|date',
         ];

@@ -2,9 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Transactions\CreateTransactionAction;
+use App\DTOs\CreateTransactionData;
+use App\Enums\TransactionType;
 use App\Http\Requests\Transactions\StoreTransactionRequest;
 use App\Http\Requests\Transactions\UpdateTransactionRequest;
+use App\Models\Team;
 use App\Models\Transaction;
+use App\Support\Money;
+use Carbon\CarbonImmutable;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
 
 class TransactionController extends Controller
 {
@@ -27,9 +35,27 @@ class TransactionController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreTransactionRequest $request): void
+    public function store(StoreTransactionRequest $request, Team $current_team, CreateTransactionAction $createTransaction): RedirectResponse
     {
-        //
+        Gate::authorize('create', [Transaction::class, $current_team]);
+
+        $validated = $request->validated();
+
+        $transactionData = new CreateTransactionData(
+            account_id: $validated['account_id'],
+            category_id: $validated['category_id'] ?? null,
+            type: TransactionType::from($validated['type']),
+            amount: Money::fromInput($validated['amount']),
+            date: CarbonImmutable::parse($validated['date']),
+            description: $validated['description'] ?? null,
+            notes: $validated['notes'] ?? null,
+            transfer_group_id: null,
+            recurring_id: null,
+        );
+
+        $createTransaction->execute($current_team, $request->user(), $transactionData);
+
+        return back()->with('success', 'Transacción creada exitosamente.'); // TODO: i18n
     }
 
     /**

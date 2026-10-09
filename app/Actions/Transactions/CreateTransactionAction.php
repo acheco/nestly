@@ -22,6 +22,12 @@ class CreateTransactionAction
 
             $account = $team->accounts()->lockForUpdate()->findOrFail($data->account_id);
 
+            if ($account->archived) {
+                throw ValidationException::withMessages([
+                    'account_id' => 'No se pueden registrar transacciones en una cuenta archivada.', // TODO(i18n)
+                ]);
+            }
+
             if ($account->visibility === AccountVisibility::Private && $data->transfer_group_id === null) {
                 throw ValidationException::withMessages([
                     'account_id' => 'No puedes registrar transacciones en una cuenta privada sin un grupo de transferencia.', // TODO(i18n)
