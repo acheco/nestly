@@ -1,11 +1,16 @@
 <?php
 
+use App\Actions\Transactions\CreateTransactionAction;
 use App\DTOs\CreateTransactionData;
 use App\DTOs\CreateTransferData;
+use App\DTOs\UpdateTransactionData;
 use App\Enums\CategoryKind;
 use App\Enums\TransactionType;
+use App\Models\Account;
 use App\Models\Category;
 use App\Models\Team;
+use App\Models\Transaction;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -77,6 +82,19 @@ function transferData(array $overrides = []): CreateTransferData
     ], $overrides));
 }
 
+function updateTransactionData(array $overrides = []): UpdateTransactionData
+{
+    return new UpdateTransactionData(...array_merge([
+        'account_id' => null,
+        'category_id' => null,
+        'type' => TransactionType::Expense,
+        'amount' => '100.00',
+        'date' => CarbonImmutable::parse('2026-09-15'),
+        'description' => null,
+        'notes' => null,
+    ], $overrides));
+}
+
 function makeCategory(Team $team, CategoryKind $kind): Category
 {
     return Category::factory()->create([
@@ -86,4 +104,17 @@ function makeCategory(Team $team, CategoryKind $kind): Category
         'color' => '#000000',
         'kind' => $kind,
     ]);
+}
+
+/**
+ * Registra un gasto de 100.00 vía la action real, para que el saldo de la
+ * cuenta quede coherente (initial_balance − 100).
+ */
+function recordExpense(Team $team, Account $account, User $creator, ?Category $category = null): Transaction
+{
+    return app(CreateTransactionAction::class)->execute($team, $creator, transactionData([
+        'account_id' => $account->id,
+        'category_id' => $category?->id,
+        'amount' => '100.00',
+    ]));
 }

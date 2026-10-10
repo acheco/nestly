@@ -15,6 +15,10 @@ Route::prefix('{current_team}')
         Route::get('dashboard', DashboardController::class)->name('dashboard');
 
         Route::post('transactions', [TransactionController::class, 'store'])->name('transactions.store');
+        Route::patch('transactions/{transaction}', [TransactionController::class, 'update'])
+            ->scopeBindings()
+            ->name('transactions.update');
+
         Route::post('transfers', [TransferController::class, 'store'])->name('transfers.store');
     });
 

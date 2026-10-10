@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Transactions\CreateTransactionAction;
+use App\Actions\Transactions\UpdateTransactionAction;
 use App\DTOs\CreateTransactionData;
+use App\DTOs\UpdateTransactionData;
 use App\Enums\TransactionType;
 use App\Http\Requests\Transactions\StoreTransactionRequest;
 use App\Http\Requests\Transactions\UpdateTransactionRequest;
@@ -77,9 +79,27 @@ class TransactionController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateTransactionRequest $request, Transaction $transaction): void
+    public function update(UpdateTransactionRequest $request, Team $current_team, Transaction $transaction, UpdateTransactionAction $updateTransaction): RedirectResponse
     {
-        //
+        // $transaction ya viene resuelto por $current_team->transactions()
+        // (scopeBindings en la ruta): una transacción de otro team da 404.
+        Gate::authorize('update', $transaction);
+
+        $validated = $request->validated();
+
+        $transactionData = new UpdateTransactionData(
+            account_id: $validated['account_id'],
+            category_id: $validated['category_id'] ?? null,
+            type: TransactionType::from($validated['type']),
+            amount: Money::fromInput($validated['amount']),
+            date: CarbonImmutable::parse($validated['date']),
+            description: $validated['description'] ?? null,
+            notes: $validated['notes'] ?? null,
+        );
+
+        $updateTransaction->execute($current_team, $request->user(), $transaction->id, $transactionData);
+
+        return back()->with('success', 'Transacción actualizada.'); // TODO(i18n)
     }
 
     /**

@@ -38,8 +38,13 @@ class TransactionPolicy
      */
     public function update(User $user, Transaction $transaction): bool
     {
-        return $transaction->created_by === $user->id
-            || ($user->teamRole($transaction->account->team)?->isAtLeast(TeamRole::Admin) ?? false);
+        $role = $user->teamRole($transaction->team);
+
+        if ($role === null || ! $role->isAtLeast(TeamRole::Member)) {
+            return false;
+        }
+
+        return $transaction->created_by === $user->id || $role->isAtLeast(TeamRole::Admin);
     }
 
     /**

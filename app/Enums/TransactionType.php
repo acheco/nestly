@@ -14,6 +14,18 @@ enum TransactionType: string
         return $this->value;
     }
 
+    /**
+     * Tipo contrario: revertir el efecto de una transacción es aplicar su
+     * mismo monto con el tipo opuesto.
+     */
+    public function opposite(): self
+    {
+        return match ($this) {
+            self::Income => self::Expense,
+            self::Expense => self::Income,
+        };
+    }
+
     public function getSymbol(): string
     {
         return match ($this) {

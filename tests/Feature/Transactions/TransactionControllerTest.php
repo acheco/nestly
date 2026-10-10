@@ -306,3 +306,80 @@ test('the date limit uses the user timezone, not the server one', function () {
 
     $this->assertDatabaseCount('transactions', 1);
 });
+
+// ---------------------------------------------------------------------
+// PATCH /{current_team}/transactions/{transaction}
+// ---------------------------------------------------------------------
+
+test('the creator can update their transaction', function () {
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+
+    $this->actingAs($this->user)
+        ->from(route('dashboard', $this->team))
+        ->patch(route('transactions.update', [$this->team, $transaction]), ($this->payload)(['amount' => '150.00']))
+        ->assertRedirect(route('dashboard', $this->team))
+        ->assertSessionHas('success')
+        ->assertSessionHasNoErrors();
+
+    expect($transaction->fresh()->amount)->toBe('150.00')
+        ->and($this->account->fresh()->current_balance)->toBe('850.00');
+});
+
+test('a member cannot update a transaction created by someone else', function () {
+    $other = User::factory()->create();
+    $this->team->members()->attach($other, ['role' => TeamRole::Member->value]);
+    $transaction = recordExpense($this->team, $this->account, $other, $this->category);
+
+    $this->actingAs($this->user)
+        ->patch(route('transactions.update', [$this->team, $transaction]), ($this->payload)(['amount' => '150.00']))
+        ->assertForbidden();
+
+    expect($this->account->fresh()->current_balance)->toBe('900.00');
+});
+
+test('an admin can update a transaction created by someone else', function () {
+    $admin = User::factory()->create();
+    $this->team->members()->attach($admin, ['role' => TeamRole::Admin->value]);
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+
+    $this->actingAs($admin)
+        ->patch(route('transactions.update', [$this->team, $transaction]), ($this->payload)(['amount' => '150.00']))
+        ->assertSessionHasNoErrors();
+
+    expect($this->account->fresh()->current_balance)->toBe('850.00');
+});
+
+test('a viewer cannot update a transaction', function () {
+    $viewer = User::factory()->create();
+    $this->team->members()->attach($viewer, ['role' => TeamRole::Viewer->value]);
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+
+    $this->actingAs($viewer)
+        ->patch(route('transactions.update', [$this->team, $transaction]), ($this->payload)(['amount' => '150.00']))
+        ->assertForbidden();
+
+    expect($this->account->fresh()->current_balance)->toBe('900.00');
+});
+
+test('a transaction from another team returns a 404 on update', function () {
+    $otherTeam = Team::factory()->create();
+    $otherAccount = Account::factory()->create(['team_id' => $otherTeam->id, 'initial_balance' => '500.00']);
+    $foreign = recordExpense($otherTeam, $otherAccount, $this->user);
+
+    $this->actingAs($this->user)
+        ->patch(route('transactions.update', [$this->team, $foreign]), ($this->payload)(['amount' => '150.00']))
+        ->assertNotFound();
+
+    expect($otherAccount->fresh()->current_balance)->toBe('400.00');
+});
+
+test('updating with a future date fails validation', function () {
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+    $this->travelTo(CarbonImmutable::parse('2026-10-09 12:00:00', 'UTC'));
+
+    $this->actingAs($this->user)
+        ->patch(route('transactions.update', [$this->team, $transaction]), ($this->payload)(['date' => '2026-10-10']))
+        ->assertSessionHasErrors('date');
+
+    expect($this->account->fresh()->current_balance)->toBe('900.00');
+});
