@@ -1,6 +1,6 @@
 <?php
 
-namespace App\DTOs;
+namespace App\DTOs\Transactions;
 
 use Carbon\CarbonImmutable;
 

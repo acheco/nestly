@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Transactions\CreateTransferAction;
-use App\DTOs\CreateTransferData;
+use App\DTOs\Transactions\CreateTransferData;
 use App\Http\Requests\Transactions\StoreTransferRequest;
 use App\Models\Team;
 use App\Models\Transaction;

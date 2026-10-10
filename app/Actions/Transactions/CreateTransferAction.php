@@ -2,8 +2,8 @@
 
 namespace App\Actions\Transactions;
 
-use App\DTOs\CreateTransferData;
-use App\DTOs\TransferResultData;
+use App\DTOs\Transactions\CreateTransferData;
+use App\DTOs\Transactions\TransferResultData;
 use App\Enums\AccountVisibility;
 use App\Enums\TransactionType;
 use App\Models\Account;

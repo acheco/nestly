@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Actions\Transactions\CreateTransactionAction;
-use App\DTOs\CreateTransactionData;
+use App\DTOs\Transactions\CreateTransactionData;
 use App\Enums\TeamRole;
 use App\Enums\TransactionType;
 use App\Models\Account;

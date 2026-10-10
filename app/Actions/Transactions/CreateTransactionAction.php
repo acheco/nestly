@@ -2,7 +2,7 @@
 
 namespace App\Actions\Transactions;
 
-use App\DTOs\CreateTransactionData;
+use App\DTOs\Transactions\CreateTransactionData;
 use App\Enums\AccountVisibility;
 use App\Models\Team;
 use App\Models\Transaction;

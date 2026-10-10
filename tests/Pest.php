@@ -1,9 +1,9 @@
 <?php
 
 use App\Actions\Transactions\CreateTransactionAction;
-use App\DTOs\CreateTransactionData;
-use App\DTOs\CreateTransferData;
-use App\DTOs\UpdateTransactionData;
+use App\DTOs\Transactions\CreateTransactionData;
+use App\DTOs\Transactions\CreateTransferData;
+use App\DTOs\Transactions\UpdateTransactionData;
 use App\Enums\CategoryKind;
 use App\Enums\TransactionType;
 use App\Models\Account;

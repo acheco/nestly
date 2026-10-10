@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Actions\Transactions\CreateTransactionAction;
+use App\Actions\Transactions\DeleteTransactionAction;
 use App\Actions\Transactions\UpdateTransactionAction;
-use App\DTOs\CreateTransactionData;
-use App\DTOs\UpdateTransactionData;
+use App\DTOs\Transactions\CreateTransactionData;
+use App\DTOs\Transactions\UpdateTransactionData;
 use App\Enums\TransactionType;
 use App\Http\Requests\Transactions\StoreTransactionRequest;
 use App\Http\Requests\Transactions\UpdateTransactionRequest;
@@ -105,8 +106,12 @@ class TransactionController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Transaction $transaction): void
+    public function destroy(Team $current_team, Transaction $transaction, DeleteTransactionAction $deleteTransaction): RedirectResponse
     {
-        //
+        Gate::authorize('delete', $transaction);
+
+        $deleteTransaction->execute($current_team, $transaction->id);
+
+        return back()->with('success', 'Transacción eliminada.'); // TODO(i18n)
     }
 }

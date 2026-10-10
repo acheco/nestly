@@ -1,5 +1,6 @@
 <?php
 
+use App\Actions\Transactions\CreateTransferAction;
 use App\Enums\CategoryKind;
 use App\Enums\TeamRole;
 use App\Enums\TransactionType;
@@ -381,5 +382,129 @@ test('updating with a future date fails validation', function () {
         ->patch(route('transactions.update', [$this->team, $transaction]), ($this->payload)(['date' => '2026-10-10']))
         ->assertSessionHasErrors('date');
 
+    expect($this->account->fresh()->current_balance)->toBe('900.00');
+});
+
+// ---------------------------------------------------------------------
+// DELETE /{current_team}/transactions/{transaction}
+// ---------------------------------------------------------------------
+
+test('guests are redirected to the login page on delete', function () {
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+
+    $this->delete(route('transactions.destroy', [$this->team, $transaction]))
+        ->assertRedirect(route('login'));
+
+    $this->assertModelExists($transaction);
+    expect($this->account->fresh()->current_balance)->toBe('900.00');
+});
+
+test('the creator can delete their transaction', function () {
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+
+    $this->actingAs($this->user)
+        ->from(route('dashboard', $this->team))
+        ->delete(route('transactions.destroy', [$this->team, $transaction]))
+        ->assertRedirect(route('dashboard', $this->team))
+        ->assertSessionHas('success')
+        ->assertSessionHasNoErrors();
+
+    $this->assertModelMissing($transaction);
+    expect($this->account->fresh()->current_balance)->toBe('1000.00');
+});
+
+test('a member cannot delete a transaction created by someone else', function () {
+    $other = User::factory()->create();
+    $this->team->members()->attach($other, ['role' => TeamRole::Member->value]);
+    $transaction = recordExpense($this->team, $this->account, $other, $this->category);
+
+    $this->actingAs($this->user)
+        ->delete(route('transactions.destroy', [$this->team, $transaction]))
+        ->assertForbidden();
+
+    $this->assertModelExists($transaction);
+    expect($this->account->fresh()->current_balance)->toBe('900.00');
+});
+
+test('an admin can delete a transaction created by someone else', function () {
+    $admin = User::factory()->create();
+    $this->team->members()->attach($admin, ['role' => TeamRole::Admin->value]);
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+
+    $this->actingAs($admin)
+        ->delete(route('transactions.destroy', [$this->team, $transaction]))
+        ->assertSessionHasNoErrors();
+
+    $this->assertModelMissing($transaction);
+    expect($this->account->fresh()->current_balance)->toBe('1000.00');
+});
+
+test('a viewer cannot delete a transaction', function () {
+    $viewer = User::factory()->create();
+    $this->team->members()->attach($viewer, ['role' => TeamRole::Viewer->value]);
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+
+    $this->actingAs($viewer)
+        ->delete(route('transactions.destroy', [$this->team, $transaction]))
+        ->assertForbidden();
+
+    $this->assertModelExists($transaction);
+    expect($this->account->fresh()->current_balance)->toBe('900.00');
+});
+
+test('a user who is not a team member gets a 403 on delete', function () {
+    $outsider = User::factory()->create();
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+
+    $this->actingAs($outsider)
+        ->delete(route('transactions.destroy', [$this->team, $transaction]))
+        ->assertForbidden();
+
+    $this->assertModelExists($transaction);
+    expect($this->account->fresh()->current_balance)->toBe('900.00');
+});
+
+test('a transaction from another team returns a 404 on delete', function () {
+    $otherTeam = Team::factory()->create();
+    $otherAccount = Account::factory()->create(['team_id' => $otherTeam->id, 'initial_balance' => '500.00']);
+    $foreign = recordExpense($otherTeam, $otherAccount, $this->user);
+
+    $this->actingAs($this->user)
+        ->delete(route('transactions.destroy', [$this->team, $foreign]))
+        ->assertNotFound();
+
+    $this->assertModelExists($foreign);
+    expect($otherAccount->fresh()->current_balance)->toBe('400.00');
+});
+
+test('a leg of a transfer cannot be deleted from the transactions endpoint', function () {
+    $destination = Account::factory()->create([
+        'team_id' => $this->team->id,
+        'initial_balance' => '1000.00',
+    ]);
+    $transfer = app(CreateTransferAction::class)->execute($this->team, $this->user, transferData([
+        'from_account_id' => $this->account->id,
+        'to_account_id' => $destination->id,
+    ]));
+
+    $this->actingAs($this->user)
+        ->delete(route('transactions.destroy', [$this->team, $transfer->expense_transaction]))
+        ->assertSessionHasErrors('account_id');
+
+    $this->assertModelExists($transfer->expense_transaction);
+    $this->assertModelExists($transfer->income_transaction);
+    expect($this->account->fresh()->current_balance)->toBe('900.00')
+        ->and($destination->fresh()->current_balance)->toBe('1100.00');
+});
+
+test('a transaction on an archived account cannot be deleted', function () {
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+    $this->account->forceFill(['archived' => true])->save();
+
+    $this->actingAs($this->user)
+        ->delete(route('transactions.destroy', [$this->team, $transaction]))
+        ->assertSessionHasErrors('account_id');
+
+    $this->assertModelExists($transaction);
     expect($this->account->fresh()->current_balance)->toBe('900.00');
 });

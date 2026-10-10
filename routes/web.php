@@ -18,6 +18,9 @@ Route::prefix('{current_team}')
         Route::patch('transactions/{transaction}', [TransactionController::class, 'update'])
             ->scopeBindings()
             ->name('transactions.update');
+        Route::delete('transactions/{transaction}', [TransactionController::class, 'destroy'])
+            ->scopeBindings()
+            ->name('transactions.destroy');
 
         Route::post('transfers', [TransferController::class, 'store'])->name('transfers.store');
     });
