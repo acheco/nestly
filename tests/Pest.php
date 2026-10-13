@@ -1,10 +1,12 @@
 <?php
 
 use App\Actions\Transactions\CreateTransactionAction;
+use App\Actions\Transactions\CreateTransferAction;
 use App\DTOs\Transactions\CreateTransactionData;
 use App\DTOs\Transactions\CreateTransferData;
 use App\DTOs\Transactions\UpdateTransactionData;
 use App\Enums\CategoryKind;
+use App\Enums\TeamRole;
 use App\Enums\TransactionType;
 use App\Models\Account;
 use App\Models\Category;
@@ -117,4 +119,23 @@ function recordExpense(Team $team, Account $account, User $creator, ?Category $c
         'category_id' => $category?->id,
         'amount' => '100.00',
     ]));
+}
+
+/**
+ * Crea una transferencia de 100.00 vía la action real y devuelve su transfer_group_id.
+ */
+function recordTransfer(Team $team, User $creator, Account $from, Account $to): string
+{
+    return app(CreateTransferAction::class)->execute($team, $creator, transferData([
+        'from_account_id' => $from->id,
+        'to_account_id' => $to->id,
+    ]))->transfer_group_id;
+}
+
+function teamUser(Team $team, TeamRole $role): User
+{
+    $user = User::factory()->create();
+    $team->members()->attach($user, ['role' => $role->value]);
+
+    return $user;
 }

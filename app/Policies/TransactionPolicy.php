@@ -54,4 +54,14 @@ class TransactionPolicy
     {
         return $this->update($user, $transaction);
     }
+
+    /**
+     * Role-only gate for deleting a transfer (no Transfer model to bind).
+     * Creator / private-account owner / admin+ is checked in DeleteTransferAction
+     * against the locked rows.
+     */
+    public function deleteTransfer(User $user, Team $team): bool
+    {
+        return $user->teamRole($team)?->isAtLeast(TeamRole::Member) ?? false;
+    }
 }
