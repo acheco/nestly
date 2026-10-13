@@ -23,6 +23,9 @@ Route::prefix('{current_team}')
             ->name('transactions.destroy');
 
         Route::post('transfers', [TransferController::class, 'store'])->name('transfers.store');
+        Route::delete('transfers/{transfer_group_id}', [TransferController::class, 'destroy'])
+            ->whereUuid('transfer_group_id')
+            ->name('transfers.destroy');
     });
 
 Route::middleware(['auth'])->group(function () {

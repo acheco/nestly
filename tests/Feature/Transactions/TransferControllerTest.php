@@ -225,3 +225,92 @@ test('the transfer date limit uses the user timezone, not the server one', funct
 
     $this->assertDatabaseCount('transactions', 2);
 });
+
+test('guests are redirected to the login page on delete', function () {
+    $transferGroupId = recordTransfer($this->team, $this->user, $this->fromAccount, $this->toAccount);
+
+    $this->delete(route('transfers.destroy', [$this->team, $transferGroupId]))
+        ->assertRedirect(route('login'));
+
+    $this->assertDatabaseCount('transactions', 2);
+    expect($this->fromAccount->fresh()->current_balance)->toBe('900.00')
+        ->and($this->toAccount->fresh()->current_balance)->toBe('1100.00');
+});
+
+test('the creator can delete their transfer', function () {
+    $transferGroupId = recordTransfer($this->team, $this->user, $this->fromAccount, $this->toAccount);
+
+    $this->actingAs($this->user)
+        ->from(route('dashboard', $this->team))
+        ->delete(route('transfers.destroy', [$this->team, $transferGroupId]))
+        ->assertRedirect(route('dashboard', $this->team))
+        ->assertSessionHas('success')
+        ->assertSessionHasNoErrors();
+
+    $this->assertDatabaseCount('transactions', 0);
+    expect($this->fromAccount->fresh()->current_balance)->toBe('1000.00')
+        ->and($this->toAccount->fresh()->current_balance)->toBe('1000.00');
+});
+
+test('a viewer cannot delete a transfer', function () {
+    $viewer = User::factory()->create();
+    $this->team->members()->attach($viewer, ['role' => TeamRole::Viewer->value]);
+    $transferGroupId = recordTransfer($this->team, $this->user, $this->fromAccount, $this->toAccount);
+
+    $this->actingAs($viewer)
+        ->delete(route('transfers.destroy', [$this->team, $transferGroupId]))
+        ->assertForbidden();
+
+    $this->assertDatabaseCount('transactions', 2);
+    expect($this->fromAccount->fresh()->current_balance)->toBe('900.00')
+        ->and($this->toAccount->fresh()->current_balance)->toBe('1100.00');
+});
+
+test('a member who is neither the creator nor an account owner cannot delete a transfer', function () {
+    $other = User::factory()->create();
+    $this->team->members()->attach($other, ['role' => TeamRole::Member->value]);
+    $transferGroupId = recordTransfer($this->team, $other, $this->fromAccount, $this->toAccount);
+
+    $this->actingAs($this->user)
+        ->delete(route('transfers.destroy', [$this->team, $transferGroupId]))
+        ->assertForbidden();
+
+    $this->assertDatabaseCount('transactions', 2);
+    expect($this->fromAccount->fresh()->current_balance)->toBe('900.00')
+        ->and($this->toAccount->fresh()->current_balance)->toBe('1100.00');
+});
+
+test('a transfer from another team returns a 404 on delete', function () {
+    $otherTeam = Team::factory()->create();
+    $otherFrom = Account::factory()->create(['team_id' => $otherTeam->id, 'initial_balance' => '500.00']);
+    $otherTo = Account::factory()->create(['team_id' => $otherTeam->id, 'initial_balance' => '500.00']);
+    $foreignGroupId = recordTransfer($otherTeam, User::factory()->create(), $otherFrom, $otherTo);
+
+    $this->actingAs($this->user)
+        ->delete(route('transfers.destroy', [$this->team, $foreignGroupId]))
+        ->assertNotFound();
+
+    $this->assertDatabaseCount('transactions', 2);
+    expect($otherFrom->fresh()->current_balance)->toBe('400.00')
+        ->and($otherTo->fresh()->current_balance)->toBe('600.00');
+});
+
+test('a non uuid transfer id returns a 404', function () {
+    // route() no genera URLs que violen whereUuid, así que se arma a mano.
+    $this->actingAs($this->user)
+        ->delete(route('transfers.store', $this->team).'/abc')
+        ->assertNotFound();
+});
+
+test('a transfer involving an archived account cannot be deleted', function (string $account) {
+    $transferGroupId = recordTransfer($this->team, $this->user, $this->fromAccount, $this->toAccount);
+    $this->{$account}->forceFill(['archived' => true])->save();
+
+    $this->actingAs($this->user)
+        ->delete(route('transfers.destroy', [$this->team, $transferGroupId]))
+        ->assertSessionHasErrors('account_id');
+
+    $this->assertDatabaseCount('transactions', 2);
+    expect($this->fromAccount->fresh()->current_balance)->toBe('900.00')
+        ->and($this->toAccount->fresh()->current_balance)->toBe('1100.00');
+})->with(['fromAccount', 'toAccount']);
