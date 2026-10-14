@@ -60,6 +60,15 @@ class CreateTransferAction
                 throw new AuthorizationException('Solo el dueño puede transferir desde una cuenta privada.'); // TODO(i18n)
             }
 
+            /**
+             *  Private accounts only move money across the team perimeter (team → private, private → team).
+             *  Private → private never touches team money, so it is rejected. Checked after the 403 so a user
+             *  moving money out of someone else's private account gets 403, not a hint about the destination.
+             */
+            if ($fromAccount->visibility === AccountVisibility::Private && $toAccount->visibility === AccountVisibility::Private) {
+                throw ValidationException::withMessages(['to_account_id' => 'No se puede transferir entre dos cuentas privadas.']); // TODO(i18n)
+            }
+
             if ($fromAccount->archived) {
                 throw ValidationException::withMessages(['from_account_id' => 'No se puede transferir desde una cuenta archivada.']); // TODO(i18n)
             }

@@ -153,6 +153,54 @@ test('a user can make a transfer to a private account', function () {
         ->and($privateAccount->fresh()->current_balance)->toBe('1100.00');
 });
 
+test('a transfer between two private accounts returns a 422 error', function () {
+    $ownPrivate = Account::factory()->private()->create([
+        'team_id' => $this->team->id,
+        'owner_id' => $this->user->id,
+        'initial_balance' => '1000.00',
+    ]);
+    $otherPrivate = Account::factory()->private()->create([
+        'team_id' => $this->team->id,
+        'owner_id' => User::factory()->create()->id,
+        'initial_balance' => '1000.00',
+    ]);
+
+    try {
+        $this->action->execute($this->team, $this->user, transferData([
+            'from_account_id' => $ownPrivate->id,
+            'to_account_id' => $otherPrivate->id,
+        ]));
+        $this->fail('Expected ValidationException');
+    } catch (ValidationException $e) {
+        expect($e->errors())->toHaveKey('to_account_id');
+    }
+
+    expect($ownPrivate->fresh()->current_balance)->toBe('1000.00')
+        ->and($otherPrivate->fresh()->current_balance)->toBe('1000.00');
+
+    $this->assertDatabaseCount('transactions', 0);
+});
+
+test('taking money from someone else\'s private account into a private one returns a 403, not a 422', function () {
+    $otherPrivate = Account::factory()->private()->create([
+        'team_id' => $this->team->id,
+        'owner_id' => User::factory()->create()->id,
+        'initial_balance' => '1000.00',
+    ]);
+    $ownPrivate = Account::factory()->private()->create([
+        'team_id' => $this->team->id,
+        'owner_id' => $this->user->id,
+        'initial_balance' => '1000.00',
+    ]);
+
+    expect(fn () => $this->action->execute($this->team, $this->user, transferData([
+        'from_account_id' => $otherPrivate->id,
+        'to_account_id' => $ownPrivate->id,
+    ])))->toThrow(AuthorizationException::class);
+
+    $this->assertDatabaseCount('transactions', 0);
+});
+
 test('a transfer from an archived account returns a 422 error', function () {
     $archivedAccount = Account::factory()->archived()->create([
         'team_id' => $this->team->id,
