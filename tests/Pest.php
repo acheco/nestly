@@ -79,6 +79,7 @@ function transferData(array $overrides = []): CreateTransferData
         'from_account_id' => null,
         'to_account_id' => null,
         'amount' => '100.00',
+        'category_id' => null,
         'description' => null,
         'date' => CarbonImmutable::parse('2026-09-15'),
     ], $overrides));

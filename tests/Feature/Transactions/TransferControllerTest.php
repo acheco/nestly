@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\CategoryKind;
 use App\Enums\TeamRole;
 use App\Enums\TransactionType;
 use App\Models\Account;
@@ -140,7 +141,43 @@ test('validation errors are returned for invalid input', function (array $overri
     'description too long' => [['description' => str_repeat('a', 256)], 'description'],
     'missing date' => [['date' => null], 'date'],
     'invalid date' => [['date' => 'not-a-date'], 'date'],
+    'category not a uuid' => [['category_id' => 'not-a-uuid'], 'category_id'],
 ]);
+
+test('a member can create a categorized transfer to a private account', function () {
+    $privateAccount = Account::factory()->private()->create([
+        'team_id' => $this->team->id,
+        'owner_id' => User::factory()->create()->id,
+        'initial_balance' => '1000.00',
+    ]);
+    $category = makeCategory($this->team, CategoryKind::Expense);
+
+    $this->actingAs($this->user)
+        ->post(route('transfers.store', $this->team), ($this->payload)([
+            'to_account_id' => $privateAccount->id,
+            'category_id' => $category->id,
+        ]))
+        ->assertSessionHasNoErrors();
+
+    $this->assertDatabaseHas('transactions', [
+        'account_id' => $this->fromAccount->id,
+        'category_id' => $category->id,
+    ]);
+    $this->assertDatabaseHas('transactions', [
+        'account_id' => $privateAccount->id,
+        'category_id' => null,
+    ]);
+});
+
+test('a team to team transfer with a category fails validation', function () {
+    $this->actingAs($this->user)
+        ->post(route('transfers.store', $this->team), ($this->payload)([
+            'category_id' => makeCategory($this->team, CategoryKind::Expense)->id,
+        ]))
+        ->assertSessionHasErrors('category_id');
+
+    $this->assertDatabaseCount('transactions', 0);
+});
 
 test('a transfer to the same account fails validation', function () {
     $this->actingAs($this->user)

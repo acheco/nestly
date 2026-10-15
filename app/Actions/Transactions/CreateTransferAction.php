@@ -77,12 +77,44 @@ class CreateTransferAction
                 throw ValidationException::withMessages(['to_account_id' => 'No se puede transferir a una cuenta archivada.']); // TODO(i18n)
             }
 
+            /**
+             *  Optional category (ERD §4.3.17): only when the transfer crosses the team perimeter
+             *  (one team account and one private account), stored only on the team-side leg.
+             *  Private → private was rejected above, so "same visibility" here can only mean team → team.
+             */
+            $expenseCategoryId = null;
+            $incomeCategoryId = null;
+
+            if ($data->category_id !== null) {
+                $category = $team->categories()->findOrFail($data->category_id);
+
+                if ($fromAccount->visibility === $toAccount->visibility) {
+                    throw ValidationException::withMessages(['category_id' => 'Una transferencia entre cuentas del team no lleva categoría.']); // TODO(i18n)
+                }
+
+                // The team-side leg is the expense when money leaves the team, the income when it enters.
+                $teamLegType = $fromAccount->visibility === AccountVisibility::Team
+                    ? TransactionType::Expense
+                    : TransactionType::Income;
+
+                if ($category->kind->value !== $teamLegType->value) {
+                    throw ValidationException::withMessages(['category_id' => 'El tipo de categoría no coincide con la transferencia. Selecciona una categoría válida para este registro.']); // TODO(i18n)
+                }
+
+                if ($teamLegType === TransactionType::Expense) {
+                    $expenseCategoryId = $category->id;
+                } else {
+                    $incomeCategoryId = $category->id;
+                }
+            }
+
             $transferGroupId = Str::uuid()->toString();
 
             $expenseTransaction = Transaction::create([
                 'team_id' => $team->id,
                 'transfer_group_id' => $transferGroupId,
                 'account_id' => $fromAccount->id,
+                'category_id' => $expenseCategoryId,
                 'amount' => $data->amount,
                 'description' => $data->description,
                 'date' => $data->date,
@@ -94,6 +126,7 @@ class CreateTransferAction
                 'team_id' => $team->id,
                 'transfer_group_id' => $transferGroupId,
                 'account_id' => $toAccount->id,
+                'category_id' => $incomeCategoryId,
                 'amount' => $data->amount,
                 'description' => $data->description,
                 'date' => $data->date,

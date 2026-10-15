@@ -30,6 +30,7 @@ class StoreTransferRequest extends FormRequest
             'from_account_id' => 'required|different:to_account_id|uuid',
             'to_account_id' => 'required|uuid',
             'amount' => 'required|numeric|decimal:0,2|min:0.01|max:'.Money::MAX,
+            'category_id' => 'nullable|uuid',
             'description' => 'nullable|string|max:255',
             'date' => $this->transactionDateRules(),
         ];

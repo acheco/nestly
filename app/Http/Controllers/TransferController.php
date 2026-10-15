@@ -26,6 +26,7 @@ class TransferController extends Controller
             from_account_id: $validated['from_account_id'],
             to_account_id: $validated['to_account_id'],
             amount: Money::fromInput($validated['amount']),
+            category_id: $validated['category_id'] ?? null,
             description: $validated['description'] ?? null,
             date: CarbonImmutable::parse($validated['date']),
         );

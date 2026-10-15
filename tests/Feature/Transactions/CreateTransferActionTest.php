@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\Transactions\CreateTransferAction;
+use App\Enums\CategoryKind;
 use App\Enums\TransactionType;
 use App\Models\Account;
 use App\Models\Team;
@@ -285,4 +286,128 @@ test('the transfer date limit uses the user timezone, not the server one', funct
     ]));
 
     $this->assertDatabaseCount('transactions', 2);
+});
+
+/*
+ * Category on transfers (ERD §4.3.17): only when crossing the team perimeter, only on the team-side leg.
+ */
+
+test('a team to private transfer stores the expense category only on the team leg', function () {
+    $privateAccount = Account::factory()->private()->create([
+        'team_id' => $this->team->id,
+        'owner_id' => User::factory()->create()->id,
+        'initial_balance' => '1000.00',
+    ]);
+    $category = makeCategory($this->team, CategoryKind::Expense);
+
+    $result = $this->action->execute($this->team, $this->user, transferData([
+        'from_account_id' => $this->fromAccount->id,
+        'to_account_id' => $privateAccount->id,
+        'category_id' => $category->id,
+    ]));
+
+    expect($result->expense_transaction->category_id)->toBe($category->id)
+        ->and($result->income_transaction->category_id)->toBeNull();
+});
+
+test('a private to team transfer stores the income category only on the team leg', function () {
+    $privateAccount = Account::factory()->private()->create([
+        'team_id' => $this->team->id,
+        'owner_id' => $this->user->id,
+        'initial_balance' => '1000.00',
+    ]);
+    $category = makeCategory($this->team, CategoryKind::Income);
+
+    $result = $this->action->execute($this->team, $this->user, transferData([
+        'from_account_id' => $privateAccount->id,
+        'to_account_id' => $this->toAccount->id,
+        'category_id' => $category->id,
+    ]));
+
+    expect($result->income_transaction->category_id)->toBe($category->id)
+        ->and($result->expense_transaction->category_id)->toBeNull();
+});
+
+test('a transfer crossing the perimeter without category stores no category', function () {
+    $privateAccount = Account::factory()->private()->create([
+        'team_id' => $this->team->id,
+        'owner_id' => User::factory()->create()->id,
+        'initial_balance' => '1000.00',
+    ]);
+
+    $result = $this->action->execute($this->team, $this->user, transferData([
+        'from_account_id' => $this->fromAccount->id,
+        'to_account_id' => $privateAccount->id,
+    ]));
+
+    expect($result->expense_transaction->category_id)->toBeNull()
+        ->and($result->income_transaction->category_id)->toBeNull();
+});
+
+test('a team to team transfer with a category returns a 422 error', function () {
+    $category = makeCategory($this->team, CategoryKind::Expense);
+
+    try {
+        $this->action->execute($this->team, $this->user, transferData([
+            'from_account_id' => $this->fromAccount->id,
+            'to_account_id' => $this->toAccount->id,
+            'category_id' => $category->id,
+        ]));
+        $this->fail('Expected ValidationException');
+    } catch (ValidationException $e) {
+        expect($e->errors())->toHaveKey('category_id');
+    }
+
+    expect($this->fromAccount->fresh()->current_balance)->toBe('1000.00')
+        ->and($this->toAccount->fresh()->current_balance)->toBe('1000.00');
+
+    $this->assertDatabaseCount('transactions', 0);
+});
+
+test('a category whose kind does not match the team leg returns a 422 error', function (string $direction, CategoryKind $wrongKind) {
+    $privateAccount = Account::factory()->private()->create([
+        'team_id' => $this->team->id,
+        'owner_id' => $this->user->id,
+        'initial_balance' => '1000.00',
+    ]);
+    [$from, $to] = $direction === 'team_to_private'
+        ? [$this->fromAccount, $privateAccount]
+        : [$privateAccount, $this->toAccount];
+
+    try {
+        $this->action->execute($this->team, $this->user, transferData([
+            'from_account_id' => $from->id,
+            'to_account_id' => $to->id,
+            'category_id' => makeCategory($this->team, $wrongKind)->id,
+        ]));
+        $this->fail('Expected ValidationException');
+    } catch (ValidationException $e) {
+        expect($e->errors())->toHaveKey('category_id');
+    }
+
+    expect($from->fresh()->current_balance)->toBe('1000.00')
+        ->and($to->fresh()->current_balance)->toBe('1000.00');
+
+    $this->assertDatabaseCount('transactions', 0);
+})->with([
+    'team to private with an income category' => ['team_to_private', CategoryKind::Income],
+    'private to team with an expense category' => ['private_to_team', CategoryKind::Expense],
+]);
+
+test('a category from another team returns a 404', function () {
+    $privateAccount = Account::factory()->private()->create([
+        'team_id' => $this->team->id,
+        'owner_id' => User::factory()->create()->id,
+        'initial_balance' => '1000.00',
+    ]);
+    $foreignCategory = makeCategory(Team::factory()->create(), CategoryKind::Expense);
+
+    expect(fn () => $this->action->execute($this->team, $this->user, transferData([
+        'from_account_id' => $this->fromAccount->id,
+        'to_account_id' => $privateAccount->id,
+        'category_id' => $foreignCategory->id,
+    ])))->toThrow(ModelNotFoundException::class);
+
+    expect($this->fromAccount->fresh()->current_balance)->toBe('1000.00');
+    $this->assertDatabaseCount('transactions', 0);
 });
