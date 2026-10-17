@@ -5,6 +5,7 @@ use App\Actions\Transactions\CreateTransferAction;
 use App\DTOs\Transactions\CreateTransactionData;
 use App\DTOs\Transactions\CreateTransferData;
 use App\DTOs\Transactions\UpdateTransactionData;
+use App\DTOs\Transactions\UpdateTransferData;
 use App\Enums\CategoryKind;
 use App\Enums\TeamRole;
 use App\Enums\TransactionType;
@@ -98,6 +99,18 @@ function updateTransactionData(array $overrides = []): UpdateTransactionData
     ], $overrides));
 }
 
+function updateTransferData(array $overrides = []): UpdateTransferData
+{
+    return new UpdateTransferData(...array_merge([
+        'from_account_id' => null,
+        'to_account_id' => null,
+        'amount' => '100.00',
+        'category_id' => null,
+        'description' => null,
+        'date' => CarbonImmutable::parse('2026-09-15'),
+    ], $overrides));
+}
+
 function makeCategory(Team $team, CategoryKind $kind): Category
 {
     return Category::factory()->create([
@@ -139,4 +152,14 @@ function teamUser(Team $team, TeamRole $role): User
     $team->members()->attach($user, ['role' => $role->value]);
 
     return $user;
+}
+
+function transferLegs(string $groupId): array
+{
+    $legs = Transaction::where('transfer_group_id', $groupId)->get();
+
+    return [
+        'expense' => $legs->firstWhere('type', TransactionType::Expense),
+        'income' => $legs->firstWhere('type', TransactionType::Income),
+    ];
 }
