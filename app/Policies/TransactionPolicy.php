@@ -48,6 +48,16 @@ class TransactionPolicy
     }
 
     /**
+     * Role-only gate for updating a transfer (no Transfer model to bind).
+     * Creator / private-account owner / admin+ is checked in UpdateTransferAction
+     * against the locked rows.
+     */
+    public function updateTransfer(User $user, Team $team): bool
+    {
+        return $user->teamRole($team)?->isAtLeast(TeamRole::Member) ?? false;
+    }
+
+    /**
      * Determine whether the user can delete the model.
      */
     public function delete(User $user, Transaction $transaction): bool

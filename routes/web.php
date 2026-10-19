@@ -23,6 +23,11 @@ Route::prefix('{current_team}')
             ->name('transactions.destroy');
 
         Route::post('transfers', [TransferController::class, 'store'])->name('transfers.store');
+
+        Route::patch('transfers/{transfer_group_id}', [TransferController::class, 'update'])
+            ->whereUuid('transfer_group_id')
+            ->name('transfers.update');
+
         Route::delete('transfers/{transfer_group_id}', [TransferController::class, 'destroy'])
             ->whereUuid('transfer_group_id')
             ->name('transfers.destroy');

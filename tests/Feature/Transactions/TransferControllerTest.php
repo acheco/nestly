@@ -351,3 +351,86 @@ test('a transfer involving an archived account cannot be deleted', function (str
     expect($this->fromAccount->fresh()->current_balance)->toBe('900.00')
         ->and($this->toAccount->fresh()->current_balance)->toBe('1100.00');
 })->with(['fromAccount', 'toAccount']);
+
+test('the creator can update their transfer', function () {
+    $transferGroupId = recordTransfer($this->team, $this->user, $this->fromAccount, $this->toAccount);
+
+    $this->actingAs($this->user)
+        ->from(route('dashboard', $this->team))
+        ->patch(route('transfers.update', [$this->team, $transferGroupId]), ($this->payload)(['amount' => '250.00']))
+        ->assertRedirect(route('dashboard', $this->team))
+        ->assertSessionHas('success')
+        ->assertSessionHasNoErrors();
+
+    $this->assertDatabaseCount('transactions', 2);
+    expect($this->fromAccount->fresh()->current_balance)->toBe('750.00')
+        ->and($this->toAccount->fresh()->current_balance)->toBe('1250.00');
+});
+
+test('guests are redirected to the login page on update', function () {
+    $transferGroupId = recordTransfer($this->team, $this->user, $this->fromAccount, $this->toAccount);
+
+    $this->patch(route('transfers.update', [$this->team, $transferGroupId]), ($this->payload)(['amount' => '250.00']))
+        ->assertRedirect(route('login'));
+
+    expect($this->fromAccount->fresh()->current_balance)->toBe('900.00')
+        ->and($this->toAccount->fresh()->current_balance)->toBe('1100.00');
+});
+
+test('a viewer cannot update a transfer', function () {
+    $viewer = User::factory()->create();
+    $this->team->members()->attach($viewer, ['role' => TeamRole::Viewer->value]);
+    $transferGroupId = recordTransfer($this->team, $this->user, $this->fromAccount, $this->toAccount);
+
+    $this->actingAs($viewer)
+        ->patch(route('transfers.update', [$this->team, $transferGroupId]), ($this->payload)(['amount' => '250.00']))
+        ->assertForbidden();
+
+    expect($this->fromAccount->fresh()->current_balance)->toBe('900.00')
+        ->and($this->toAccount->fresh()->current_balance)->toBe('1100.00');
+});
+
+test('a member who is neither the creator nor an account owner cannot update a transfer', function () {
+    $other = User::factory()->create();
+    $this->team->members()->attach($other, ['role' => TeamRole::Member->value]);
+    $transferGroupId = recordTransfer($this->team, $other, $this->fromAccount, $this->toAccount);
+
+    $this->actingAs($this->user)
+        ->patch(route('transfers.update', [$this->team, $transferGroupId]), ($this->payload)(['amount' => '250.00']))
+        ->assertForbidden();
+
+    expect($this->fromAccount->fresh()->current_balance)->toBe('900.00')
+        ->and($this->toAccount->fresh()->current_balance)->toBe('1100.00');
+});
+
+test('a non uuid transfer id returns a 404 on update', function () {
+    // route() no genera URLs que violen whereUuid, así que se arma a mano.
+    $this->actingAs($this->user)
+        ->patch(route('transfers.store', $this->team).'/abc', ($this->payload)())
+        ->assertNotFound();
+});
+
+test('a transfer group that does not exist returns a 404 on update', function () {
+    $this->actingAs($this->user)
+        ->patch(route('transfers.update', [$this->team, (string) Str::uuid()]), ($this->payload)())
+        ->assertNotFound();
+
+    $this->assertDatabaseCount('transactions', 0);
+});
+
+test('update validation errors are returned for invalid input', function (array $overrides, string $field) {
+    $this->travelTo(CarbonImmutable::parse('2026-10-09 12:00:00', 'UTC'));
+    $transferGroupId = recordTransfer($this->team, $this->user, $this->fromAccount, $this->toAccount);
+
+    $this->actingAs($this->user)
+        ->patch(route('transfers.update', [$this->team, $transferGroupId]), ($this->payload)($overrides))
+        ->assertSessionHasErrors($field);
+
+    expect($this->fromAccount->fresh()->current_balance)->toBe('900.00')
+        ->and($this->toAccount->fresh()->current_balance)->toBe('1100.00');
+})->with([
+    // Closures para poder referenciar las cuentas creadas en beforeEach.
+    'same account' => [fn () => ['to_account_id' => $this->fromAccount->id], 'from_account_id'],
+    'future date' => [fn () => ['date' => '2026-10-10'], 'date'],
+    'missing amount' => [fn () => ['amount' => null], 'amount'],
+]);

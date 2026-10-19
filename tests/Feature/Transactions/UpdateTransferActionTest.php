@@ -233,7 +233,7 @@ test('moving the source to someone else\'s private account returns a 403', funct
         'initial_balance' => '1000.00',
     ]);
 
-    expect(fn() => $this->action->execute($this->team, $this->creator, $this->groupId, updateTransferData([
+    expect(fn () => $this->action->execute($this->team, $this->creator, $this->groupId, updateTransferData([
         'from_account_id' => $privateAccount->id,
         'to_account_id' => $this->accountB->id,
     ])))->toThrow(AuthorizationException::class)
@@ -278,7 +278,7 @@ test('a new account from another team returns a 404', function () {
         'initial_balance' => '500.00',
     ]);
 
-    expect(fn() => $this->action->execute($this->team, $this->creator, $this->groupId, updateTransferData([
+    expect(fn () => $this->action->execute($this->team, $this->creator, $this->groupId, updateTransferData([
         'from_account_id' => $this->accountA->id,
         'to_account_id' => $foreignAccount->id,
     ])))->toThrow(ModelNotFoundException::class)
@@ -406,7 +406,7 @@ test('a member cannot gain permission by moving the transfer into their own priv
         'initial_balance' => '1000.00',
     ]);
 
-    expect(fn() => $this->action->execute($this->team, $intruder, $this->groupId, updateTransferData([
+    expect(fn () => $this->action->execute($this->team, $intruder, $this->groupId, updateTransferData([
         'from_account_id' => $this->accountA->id,
         'to_account_id' => $intruderPrivate->id,
     ])))->toThrow(AuthorizationException::class)
