@@ -2,6 +2,7 @@
 
 namespace App\Actions\Transactions;
 
+use App\Actions\Transactions\Support\TransactionDateRule;
 use App\DTOs\Transactions\CreateTransactionData;
 use App\Enums\AccountVisibility;
 use App\Models\Team;
@@ -13,16 +14,14 @@ use Throwable;
 
 class CreateTransactionAction
 {
+    public function __construct(private readonly TransactionDateRule $dateRule) {}
+
     /**
      * @throws Throwable
      */
     public function execute(Team $team, User $user, CreateTransactionData $data): Transaction
     {
-        if ($data->date->toDateString() > $user->localToday()) {
-            throw ValidationException::withMessages([
-                'date' => 'La fecha no puede ser posterior a hoy.', // TODO(i18n)
-            ]);
-        }
+        $this->dateRule->assertNotInFuture($user, $data->date);
 
         return DB::transaction(function () use ($team, $user, $data) {
 

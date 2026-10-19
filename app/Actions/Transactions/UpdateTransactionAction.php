@@ -2,6 +2,7 @@
 
 namespace App\Actions\Transactions;
 
+use App\Actions\Transactions\Support\TransactionDateRule;
 use App\DTOs\Transactions\UpdateTransactionData;
 use App\Enums\AccountVisibility;
 use App\Models\Account;
@@ -20,16 +21,14 @@ use Throwable;
  */
 class UpdateTransactionAction
 {
+    public function __construct(private readonly TransactionDateRule $dateRule) {}
+
     /**
      * @throws Throwable
      */
     public function execute(Team $team, User $user, string $transactionId, UpdateTransactionData $data): Transaction
     {
-        if ($data->date->toDateString() > $user->localToday()) {
-            throw ValidationException::withMessages([
-                'date' => 'La fecha no puede ser posterior a hoy.', // TODO(i18n)
-            ]);
-        }
+        $this->dateRule->assertNotInFuture($user, $data->date);
 
         return DB::transaction(function () use ($team, $transactionId, $data) {
             // 1. Bloquear la transacción primero: evita que dos ediciones

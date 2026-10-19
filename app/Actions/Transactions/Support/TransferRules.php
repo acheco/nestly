@@ -13,15 +13,15 @@ use Illuminate\Validation\ValidationException;
 
 final class TransferRules
 {
+    public function __construct(private readonly TransactionDateRule $dateRule) {}
+
     public function assertValidInput(User $user, string $fromId, string $toId, CarbonInterface $date): void
     {
         if ($fromId === $toId) {
             throw ValidationException::withMessages(['from_account_id' => 'Las cuentas deben ser diferentes']); // TODO(i18n)
         }
 
-        if ($date->toDateString() > $user->localToday()) {
-            throw ValidationException::withMessages(['date' => 'La fecha no puede ser posterior a hoy']); // TODO(i18n)
-        }
+        $this->dateRule->assertNotInFuture($user, $date);
     }
 
     public function assertAccounts(User $user, Account $from, Account $to): void
