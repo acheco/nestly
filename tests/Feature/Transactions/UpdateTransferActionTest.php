@@ -233,14 +233,14 @@ test('moving the source to someone else\'s private account returns a 403', funct
         'initial_balance' => '1000.00',
     ]);
 
-    expect(fn () => $this->action->execute($this->team, $this->creator, $this->groupId, updateTransferData([
+    expect(fn() => $this->action->execute($this->team, $this->creator, $this->groupId, updateTransferData([
         'from_account_id' => $privateAccount->id,
         'to_account_id' => $this->accountB->id,
-    ])))->toThrow(AuthorizationException::class);
-
-    expect($this->accountA->fresh()->current_balance)->toBe('900.00')
+    ])))->toThrow(AuthorizationException::class)
+        ->and($this->accountA->fresh()->current_balance)->toBe('900.00')
         ->and($this->accountB->fresh()->current_balance)->toBe('1100.00')
         ->and($privateAccount->fresh()->current_balance)->toBe('1000.00');
+
 });
 
 test('moving a transfer between two private accounts returns a 422 error', function () {
@@ -278,14 +278,14 @@ test('a new account from another team returns a 404', function () {
         'initial_balance' => '500.00',
     ]);
 
-    expect(fn () => $this->action->execute($this->team, $this->creator, $this->groupId, updateTransferData([
+    expect(fn() => $this->action->execute($this->team, $this->creator, $this->groupId, updateTransferData([
         'from_account_id' => $this->accountA->id,
         'to_account_id' => $foreignAccount->id,
-    ])))->toThrow(ModelNotFoundException::class);
-
-    expect($this->accountA->fresh()->current_balance)->toBe('900.00')
+    ])))->toThrow(ModelNotFoundException::class)
+        ->and($this->accountA->fresh()->current_balance)->toBe('900.00')
         ->and($this->accountB->fresh()->current_balance)->toBe('1100.00')
         ->and($foreignAccount->fresh()->current_balance)->toBe('500.00');
+
 });
 
 /*
@@ -406,10 +406,12 @@ test('a member cannot gain permission by moving the transfer into their own priv
         'initial_balance' => '1000.00',
     ]);
 
-    expect(fn () => $this->action->execute($this->team, $intruder, $this->groupId, updateTransferData([
+    expect(fn() => $this->action->execute($this->team, $intruder, $this->groupId, updateTransferData([
         'from_account_id' => $this->accountA->id,
         'to_account_id' => $intruderPrivate->id,
-    ])))->toThrow(AuthorizationException::class);
+    ])))->toThrow(AuthorizationException::class)
+        ->and($this->accountA->fresh()->current_balance)->toBe('900.00')
+        ->and($this->accountB->fresh()->current_balance)->toBe('1100.00')
+        ->and($intruderPrivate->fresh()->current_balance)->toBe('1000.00');
 
-    // saldos de A, B y $intruderPrivate intactos
 });
