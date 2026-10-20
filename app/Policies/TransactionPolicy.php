@@ -3,7 +3,6 @@
 namespace App\Policies;
 
 use App\Enums\TeamRole;
-use App\Models\Account;
 use App\Models\Team;
 use App\Models\Transaction;
 use App\Models\User;
@@ -29,11 +28,9 @@ class TransactionPolicy
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user, Account $account): bool
+    public function create(User $user, Team $team): bool
     {
-        $hasRole = $user->teamRole($account->team)?->isAtLeast(TeamRole::Member) ?? false;
-
-        return $hasRole && (new AccountPolicy)->view($user, $account);
+        return $user->teamRole($team)?->isAtLeast(TeamRole::Member) ?? false;
     }
 
     /**
@@ -41,8 +38,23 @@ class TransactionPolicy
      */
     public function update(User $user, Transaction $transaction): bool
     {
-        return $transaction->created_by === $user->id
-            || ($user->teamRole($transaction->account->team)?->isAtLeast(TeamRole::Admin) ?? false);
+        $role = $user->teamRole($transaction->team);
+
+        if ($role === null || ! $role->isAtLeast(TeamRole::Member)) {
+            return false;
+        }
+
+        return $transaction->created_by === $user->id || $role->isAtLeast(TeamRole::Admin);
+    }
+
+    /**
+     * Role-only gate for updating a transfer (no Transfer model to bind).
+     * Creator / private-account owner / admin+ is checked in UpdateTransferAction
+     * against the locked rows.
+     */
+    public function updateTransfer(User $user, Team $team): bool
+    {
+        return $user->teamRole($team)?->isAtLeast(TeamRole::Member) ?? false;
     }
 
     /**
@@ -51,5 +63,15 @@ class TransactionPolicy
     public function delete(User $user, Transaction $transaction): bool
     {
         return $this->update($user, $transaction);
+    }
+
+    /**
+     * Role-only gate for deleting a transfer (no Transfer model to bind).
+     * Creator / private-account owner / admin+ is checked in DeleteTransferAction
+     * against the locked rows.
+     */
+    public function deleteTransfer(User $user, Team $team): bool
+    {
+        return $user->teamRole($team)?->isAtLeast(TeamRole::Member) ?? false;
     }
 }

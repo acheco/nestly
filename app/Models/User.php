@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Concerns\HasTeams;
+use Carbon\CarbonImmutable;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -18,16 +19,17 @@ use Laravel\Fortify\PasskeyAuthenticatable;
 use Laravel\Fortify\TwoFactorAuthenticatable;
 
 /**
- * @property int $id
+ * @property string $id
  * @property string $name
  * @property string $email
  * @property Carbon|null $email_verified_at
  * @property string $password
+ * @property string $timezone
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
  * @property string|null $remember_token
- * @property int|null $current_team_id
+ * @property string|null $current_team_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Team|null $currentTeam
@@ -54,5 +56,24 @@ class User extends Authenticatable implements PasskeyUser
             'password' => 'hashed',
             'two_factor_confirmed_at' => 'datetime',
         ];
+    }
+
+    /**
+     * Default en memoria: el default('UTC') de la columna lo aplica PostgreSQL
+     * al insertar, pero Eloquent no relee la fila, así que sin esto la
+     * instancia recién creada tendría timezone = null.
+     *
+     * @var array<string, string>
+     */
+    protected $attributes = [
+        'timezone' => 'UTC',
+    ];
+
+    /**
+     * Fecha de hoy (Y-m-d) en la zona horaria del usuario.
+     */
+    public function localToday(): string
+    {
+        return CarbonImmutable::now($this->timezone)->toDateString();
     }
 }

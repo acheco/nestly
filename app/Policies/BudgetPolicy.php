@@ -2,7 +2,6 @@
 
 namespace App\Policies;
 
-use App\Enums\BudgetScope;
 use App\Enums\TeamRole;
 use App\Models\Budget;
 use App\Models\Team;
@@ -29,11 +28,9 @@ class BudgetPolicy
     /**
      * Determine whether the user can create models.
      */
-    public function create(User $user, Team $team, BudgetScope $scope): bool
+    public function create(User $user, Team $team): bool
     {
-        $minRole = $scope === BudgetScope::Personal ? TeamRole::Member : TeamRole::Admin;
-
-        return $user->teamRole($team)?->isAtLeast($minRole) ?? false;
+        return $this->canManage($user, $team);
     }
 
     /**
@@ -41,11 +38,7 @@ class BudgetPolicy
      */
     public function update(User $user, Budget $budget): bool
     {
-        if ($budget->scope === BudgetScope::Personal) {
-            return $budget->owner_id === $user->id || ($user->teamRole($budget->team)?->isAtLeast(TeamRole::Admin) ?? false);
-        }
-
-        return $user->teamRole($budget->team)?->isAtLeast(TeamRole::Admin) ?? false;
+        return $this->canManage($user, $budget->team);
     }
 
     /**
@@ -53,6 +46,11 @@ class BudgetPolicy
      */
     public function delete(User $user, Budget $budget): bool
     {
-        return $this->update($user, $budget);
+        return $this->canManage($user, $budget->team);
+    }
+
+    private function canManage(User $user, Team $team): bool
+    {
+        return $user->teamRole($team)?->isAtLeast(TeamRole::Admin) ?? false;
     }
 }

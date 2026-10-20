@@ -1,0 +1,510 @@
+<?php
+
+use App\Actions\Transactions\CreateTransferAction;
+use App\Enums\CategoryKind;
+use App\Enums\TeamRole;
+use App\Enums\TransactionType;
+use App\Models\Account;
+use App\Models\Team;
+use App\Models\User;
+use Carbon\CarbonImmutable;
+use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
+
+beforeEach(function () {
+    $this->user = User::factory()->create();
+    $this->team = Team::factory()->create();
+    $this->team->members()->attach($this->user, ['role' => TeamRole::Member->value]);
+
+    $this->account = Account::factory()->create([
+        'team_id' => $this->team->id,
+        'initial_balance' => '1000.00',
+    ]);
+    $this->category = makeCategory($this->team, CategoryKind::Expense);
+
+    $this->payload = fn (array $overrides = []) => array_merge([
+        'account_id' => $this->account->id,
+        'category_id' => $this->category->id,
+        'type' => TransactionType::Expense->value,
+        'amount' => '100.00',
+        'date' => '2026-09-15',
+        'description' => 'Transacción de prueba',
+        'notes' => 'Notas de prueba',
+    ], $overrides);
+});
+
+test('guests are redirected to the login page', function () {
+    $this->post(route('transactions.store', $this->team), ($this->payload)())
+        ->assertRedirect(route('login'));
+
+    $this->assertDatabaseCount('transactions', 0);
+});
+
+test('a member can create an expense', function () {
+    $this->actingAs($this->user)
+        ->from(route('dashboard', $this->team))
+        ->post(route('transactions.store', $this->team), ($this->payload)())
+        ->assertRedirect(route('dashboard', $this->team))
+        ->assertSessionHas('success')
+        ->assertSessionHasNoErrors();
+
+    $this->assertDatabaseCount('transactions', 1);
+    $this->assertDatabaseHas('transactions', [
+        'team_id' => $this->team->id,
+        'account_id' => $this->account->id,
+        'category_id' => $this->category->id,
+        'type' => TransactionType::Expense->value,
+        'amount' => '100.00',
+        'description' => 'Transacción de prueba',
+        'notes' => 'Notas de prueba',
+        'transfer_group_id' => null,
+        'recurring_id' => null,
+        'created_by' => $this->user->id,
+    ]);
+
+    expect($this->account->fresh()->current_balance)->toBe('900.00');
+});
+
+test('a member can create an income', function () {
+    $category = makeCategory($this->team, CategoryKind::Income);
+
+    $this->actingAs($this->user)
+        ->post(route('transactions.store', $this->team), ($this->payload)([
+            'type' => TransactionType::Income->value,
+            'category_id' => $category->id,
+            'amount' => '250.50',
+        ]))
+        ->assertSessionHasNoErrors();
+
+    $this->assertDatabaseHas('transactions', [
+        'account_id' => $this->account->id,
+        'category_id' => $category->id,
+        'type' => TransactionType::Income->value,
+        'amount' => '250.50',
+    ]);
+
+    expect($this->account->fresh()->current_balance)->toBe('1250.50');
+});
+
+test('optional fields can be null', function (string $field) {
+    $this->actingAs($this->user)
+        ->post(route('transactions.store', $this->team), ($this->payload)([$field => null]))
+        ->assertSessionHasNoErrors();
+
+    $this->assertDatabaseCount('transactions', 1);
+    $this->assertDatabaseHas('transactions', [
+        'account_id' => $this->account->id,
+        $field => null,
+    ]);
+})->with(['category_id', 'description', 'notes']);
+
+test('optional fields can be omitted from the payload', function () {
+    $this->actingAs($this->user)
+        ->post(route('transactions.store', $this->team), Arr::except(($this->payload)(), [
+            'category_id',
+            'description',
+            'notes',
+        ]))
+        ->assertSessionHasNoErrors();
+
+    $this->assertDatabaseCount('transactions', 1);
+    $this->assertDatabaseHas('transactions', [
+        'account_id' => $this->account->id,
+        'category_id' => null,
+        'description' => null,
+        'notes' => null,
+    ]);
+    expect($this->account->fresh()->current_balance)->toBe('900.00');
+});
+
+test('amount can be sent as a number', function () {
+    $this->actingAs($this->user)
+        ->post(route('transactions.store', $this->team), ($this->payload)(['amount' => 100]))
+        ->assertSessionHasNoErrors();
+
+    $this->assertDatabaseCount('transactions', 1);
+    expect($this->account->fresh()->current_balance)->toBe('900.00');
+});
+
+test('a user who is not a team member gets a 403', function () {
+    $outsider = User::factory()->create();
+
+    $this->actingAs($outsider)
+        ->post(route('transactions.store', $this->team), ($this->payload)())
+        ->assertForbidden();
+
+    $this->assertDatabaseCount('transactions', 0);
+});
+
+test('a viewer cannot create a transaction', function () {
+    $viewer = User::factory()->create();
+    $this->team->members()->attach($viewer, ['role' => TeamRole::Viewer->value]);
+
+    $this->actingAs($viewer)
+        ->post(route('transactions.store', $this->team), ($this->payload)())
+        ->assertForbidden();
+
+    $this->assertDatabaseCount('transactions', 0);
+    expect($this->account->fresh()->current_balance)->toBe('1000.00');
+});
+
+test('validation errors are returned for invalid input', function (array $overrides, string $field) {
+    $this->actingAs($this->user)
+        ->post(route('transactions.store', $this->team), ($this->payload)($overrides))
+        ->assertSessionHasErrors($field);
+
+    $this->assertDatabaseCount('transactions', 0);
+    expect($this->account->fresh()->current_balance)->toBe('1000.00');
+})->with([
+    'missing account' => [['account_id' => null], 'account_id'],
+    'account not a uuid' => [['account_id' => 'not-a-uuid'], 'account_id'],
+    'category not a uuid' => [['category_id' => 'not-a-uuid'], 'category_id'],
+    'missing type' => [['type' => null], 'type'],
+    'invalid type' => [['type' => 'transfer'], 'type'],
+    'missing amount' => [['amount' => null], 'amount'],
+    'non numeric amount' => [['amount' => 'abc'], 'amount'],
+    'zero amount' => [['amount' => '0'], 'amount'],
+    'negative amount' => [['amount' => '-10.00'], 'amount'],
+    'too many decimals' => [['amount' => '10.001'], 'amount'],
+    'amount too large' => [['amount' => '1000000000000.00'], 'amount'],
+    'missing date' => [['date' => null], 'date'],
+    'invalid date' => [['date' => 'not-a-date'], 'date'],
+    'description too long' => [['description' => str_repeat('a', 256)], 'description'],
+    'notes too long' => [['notes' => str_repeat('a', 256)], 'notes'],
+]);
+
+test('a category whose kind does not match the transaction type fails validation', function () {
+    $this->actingAs($this->user)
+        ->post(route('transactions.store', $this->team), ($this->payload)([
+            'type' => TransactionType::Income->value,
+        ]))
+        ->assertSessionHasErrors('category_id');
+
+    $this->assertDatabaseCount('transactions', 0);
+    expect($this->account->fresh()->current_balance)->toBe('1000.00');
+});
+
+test('an account from another team returns a 404', function () {
+    $foreignAccount = Account::factory()->create([
+        'team_id' => Team::factory()->create()->id,
+        'initial_balance' => '500.00',
+    ]);
+
+    $this->actingAs($this->user)
+        ->post(route('transactions.store', $this->team), ($this->payload)([
+            'account_id' => $foreignAccount->id,
+        ]))
+        ->assertNotFound();
+
+    $this->assertDatabaseCount('transactions', 0);
+    expect($foreignAccount->fresh()->current_balance)->toBe('500.00');
+});
+
+test('a category from another team returns a 404', function () {
+    $foreignCategory = makeCategory(Team::factory()->create(), CategoryKind::Expense);
+
+    $this->actingAs($this->user)
+        ->post(route('transactions.store', $this->team), ($this->payload)([
+            'category_id' => $foreignCategory->id,
+        ]))
+        ->assertNotFound();
+
+    $this->assertDatabaseCount('transactions', 0);
+    expect($this->account->fresh()->current_balance)->toBe('1000.00');
+});
+
+test('a transaction on an archived account fails validation', function () {
+    $archivedAccount = Account::factory()->archived()->create([
+        'team_id' => $this->team->id,
+        'initial_balance' => '1000.00',
+    ]);
+
+    $this->actingAs($this->user)
+        ->post(route('transactions.store', $this->team), ($this->payload)([
+            'account_id' => $archivedAccount->id,
+        ]))
+        ->assertSessionHasErrors('account_id');
+
+    $this->assertDatabaseCount('transactions', 0);
+    expect($archivedAccount->fresh()->current_balance)->toBe('1000.00');
+});
+
+test('a transaction on a private account fails validation', function () {
+    $privateAccount = Account::factory()->private()->create([
+        'team_id' => $this->team->id,
+        'owner_id' => $this->user->id,
+        'initial_balance' => '1000.00',
+    ]);
+
+    $this->actingAs($this->user)
+        ->post(route('transactions.store', $this->team), ($this->payload)([
+            'account_id' => $privateAccount->id,
+        ]))
+        ->assertSessionHasErrors('account_id');
+
+    $this->assertDatabaseCount('transactions', 0);
+    expect($privateAccount->fresh()->current_balance)->toBe('1000.00');
+});
+
+test('system-only fields sent in the payload are ignored', function () {
+    $this->actingAs($this->user)
+        ->post(route('transactions.store', $this->team), ($this->payload)([
+            'transfer_group_id' => (string) Str::uuid(),
+            'recurring_id' => (string) Str::uuid(),
+        ]))
+        ->assertSessionHasNoErrors();
+
+    $this->assertDatabaseCount('transactions', 1);
+    $this->assertDatabaseHas('transactions', [
+        'account_id' => $this->account->id,
+        'transfer_group_id' => null,
+        'recurring_id' => null,
+    ]);
+});
+
+test('a forged transfer_group_id cannot bypass the private account rule', function () {
+    $privateAccount = Account::factory()->private()->create([
+        'team_id' => $this->team->id,
+        'owner_id' => $this->user->id,
+        'initial_balance' => '1000.00',
+    ]);
+
+    $this->actingAs($this->user)
+        ->post(route('transactions.store', $this->team), ($this->payload)([
+            'account_id' => $privateAccount->id,
+            'transfer_group_id' => (string) Str::uuid(),
+        ]))
+        ->assertSessionHasErrors('account_id');
+
+    $this->assertDatabaseCount('transactions', 0);
+    expect($privateAccount->fresh()->current_balance)->toBe('1000.00');
+});
+
+test('a future date fails validation', function () {
+    $this->travelTo(CarbonImmutable::parse('2026-10-09 12:00:00', 'UTC'));
+
+    $this->actingAs($this->user)
+        ->post(route('transactions.store', $this->team), ($this->payload)(['date' => '2026-10-10']))
+        ->assertSessionHasErrors('date');
+
+    $this->assertDatabaseCount('transactions', 0);
+    expect($this->account->fresh()->current_balance)->toBe('1000.00');
+});
+
+test('the date limit uses the user timezone, not the server one', function () {
+    // 02:00 UTC del 10 = 22:00 del 9 en La Paz (UTC-4).
+    $this->travelTo(CarbonImmutable::parse('2026-10-10 02:00:00', 'UTC'));
+    $this->user->timezone = 'America/La_Paz';
+    $this->user->save();
+
+    $this->actingAs($this->user)
+        ->post(route('transactions.store', $this->team), ($this->payload)(['date' => '2026-10-10']))
+        ->assertSessionHasErrors('date');
+
+    $this->actingAs($this->user)
+        ->post(route('transactions.store', $this->team), ($this->payload)(['date' => '2026-10-09']))
+        ->assertSessionHasNoErrors();
+
+    $this->assertDatabaseCount('transactions', 1);
+});
+
+// ---------------------------------------------------------------------
+// PATCH /{current_team}/transactions/{transaction}
+// ---------------------------------------------------------------------
+
+test('the creator can update their transaction', function () {
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+
+    $this->actingAs($this->user)
+        ->from(route('dashboard', $this->team))
+        ->patch(route('transactions.update', [$this->team, $transaction]), ($this->payload)(['amount' => '150.00']))
+        ->assertRedirect(route('dashboard', $this->team))
+        ->assertSessionHas('success')
+        ->assertSessionHasNoErrors();
+
+    expect($transaction->fresh()->amount)->toBe('150.00')
+        ->and($this->account->fresh()->current_balance)->toBe('850.00');
+});
+
+test('a member cannot update a transaction created by someone else', function () {
+    $other = User::factory()->create();
+    $this->team->members()->attach($other, ['role' => TeamRole::Member->value]);
+    $transaction = recordExpense($this->team, $this->account, $other, $this->category);
+
+    $this->actingAs($this->user)
+        ->patch(route('transactions.update', [$this->team, $transaction]), ($this->payload)(['amount' => '150.00']))
+        ->assertForbidden();
+
+    expect($this->account->fresh()->current_balance)->toBe('900.00');
+});
+
+test('an admin can update a transaction created by someone else', function () {
+    $admin = User::factory()->create();
+    $this->team->members()->attach($admin, ['role' => TeamRole::Admin->value]);
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+
+    $this->actingAs($admin)
+        ->patch(route('transactions.update', [$this->team, $transaction]), ($this->payload)(['amount' => '150.00']))
+        ->assertSessionHasNoErrors();
+
+    expect($this->account->fresh()->current_balance)->toBe('850.00');
+});
+
+test('a viewer cannot update a transaction', function () {
+    $viewer = User::factory()->create();
+    $this->team->members()->attach($viewer, ['role' => TeamRole::Viewer->value]);
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+
+    $this->actingAs($viewer)
+        ->patch(route('transactions.update', [$this->team, $transaction]), ($this->payload)(['amount' => '150.00']))
+        ->assertForbidden();
+
+    expect($this->account->fresh()->current_balance)->toBe('900.00');
+});
+
+test('a transaction from another team returns a 404 on update', function () {
+    $otherTeam = Team::factory()->create();
+    $otherAccount = Account::factory()->create(['team_id' => $otherTeam->id, 'initial_balance' => '500.00']);
+    $foreign = recordExpense($otherTeam, $otherAccount, $this->user);
+
+    $this->actingAs($this->user)
+        ->patch(route('transactions.update', [$this->team, $foreign]), ($this->payload)(['amount' => '150.00']))
+        ->assertNotFound();
+
+    expect($otherAccount->fresh()->current_balance)->toBe('400.00');
+});
+
+test('updating with a future date fails validation', function () {
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+    $this->travelTo(CarbonImmutable::parse('2026-10-09 12:00:00', 'UTC'));
+
+    $this->actingAs($this->user)
+        ->patch(route('transactions.update', [$this->team, $transaction]), ($this->payload)(['date' => '2026-10-10']))
+        ->assertSessionHasErrors('date');
+
+    expect($this->account->fresh()->current_balance)->toBe('900.00');
+});
+
+// ---------------------------------------------------------------------
+// DELETE /{current_team}/transactions/{transaction}
+// ---------------------------------------------------------------------
+
+test('guests are redirected to the login page on delete', function () {
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+
+    $this->delete(route('transactions.destroy', [$this->team, $transaction]))
+        ->assertRedirect(route('login'));
+
+    $this->assertModelExists($transaction);
+    expect($this->account->fresh()->current_balance)->toBe('900.00');
+});
+
+test('the creator can delete their transaction', function () {
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+
+    $this->actingAs($this->user)
+        ->from(route('dashboard', $this->team))
+        ->delete(route('transactions.destroy', [$this->team, $transaction]))
+        ->assertRedirect(route('dashboard', $this->team))
+        ->assertSessionHas('success')
+        ->assertSessionHasNoErrors();
+
+    $this->assertModelMissing($transaction);
+    expect($this->account->fresh()->current_balance)->toBe('1000.00');
+});
+
+test('a member cannot delete a transaction created by someone else', function () {
+    $other = User::factory()->create();
+    $this->team->members()->attach($other, ['role' => TeamRole::Member->value]);
+    $transaction = recordExpense($this->team, $this->account, $other, $this->category);
+
+    $this->actingAs($this->user)
+        ->delete(route('transactions.destroy', [$this->team, $transaction]))
+        ->assertForbidden();
+
+    $this->assertModelExists($transaction);
+    expect($this->account->fresh()->current_balance)->toBe('900.00');
+});
+
+test('an admin can delete a transaction created by someone else', function () {
+    $admin = User::factory()->create();
+    $this->team->members()->attach($admin, ['role' => TeamRole::Admin->value]);
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+
+    $this->actingAs($admin)
+        ->delete(route('transactions.destroy', [$this->team, $transaction]))
+        ->assertSessionHasNoErrors();
+
+    $this->assertModelMissing($transaction);
+    expect($this->account->fresh()->current_balance)->toBe('1000.00');
+});
+
+test('a viewer cannot delete a transaction', function () {
+    $viewer = User::factory()->create();
+    $this->team->members()->attach($viewer, ['role' => TeamRole::Viewer->value]);
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+
+    $this->actingAs($viewer)
+        ->delete(route('transactions.destroy', [$this->team, $transaction]))
+        ->assertForbidden();
+
+    $this->assertModelExists($transaction);
+    expect($this->account->fresh()->current_balance)->toBe('900.00');
+});
+
+test('a user who is not a team member gets a 403 on delete', function () {
+    $outsider = User::factory()->create();
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+
+    $this->actingAs($outsider)
+        ->delete(route('transactions.destroy', [$this->team, $transaction]))
+        ->assertForbidden();
+
+    $this->assertModelExists($transaction);
+    expect($this->account->fresh()->current_balance)->toBe('900.00');
+});
+
+test('a transaction from another team returns a 404 on delete', function () {
+    $otherTeam = Team::factory()->create();
+    $otherAccount = Account::factory()->create(['team_id' => $otherTeam->id, 'initial_balance' => '500.00']);
+    $foreign = recordExpense($otherTeam, $otherAccount, $this->user);
+
+    $this->actingAs($this->user)
+        ->delete(route('transactions.destroy', [$this->team, $foreign]))
+        ->assertNotFound();
+
+    $this->assertModelExists($foreign);
+    expect($otherAccount->fresh()->current_balance)->toBe('400.00');
+});
+
+test('a leg of a transfer cannot be deleted from the transactions endpoint', function () {
+    $destination = Account::factory()->create([
+        'team_id' => $this->team->id,
+        'initial_balance' => '1000.00',
+    ]);
+    $transfer = app(CreateTransferAction::class)->execute($this->team, $this->user, transferData([
+        'from_account_id' => $this->account->id,
+        'to_account_id' => $destination->id,
+    ]));
+
+    $this->actingAs($this->user)
+        ->delete(route('transactions.destroy', [$this->team, $transfer->expense_transaction]))
+        ->assertSessionHasErrors('account_id');
+
+    $this->assertModelExists($transfer->expense_transaction);
+    $this->assertModelExists($transfer->income_transaction);
+    expect($this->account->fresh()->current_balance)->toBe('900.00')
+        ->and($destination->fresh()->current_balance)->toBe('1100.00');
+});
+
+test('a transaction on an archived account cannot be deleted', function () {
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+    $this->account->forceFill(['archived' => true])->save();
+
+    $this->actingAs($this->user)
+        ->delete(route('transactions.destroy', [$this->team, $transaction]))
+        ->assertSessionHasErrors('account_id');
+
+    $this->assertModelExists($transaction);
+    expect($this->account->fresh()->current_balance)->toBe('900.00');
+});

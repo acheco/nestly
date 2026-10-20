@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\StoreRecurringExpenseRequest;
-use App\Http\Requests\UpdateRecurringExpenseRequest;
+use App\Http\Requests\RecurringExpenses\StoreRecurringExpenseRequest;
+use App\Http\Requests\RecurringExpenses\UpdateRecurringExpenseRequest;
 use App\Models\RecurringExpense;
 
 class RecurringExpenseController extends Controller
@@ -11,7 +11,7 @@ class RecurringExpenseController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(): void
     {
         //
     }
@@ -19,7 +19,7 @@ class RecurringExpenseController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(): void
     {
         //
     }
@@ -27,7 +27,7 @@ class RecurringExpenseController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StoreRecurringExpenseRequest $request)
+    public function store(StoreRecurringExpenseRequest $request): void
     {
         //
     }
@@ -35,7 +35,7 @@ class RecurringExpenseController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(RecurringExpense $recurringExpense)
+    public function show(RecurringExpense $recurringExpense): void
     {
         //
     }
@@ -43,7 +43,7 @@ class RecurringExpenseController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(RecurringExpense $recurringExpense)
+    public function edit(RecurringExpense $recurringExpense): void
     {
         //
     }
@@ -51,7 +51,7 @@ class RecurringExpenseController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateRecurringExpenseRequest $request, RecurringExpense $recurringExpense)
+    public function update(UpdateRecurringExpenseRequest $request, RecurringExpense $recurringExpense): void
     {
         //
     }
@@ -59,7 +59,7 @@ class RecurringExpenseController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(RecurringExpense $recurringExpense)
+    public function destroy(RecurringExpense $recurringExpense): void
     {
         //
     }

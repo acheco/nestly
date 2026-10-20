@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
@@ -17,7 +18,7 @@ return new class extends Migration
             $table->foreignUuid('account_id')->constrained()->restrictOnDelete();
             $table->foreignUuid('category_id')->nullable()->constrained('categories')->restrictOnDelete();
             $table->foreignUuid('created_by')->nullable()->constrained('users')->nullOnDelete();
-            $table->string('type');
+            $table->enum('type', ['income', 'expense']); // Income|Expense
             $table->decimal('amount', 14, 2);
             $table->date('date');
             $table->string('description')->nullable();
@@ -32,7 +33,7 @@ return new class extends Migration
         DB::statement('CREATE INDEX idx_tx_account ON transactions (account_id)');
         DB::statement('CREATE INDEX idx_tx_category ON transactions (category_id)');
         DB::statement('CREATE INDEX idx_tx_transfer_group ON transactions (transfer_group_id) WHERE transfer_group_id IS NOT NULL');
-
+        DB::statement('ALTER TABLE transactions ADD CONSTRAINT transactions_amount_positive CHECK (amount > 0)');
     }
 
     /**

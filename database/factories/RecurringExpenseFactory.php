@@ -5,8 +5,12 @@
 namespace Database\Factories;
 
 use App\Enums\RecurringFrequency;
+use App\Models\RecurringExpense;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
+/**
+ * @extends Factory<RecurringExpense>
+ */
 class RecurringExpenseFactory extends Factory
 {
     public function definition(): array
