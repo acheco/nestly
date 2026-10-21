@@ -6,6 +6,7 @@ use App\Enums\TeamRole;
 use App\Enums\TransactionType;
 use App\Models\Account;
 use App\Models\Team;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB;
 
 beforeEach(function () {
@@ -155,4 +156,88 @@ test('a transfer group between two private accounts is reported', function () {
     expect($groups)->toHaveCount(1)
         ->and($groups[0]->transfer_group_id)->toBe($groupId)
         ->and($groups[0]->reasons)->toBe([BrokenTransferReason::PrivateToPrivate]);
+});
+
+test('fixBalance rewrites a drifted balance and reports the drift it fixed', function () {
+    recordExpense($this->team, $this->accountA, $this->creator);
+    recordTransfer($this->team, $this->creator, $this->accountA, $this->accountB);
+
+    DB::table('accounts')
+        ->where('id', $this->accountA->id)
+        ->update(['current_balance' => '1234.56']);
+
+    $drift = $this->reconciler->fixBalance($this->team, $this->accountA->id);
+
+    expect($drift)->not->toBeNull()
+        ->and($drift->account_id)->toBe($this->accountA->id)
+        ->and($drift->expected)->toBe('800.00')
+        ->and($drift->actual)->toBe('1234.56')
+        ->and($this->accountA->fresh()->current_balance)->toBe('800.00')
+        ->and($this->reconciler->check($this->team)->isClean())->toBeTrue();
+});
+
+test('fixBalance returns null and leaves a balance in sync untouched', function () {
+    recordExpense($this->team, $this->accountA, $this->creator);
+
+    $before = $this->accountA->fresh();
+
+    expect($this->reconciler->fixBalance($this->team, $this->accountA->id))->toBeNull()
+        ->and($this->accountA->fresh()->current_balance)->toBe($before->current_balance)
+        ->and($this->accountA->fresh()->updated_at)->toEqual($before->updated_at);
+});
+
+test('fixBalance resets an account without transactions to its initial balance', function () {
+    DB::table('accounts')
+        ->where('id', $this->accountB->id)
+        ->update(['current_balance' => '0.00']);
+
+    $drift = $this->reconciler->fixBalance($this->team, $this->accountB->id);
+
+    expect($drift->expected)->toBe('1000.00')
+        ->and($drift->actual)->toBe('0.00')
+        ->and($this->accountB->fresh()->current_balance)->toBe('1000.00');
+});
+
+test('fixBalance only touches the given account', function () {
+    DB::table('accounts')
+        ->whereIn('id', [$this->accountA->id, $this->accountB->id])
+        ->update(['current_balance' => '1.00']);
+
+    $this->reconciler->fixBalance($this->team, $this->accountA->id);
+
+    $drifts = $this->reconciler->check($this->team)->drifts;
+
+    expect($drifts)->toHaveCount(1)
+        ->and($drifts[0]->account_id)->toBe($this->accountB->id)
+        ->and($this->accountB->fresh()->current_balance)->toBe('1.00');
+});
+
+test('fixBalance fixes a private account from the transfer legs that cross into it', function () {
+    recordTransfer($this->team, $this->creator, $this->accountA, $this->privateAccount);
+
+    $expected = $this->privateAccount->fresh()->current_balance;
+
+    DB::table('accounts')
+        ->where('id', $this->privateAccount->id)
+        ->update(['current_balance' => '0.00']);
+
+    $drift = $this->reconciler->fixBalance($this->team, $this->privateAccount->id);
+
+    expect($drift->expected)->toBe($expected)
+        ->and($this->privateAccount->fresh()->current_balance)->toBe($expected);
+});
+
+test('fixBalance refuses an account from another team and leaves it untouched', function () {
+    $foreignAccount = Account::factory()->create([
+        'team_id' => Team::factory()->create()->id,
+        'initial_balance' => '1000.00',
+    ]);
+
+    DB::table('accounts')
+        ->where('id', $foreignAccount->id)
+        ->update(['current_balance' => '1.00']);
+
+    expect(fn () => $this->reconciler->fixBalance($this->team, $foreignAccount->id))
+        ->toThrow(ModelNotFoundException::class)
+        ->and($foreignAccount->fresh()->current_balance)->toBe('1.00');
 });

@@ -9,15 +9,19 @@ use App\Enums\AccountVisibility;
 use App\Enums\BrokenTransferReason;
 use App\Enums\TransactionType;
 use App\Models\Team;
+use App\Support\Money;
 use Illuminate\Support\Facades\DB;
 
 /**
  * @phpstan-type DriftRow object{id: string, current_balance: numeric-string, expected: numeric-string}
  * @phpstan-type TransferGroupRow object{transfer_group_id: string, legs: int|string, types: int|string, amounts: int|string, dates: int|string, all_private: bool|string}
  * @phpstan-type IdRow object{id: string}
+ * @phpstan-type ExpectedRow object{expected: numeric-string}
  */
 final class BalanceReconciler
 {
+    private const EXPECTED_SQL = 'a.initial_balance + COALESCE(SUM(CASE WHEN t.type = ? THEN t.amount ELSE -t.amount END), 0)';
+
     /**
      * Independent recomputation (TRD §3.8.3): sums and transfer-pair checks run in SQL,
      * not through the actions' code, so a bug there shows up here. Reports only.
@@ -31,26 +35,45 @@ final class BalanceReconciler
         );
     }
 
+    public function fixBalance(Team $team, string $accountId): ?BalanceDrift
+    {
+        return DB::transaction(function () use ($team, $accountId): ?BalanceDrift {
+            // Lock first, recompute after: recomputing before the lock would let a concurrent
+            // transfer commit in between, and saving the stale value would erase its effect
+            // (lost update). Not covered by tests: the suite runs in a single process (TRD §3.9).
+            $account = $team->accounts()->lockForUpdate()->findOrFail($accountId);
+            $expected = $this->expectedBalanceOf($accountId);
+            $previous = $account->current_balance;
+
+            if (bccomp($expected, $previous, Money::SCALE) === 0) {
+                return null;
+            }
+
+            $account->current_balance = $expected;
+            $account->save();
+
+            return new BalanceDrift(account_id: $account->id, expected: $expected, actual: $previous);
+        });
+    }
+
     /**
      * @return list<BalanceDrift>
      */
     private function driftsFor(Team $team): array
     {
         $income = TransactionType::Income->value;
+        $expected = self::EXPECTED_SQL;
 
         /** @var list<DriftRow> $rows */
-        $rows = DB::select(<<<'SQL'
+        $rows = DB::select(<<<SQL
             SELECT a.id,
                    a.current_balance,
-                   a.initial_balance
-                     + COALESCE(SUM(CASE WHEN t.type = ? THEN t.amount ELSE -t.amount END), 0) AS expected
+                   {$expected} AS expected
             FROM accounts a
             LEFT JOIN transactions t ON t.account_id = a.id
             WHERE a.team_id = ?
             GROUP BY a.id, a.initial_balance, a.current_balance
-            HAVING a.initial_balance
-                     + COALESCE(SUM(CASE WHEN t.type = ? THEN t.amount ELSE -t.amount END), 0)
-                   <> a.current_balance
+            HAVING {$expected} <> a.current_balance
             ORDER BY a.id
             SQL, [$income, $team->id, $income]);
 
@@ -147,5 +170,23 @@ final class BalanceReconciler
             SQL, [$team->id, AccountVisibility::Private->value]);
 
         return array_map(fn (object $row) => (string) $row->id, $rows);
+    }
+
+    /**
+     * @return numeric-string
+     */
+    private function expectedBalanceOf(string $accountId): string
+    {
+        /** @var ExpectedRow $row */
+        $row = DB::selectOne(
+            'SELECT '.self::EXPECTED_SQL.' AS expected
+            FROM accounts a
+            LEFT JOIN transactions t ON t.account_id = a.id
+            WHERE a.id = ?
+            GROUP BY a.id',
+            [TransactionType::Income->value, $accountId],
+        );
+
+        return $row->expected;
     }
 }
