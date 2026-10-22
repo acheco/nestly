@@ -11,6 +11,7 @@ use App\Enums\TransactionType;
 use App\Models\Team;
 use App\Support\Money;
 use Illuminate\Support\Facades\DB;
+use Throwable;
 
 /**
  * @phpstan-type DriftRow object{id: string, current_balance: numeric-string, expected: numeric-string}
@@ -35,6 +36,9 @@ final class BalanceReconciler
         );
     }
 
+    /**
+     * @throws Throwable
+     */
     public function fixBalance(Team $team, string $accountId): ?BalanceDrift
     {
         return DB::transaction(function () use ($team, $accountId): ?BalanceDrift {
