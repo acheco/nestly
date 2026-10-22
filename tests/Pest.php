@@ -163,3 +163,13 @@ function transferLegs(string $groupId): array
         'income' => $legs->firstWhere('type', TransactionType::Income),
     ];
 }
+
+/**
+ * Pisa el saldo directamente en la tabla, por detrás de las actions.
+ */
+function driftBalance(Account $account, string $balance): void
+{
+    DB::table('accounts')
+        ->where('id', $account->id)
+        ->update(['current_balance' => $balance]);
+}
