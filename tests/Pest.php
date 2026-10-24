@@ -11,6 +11,7 @@ use App\Enums\TeamRole;
 use App\Enums\TransactionType;
 use App\Models\Account;
 use App\Models\Category;
+use App\Models\RecurringExpense;
 use App\Models\Team;
 use App\Models\Transaction;
 use App\Models\User;
@@ -172,4 +173,14 @@ function driftBalance(Account $account, string $balance): void
     DB::table('accounts')
         ->where('id', $account->id)
         ->update(['current_balance' => $balance]);
+}
+
+function newRecurringExpense(Team $team, Account $account, User $creator): RecurringExpense
+{
+    return RecurringExpense::factory()->create([
+        'team_id' => $team->id,
+        'account_id' => $account->id,
+        'category_id' => makeCategory($team, CategoryKind::Expense)->id,
+        'created_by' => $creator->id,
+    ]);
 }
