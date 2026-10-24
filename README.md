@@ -19,7 +19,7 @@ rather than on feature count.
   (`$team->accounts()->findOrFail()`), never globally. A resource from another
   team is a 404, not a 403, so its existence is not confirmed.
 - **Roles and privacy.** Owner, admin, member and viewer roles. Members can hold
-  *private accounts* inside a family team: their name is visible to everyone,
+  _private accounts_ inside a family team: their name is visible to everyone,
   their balance only to their owner, they only accept transfers, and only the
   owner can move money out of them.
 - **Money without floats.** Amounts are `decimal(14,2)` columns read as strings
@@ -45,16 +45,16 @@ rather than on feature count.
 
 ## Tech stack
 
-| Layer | Technology |
-|---|---|
-| Backend | Laravel 13, PHP 8.3+ (BCMath) |
-| Frontend | Inertia.js, Vue 3 (Composition API), TypeScript |
-| UI | Tailwind CSS 4, shadcn-vue (Reka UI), Lucide |
-| Typed routes | Laravel Wayfinder |
-| Database | PostgreSQL 16 |
-| Testing | Pest 4 |
-| Quality | Laravel Pint, PHPStan (Larastan), vue-tsc |
-| CI | GitHub Actions (PHP 8.3 + PostgreSQL 16) |
+| Layer        | Technology                                      |
+| ------------ | ----------------------------------------------- |
+| Backend      | Laravel 13, PHP 8.3+ (BCMath)                   |
+| Frontend     | Inertia.js, Vue 3 (Composition API), TypeScript |
+| UI           | Tailwind CSS 4, shadcn-vue (Reka UI), Lucide    |
+| Typed routes | Laravel Wayfinder                               |
+| Database     | PostgreSQL 16                                   |
+| Testing      | Pest 4                                          |
+| Quality      | Laravel Pint, PHPStan (Larastan), vue-tsc       |
+| CI           | GitHub Actions (PHP 8.3 + PostgreSQL 16)        |
 
 A Laravel monolith with Inertia: no separate REST API in the MVP. A
 Sanctum-authenticated API for a React Native (Expo) client is planned after
@@ -116,14 +116,14 @@ composer dev
 
 ## Useful commands
 
-| Command | What it does |
-|---|---|
-| `composer test` | Pint check, PHPStan and the Pest suite |
-| `composer ci:check` | Everything CI runs, frontend checks included |
-| `composer lint` | Format PHP with Pint |
-| `php artisan nestly:reconcile` | Report balance drifts and broken transfers; exits with 1 if anything is wrong |
-| `php artisan nestly:reconcile --fix` | Rewrite drifted balances from the ledger (broken transfers are only reported) |
-| `php artisan nestly:reconcile --team=<slug>` | Limit the check to one team |
+| Command                                      | What it does                                                                  |
+| -------------------------------------------- | ----------------------------------------------------------------------------- |
+| `composer test`                              | Pint check, PHPStan and the Pest suite                                        |
+| `composer ci:check`                          | Everything CI runs, frontend checks included                                  |
+| `composer lint`                              | Format PHP with Pint                                                          |
+| `php artisan nestly:reconcile`               | Report balance drifts and broken transfers; exits with 1 if anything is wrong |
+| `php artisan nestly:reconcile --fix`         | Rewrite drifted balances from the ledger (broken transfers are only reported) |
+| `php artisan nestly:reconcile --team=<slug>` | Limit the check to one team                                                   |
 
 The test suite runs against a separate PostgreSQL database named
 `nestly_testing` (see `phpunit.xml`); create it before running the tests.
@@ -150,18 +150,18 @@ the seeder, jobs and the future mobile API go through the same checks.
 
 ## Roadmap
 
-| Phase | Scope | Status |
-|---|---|---|
-| 0 | Project setup, CI, static analysis | Done |
-| 1 | Transactions and transfers core, balance reconciliation | Done |
-| 2 | Cross-cutting authorization (policies, role matrix) | Next |
-| 3 | Accounts: first Vue screens, i18n | Planned |
-| 4 | Transactions UI | Planned |
-| 5 | Categories | Planned |
-| 6 | Budgets | Planned |
-| 7 | Recurring expenses | Planned |
-| 8 | Dashboard | Planned |
-| 9 | MVP wrap-up: audit log, E2E tests, deployment | Planned |
+| Phase | Scope                                                   | Status  |
+| ----- | ------------------------------------------------------- | ------- |
+| 0     | Project setup, CI, static analysis                      | Done    |
+| 1     | Transactions and transfers core, balance reconciliation | Done    |
+| 2     | Cross-cutting authorization (policies, role matrix)     | Next    |
+| 3     | Accounts: first Vue screens, i18n                       | Planned |
+| 4     | Transactions UI                                         | Planned |
+| 5     | Categories                                              | Planned |
+| 6     | Budgets                                                 | Planned |
+| 7     | Recurring expenses                                      | Planned |
+| 8     | Dashboard                                               | Planned |
+| 9     | MVP wrap-up: audit log, E2E tests, deployment           | Planned |
 
 After the MVP: savings pots and MFA, then the mobile API and a React Native
 client.
