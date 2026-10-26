@@ -10,6 +10,7 @@ use App\Enums\CategoryKind;
 use App\Enums\TeamRole;
 use App\Enums\TransactionType;
 use App\Models\Account;
+use App\Models\Budget;
 use App\Models\Category;
 use App\Models\RecurringExpense;
 use App\Models\Team;
@@ -182,5 +183,15 @@ function newRecurringExpense(Team $team, Account $account, User $creator): Recur
         'account_id' => $account->id,
         'category_id' => makeCategory($team, CategoryKind::Expense)->id,
         'created_by' => $creator->id,
+    ]);
+}
+
+function newBudget(Team $team, ?User $creator = null): Budget
+{
+    // A fresh category per budget, so budgets_no_overlap never fires between them.
+    return Budget::factory()->create([
+        'team_id' => $team->id,
+        'category_id' => makeCategory($team, CategoryKind::Expense)->id,
+        'created_by' => $creator?->id,
     ]);
 }

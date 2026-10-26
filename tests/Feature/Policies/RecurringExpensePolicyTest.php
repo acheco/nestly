@@ -16,13 +16,6 @@ beforeEach(function () {
     $this->outsider = User::factory()->create();
 });
 
-dataset('roles', [
-    'owner' => [TeamRole::Owner],
-    'admin' => [TeamRole::Admin],
-    'member' => [TeamRole::Member],
-    'viewer' => [TeamRole::Viewer],
-]);
-
 dataset('management abilities', ['update', 'delete', 'pause', 'resume']);
 
 test('view any recurring expense of the team', function (TeamRole $role) {

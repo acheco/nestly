@@ -7,14 +7,14 @@ use App\Models\Category;
 use App\Models\Team;
 use App\Models\User;
 
-class CategoryPolicy
+final class CategoryPolicy
 {
     /**
      * Determine whether the user can view any models.
      */
     public function viewAny(User $user, Team $team): bool
     {
-        return $user->BelongsToTeam($team);
+        return $user->belongsToTeam($team);
     }
 
     /**
@@ -23,7 +23,7 @@ class CategoryPolicy
      */
     public function view(User $user, Category $category): bool
     {
-        return $user->BelongsToTeam($category->team);
+        return $user->belongsToTeam($category->team);
     }
 
     /**

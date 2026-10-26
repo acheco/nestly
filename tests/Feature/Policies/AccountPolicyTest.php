@@ -21,13 +21,6 @@ beforeEach(function () {
     $this->outsider = User::factory()->create();
 });
 
-dataset('roles', [
-    'owner' => [TeamRole::Owner],
-    'admin' => [TeamRole::Admin],
-    'member' => [TeamRole::Member],
-    'viewer' => [TeamRole::Viewer],
-]);
-
 dataset('management abilities', ['update', 'archive', 'delete']);
 
 function newAccount(AccountVisibility $visibility): Account
