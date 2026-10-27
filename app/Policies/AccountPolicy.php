@@ -25,7 +25,8 @@ final class AccountPolicy
     public function viewBalance(User $user, Account $account): bool
     {
         if ($account->visibility === AccountVisibility::Private) {
-            return $account->owner_id === $user->id;
+            // Owner only, and only while still in the team: once they leave, nobody sees it (PRD §1.6.3).
+            return $account->owner_id === $user->id && $user->belongsToTeam($account->team);
         }
 
         return $user->belongsToTeam($account->team);
