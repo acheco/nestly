@@ -5,7 +5,6 @@ use App\Enums\TeamRole;
 use App\Models\Account;
 use App\Models\Team;
 use App\Models\Transaction;
-use App\Models\User;
 
 beforeEach(function () {
     $this->team = Team::factory()->create();

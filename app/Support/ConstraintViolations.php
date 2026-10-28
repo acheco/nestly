@@ -7,6 +7,7 @@ use Illuminate\Validation\ValidationException;
 
 final class ConstraintViolations
 {
+    // TODO(i18n)
     private const array MAP = [
         'transactions_amount_positive' => ['amount', 'El monto debe ser mayor que cero.'],
         'recurring_expenses_amount_positive' => ['amount', 'El monto debe ser mayor que cero.'],
