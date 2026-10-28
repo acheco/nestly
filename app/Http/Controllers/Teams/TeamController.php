@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Teams;
 
 use App\Actions\Teams\CreateTeam;
+use App\Actions\Teams\RemoveTeamMemberAction;
 use App\Enums\TeamRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teams\DeleteTeamRequest;
@@ -120,7 +121,7 @@ class TeamController extends Controller
     /**
      * Leave the specified team.
      */
-    public function leave(Request $request, Team $team): RedirectResponse
+    public function leave(Request $request, Team $team, RemoveTeamMemberAction $removeMember): RedirectResponse
     {
         Gate::authorize('leave', $team);
 
@@ -130,9 +131,7 @@ class TeamController extends Controller
             ? $user->fallbackTeam($team)
             : null;
 
-        $team->memberships()
-            ->where('user_id', $user->id)
-            ->delete();
+        $removeMember->execute($team, $user);
 
         if ($fallbackTeam) {
             $user->switchTeam($fallbackTeam);

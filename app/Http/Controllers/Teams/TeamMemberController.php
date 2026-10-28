@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Teams;
 
+use App\Actions\Teams\RemoveTeamMemberAction;
 use App\Enums\TeamRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teams\UpdateTeamMemberRequest;
@@ -35,15 +36,13 @@ class TeamMemberController extends Controller
     /**
      * Remove the specified team member.
      */
-    public function destroy(Team $team, User $user): RedirectResponse
+    public function destroy(Team $team, User $user, RemoveTeamMemberAction $removeMember): RedirectResponse
     {
         Gate::authorize('removeMember', $team);
 
         abort_if($team->owner()?->is($user), 403, __('The team owner cannot be removed.'));
 
-        $team->memberships()
-            ->where('user_id', $user->id)
-            ->delete();
+        $removeMember->execute($team, $user);
 
         if ($user->isCurrentTeam($team)) {
             $user->switchTeam($user->personalTeam());
