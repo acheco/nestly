@@ -17,6 +17,7 @@ use App\Models\Team;
 use App\Models\Transaction;
 use App\Models\User;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -194,4 +195,19 @@ function newBudget(Team $team, ?User $creator = null): Budget
         'category_id' => makeCategory($team, CategoryKind::Expense)->id,
         'created_by' => $creator?->id,
     ]);
+}
+
+/** Runs $callback with the query log on and returns how many queries it made. */
+function countQueries(Closure $callback): int
+{
+    DB::flushQueryLog();
+    DB::enableQueryLog();
+
+    try {
+        $callback();
+    } finally {
+        DB::disableQueryLog();
+    }
+
+    return count(DB::getQueryLog());
 }

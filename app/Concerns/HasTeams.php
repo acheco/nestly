@@ -122,6 +122,11 @@ trait HasTeams
      */
     public function teamRole(Team $team): ?TeamRole
     {
+        // If teamMemberships is loaded, trust it; load it only in read-only requests.
+        if ($this->relationLoaded('teamMemberships')) {
+            return $this->teamMemberships->firstWhere('team_id', $team->id)?->role;
+        }
+
         return $this->teamMemberships()
             ->where('team_id', $team->id)
             ->first()
