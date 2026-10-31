@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $team_id
  * @property string $name
  * @property AccountType $type
+ * @property bool $archived
  * @property numeric-string $initial_balance
  * @property numeric-string $current_balance
  * @property AccountVisibility $visibility
