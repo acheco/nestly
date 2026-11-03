@@ -16,6 +16,8 @@ Rama: `test/cross-team-hardening`. Se abre cuando `chore/adopt-sdd` esté termin
 5. [x] Invitaciones, miembros y acciones sobre teams ajenos
 6. [x] Policies de Account y RecurringExpense
 7. [x] Evaluar FKs compuestas (`account_id`, `team_id`) y (`category_id`, `team_id`) para que PostgreSQL garantice que nada apunte a otro team
+8. [x] Unificar PostgreSQL en la 18 (D-075): imagen de CI, README, `CLAUDE.md` y notas en TRD y PRD
+9. [ ] Cerrar P-001 con el SQLSTATE que devuelva el CI en la 18 y ajustar la traducción del error si hace falta
 
 ## Plan de implementación de D-074
 
