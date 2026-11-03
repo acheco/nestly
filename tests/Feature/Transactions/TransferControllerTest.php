@@ -204,6 +204,47 @@ test('a transfer involving an account from another team returns a 404', function
     expect($foreignAccount->fresh()->current_balance)->toBe('500.00');
 })->with(['from_account_id', 'to_account_id']);
 
+test('an admin gets a 404 creating a transfer involving an account from another team', function (string $field) {
+    $admin = teamUser($this->team, TeamRole::Admin);
+    $foreignAccount = Account::factory()->create([
+        'team_id' => Team::factory()->create()->id,
+        'initial_balance' => '500.00',
+    ]);
+
+    $response = $this->actingAs($admin)
+        ->post(route('transfers.store', $this->team), ($this->payload)([$field => $foreignAccount->id]));
+
+    $this->assertDatabaseCount('transactions', 0);
+    expect($foreignAccount->fresh()->current_balance)->toBe('500.00')
+        ->and($this->fromAccount->fresh()->current_balance)->toBe('1000.00')
+        ->and($this->toAccount->fresh()->current_balance)->toBe('1000.00');
+
+    $response->assertNotFound();
+})->with(['from_account_id', 'to_account_id']);
+
+test('an admin gets a 404 creating a transfer with a category from another team', function () {
+    $admin = teamUser($this->team, TeamRole::Admin);
+    $privateAccount = Account::factory()->private()->create([
+        'team_id' => $this->team->id,
+        'owner_id' => teamUser($this->team, TeamRole::Member)->id,
+        'initial_balance' => '500.00',
+    ]);
+    $foreignCategory = makeCategory(Team::factory()->create(), CategoryKind::Expense);
+
+    // Team to private on purpose: only a transfer crossing the team perimeter stores a category.
+    $response = $this->actingAs($admin)
+        ->post(route('transfers.store', $this->team), ($this->payload)([
+            'to_account_id' => $privateAccount->id,
+            'category_id' => $foreignCategory->id,
+        ]));
+
+    $this->assertDatabaseCount('transactions', 0);
+    expect($this->fromAccount->fresh()->current_balance)->toBe('1000.00')
+        ->and($privateAccount->fresh()->current_balance)->toBe('500.00');
+
+    $response->assertNotFound();
+});
+
 test('a transfer from another user private account returns a 403', function () {
     $privateAccount = Account::factory()->private()->create([
         'team_id' => $this->team->id,
@@ -330,6 +371,23 @@ test('a transfer from another team returns a 404 on delete', function () {
     $this->assertDatabaseCount('transactions', 2);
     expect($otherFrom->fresh()->current_balance)->toBe('400.00')
         ->and($otherTo->fresh()->current_balance)->toBe('600.00');
+});
+
+test('an admin gets a 404 deleting a transfer from another team', function () {
+    $admin = teamUser($this->team, TeamRole::Admin);
+    $otherTeam = Team::factory()->create();
+    $otherFrom = Account::factory()->create(['team_id' => $otherTeam->id, 'initial_balance' => '500.00']);
+    $otherTo = Account::factory()->create(['team_id' => $otherTeam->id, 'initial_balance' => '500.00']);
+    $foreignGroupId = recordTransfer($otherTeam, teamUser($otherTeam, TeamRole::Member), $otherFrom, $otherTo);
+
+    $response = $this->actingAs($admin)
+        ->delete(route('transfers.destroy', [$this->team, $foreignGroupId]));
+
+    $this->assertDatabaseCount('transactions', 2);
+    expect($otherFrom->fresh()->current_balance)->toBe('400.00')
+        ->and($otherTo->fresh()->current_balance)->toBe('600.00');
+
+    $response->assertNotFound();
 });
 
 test('a non uuid transfer id returns a 404', function () {

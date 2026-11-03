@@ -11,7 +11,7 @@ Rama: `test/cross-team-hardening`. Se abre cuando `chore/adopt-sdd` esté termin
 
 1. [x] Admin de ambos teams en transactions (con mutation check)
 2. [x] PATCH con `account_id` y `category_id` ajenos (con mutation check)
-3. [ ] Actor admin en POST/PATCH/DELETE de transactions y transfers
+3. [x] Actor admin en POST/PATCH/DELETE de transactions y transfers
 4. [ ] Fix de `TeamMemberController::destroy` a 404, con el test primero
 5. [ ] Invitaciones, miembros y acciones sobre teams ajenos
 6. [ ] Policies de Account y RecurringExpense
