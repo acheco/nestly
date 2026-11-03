@@ -19,14 +19,12 @@ class TeamMemberController extends Controller
      */
     public function update(UpdateTeamMemberRequest $request, Team $team, User $user): RedirectResponse
     {
+        // D-073: a user outside the team is a 404 for everyone, so this runs before the role check.
+        $membership = $team->memberships()->where('user_id', $user->id)->firstOrFail();
+
         Gate::authorize('updateMember', $team);
 
-        $newRole = TeamRole::from($request->validated('role'));
-
-        $team->memberships()
-            ->where('user_id', $user->id)
-            ->firstOrFail()
-            ->update(['role' => $newRole]);
+        $membership->update(['role' => TeamRole::from($request->validated('role'))]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Member role updated.')]);
 

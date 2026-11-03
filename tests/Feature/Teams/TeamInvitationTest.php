@@ -171,6 +171,25 @@ test('team invitations can be cancelled by owners', function () {
     ]);
 });
 
+test('cancelling an invitation from another team returns a 404', function () {
+    $team = Team::factory()->create();
+    $owner = teamUser($team, TeamRole::Owner);
+
+    $otherTeam = Team::factory()->create();
+    $foreignInvitation = TeamInvitation::factory()->create([
+        'team_id' => $otherTeam->id,
+        'invited_by' => teamUser($otherTeam, TeamRole::Owner)->id,
+    ]);
+
+    $response = $this
+        ->actingAs($owner)
+        ->delete(route('teams.invitations.destroy', [$team, $foreignInvitation]));
+
+    $this->assertModelExists($foreignInvitation);
+
+    $response->assertNotFound();
+});
+
 test('team invitations can be accepted', function () {
     $owner = User::factory()->create();
     $invitedUser = User::factory()->create(['email' => 'invited@example.com']);
