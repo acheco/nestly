@@ -15,3 +15,4 @@ Rama: `test/cross-team-hardening`. Se abre cuando `chore/adopt-sdd` esté termin
 4. [ ] Fix de `TeamMemberController::destroy` a 404, con el test primero
 5. [ ] Invitaciones, miembros y acciones sobre teams ajenos
 6. [ ] Policies de Account y RecurringExpense
+7. [ ] Evaluar FKs compuestas (`account_id`, `team_id`) y (`category_id`, `team_id`) para que PostgreSQL garantice que nada apunte a otro team
