@@ -179,7 +179,7 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
     - Una sola migración nueva, sin editar las existentes. Antes de cambiar nada, aborta si encuentra filas cruzadas.
     - `ConstraintViolations` no cambia: estas violaciones no las puede provocar un usuario, y si ocurren son un bug y deben dar 500.
     - Se añaden tests de esquema en `tests/Feature/Database` para las 7 relaciones.
-    - Quedan fuera `owner_id` y `created_by`, que apuntan a `users`, no a una tabla con `team_id`.
+    - Quedan fuera `owner_id` y `created_by`, que apuntan a `users`, no a una tabla con `team_id`, y `audit_logs.model_id`, que es polimórfico (`model_type` + `model_id`) y no admite FK.
 
 ---
 
