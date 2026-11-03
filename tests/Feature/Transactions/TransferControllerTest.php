@@ -454,6 +454,62 @@ test('an admin of the route team gets a 404 updating a transfer from another tea
     $response->assertNotFound();
 });
 
+test('an admin gets a 404 moving a transfer to an account from another team', function (string $field) {
+    $admin = teamUser($this->team, TeamRole::Admin);
+    $groupId = recordTransfer($this->team, $this->user, $this->fromAccount, $this->toAccount);
+    $foreignAccount = Account::factory()->create([
+        'team_id' => Team::factory()->create()->id,
+        'initial_balance' => '500.00',
+    ]);
+
+    $response = $this->actingAs($admin)
+        ->patch(route('transfers.update', [$this->team, $groupId]), ($this->payload)([
+            $field => $foreignAccount->id,
+            'amount' => '250.00',
+        ]));
+
+    $legs = transferLegs($groupId);
+
+    expect($legs['expense']->account_id)->toBe($this->fromAccount->id)
+        ->and($legs['income']->account_id)->toBe($this->toAccount->id)
+        ->and($legs['expense']->amount)->toBe('100.00')
+        ->and($this->fromAccount->fresh()->current_balance)->toBe('900.00')
+        ->and($this->toAccount->fresh()->current_balance)->toBe('1100.00')
+        ->and($foreignAccount->fresh()->current_balance)->toBe('500.00');
+
+    $response->assertNotFound();
+})->with(['from_account_id', 'to_account_id']);
+
+test('an admin gets a 404 updating a transfer with a category from another team', function () {
+    $admin = teamUser($this->team, TeamRole::Admin);
+    $groupId = recordTransfer($this->team, $this->user, $this->fromAccount, $this->toAccount);
+    $privateAccount = Account::factory()->private()->create([
+        'team_id' => $this->team->id,
+        'owner_id' => teamUser($this->team, TeamRole::Member)->id,
+        'initial_balance' => '500.00',
+    ]);
+    $foreignCategory = makeCategory(Team::factory()->create(), CategoryKind::Expense);
+
+    // Team to private on purpose: only a transfer crossing the team perimeter stores a category.
+    $response = $this->actingAs($admin)
+        ->patch(route('transfers.update', [$this->team, $groupId]), ($this->payload)([
+            'to_account_id' => $privateAccount->id,
+            'category_id' => $foreignCategory->id,
+            'amount' => '250.00',
+        ]));
+
+    $legs = transferLegs($groupId);
+
+    expect($legs['expense']->category_id)->toBeNull()
+        ->and($legs['income']->account_id)->toBe($this->toAccount->id)
+        ->and($legs['expense']->amount)->toBe('100.00')
+        ->and($this->fromAccount->fresh()->current_balance)->toBe('900.00')
+        ->and($this->toAccount->fresh()->current_balance)->toBe('1100.00')
+        ->and($privateAccount->fresh()->current_balance)->toBe('500.00');
+
+    $response->assertNotFound();
+});
+
 test('update validation errors are returned for invalid input', function (array $overrides, string $field) {
     $this->travelTo(CarbonImmutable::parse('2026-10-09 12:00:00', 'UTC'));
     $transferGroupId = recordTransfer($this->team, $this->user, $this->fromAccount, $this->toAccount);

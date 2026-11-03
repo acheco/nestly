@@ -395,6 +395,46 @@ test('an admin of both teams gets a 404 updating a transaction through the wrong
     $response->assertNotFound();
 });
 
+test('an admin gets a 404 moving a transaction to an account from another team', function () {
+    $admin = teamUser($this->team, TeamRole::Admin);
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+    $foreignAccount = Account::factory()->create([
+        'team_id' => Team::factory()->create()->id,
+        'initial_balance' => '500.00',
+    ]);
+
+    $response = $this->actingAs($admin)
+        ->patch(route('transactions.update', [$this->team, $transaction]), ($this->payload)([
+            'account_id' => $foreignAccount->id,
+            'amount' => '150.00',
+        ]));
+
+    expect($transaction->fresh()->account_id)->toBe($this->account->id)
+        ->and($transaction->fresh()->amount)->toBe('100.00')
+        ->and($this->account->fresh()->current_balance)->toBe('900.00')
+        ->and($foreignAccount->fresh()->current_balance)->toBe('500.00');
+
+    $response->assertNotFound();
+});
+
+test('an admin gets a 404 updating a transaction with a category from another team', function () {
+    $admin = teamUser($this->team, TeamRole::Admin);
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+    $foreignCategory = makeCategory(Team::factory()->create(), CategoryKind::Expense);
+
+    $response = $this->actingAs($admin)
+        ->patch(route('transactions.update', [$this->team, $transaction]), ($this->payload)([
+            'category_id' => $foreignCategory->id,
+            'amount' => '150.00',
+        ]));
+
+    expect($transaction->fresh()->category_id)->toBe($this->category->id)
+        ->and($transaction->fresh()->amount)->toBe('100.00')
+        ->and($this->account->fresh()->current_balance)->toBe('900.00');
+
+    $response->assertNotFound();
+});
+
 test('updating with a future date fails validation', function () {
     $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
     $this->travelTo(CarbonImmutable::parse('2026-10-09 12:00:00', 'UTC'));
