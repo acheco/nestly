@@ -166,6 +166,21 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
     - Un usuario que no es miembro del team de la URL sigue recibiendo **403** de `EnsureTeamMembership`.
 - **Consecuencia:** corregir `TeamMemberController::destroy`, que hoy responde con éxito a un usuario ajeno al team. Los tests cross-team usan como actor el rol más privilegiado que puede hacer la acción.
 
+### D-074 · PostgreSQL garantiza que las referencias no crucen de team
+- **Fecha:** 2026-11-03
+- **Estado:** aprobada, pendiente de implementar. Se implementa después de la tarea 6 de `000-cross-team-hardening`, como tarea aparte con su propia rama.
+- **Contexto:** D-073 protege estas referencias solo en la aplicación. Una FK simple comprueba que la fila exista, no que sea del mismo team, así que un bug en una action podría escribir una referencia a otro team sin que la base lo impida.
+- **Decisión:** toda referencia entre tablas con `team_id` usa una FK compuesta `(columna, team_id)` hacia `(id, team_id)`.
+    - Tablas referenciadas, con un `UNIQUE (id, team_id)` nuevo: `accounts`, `categories`, `recurring_expenses`.
+    - FKs que se reemplazan: `transactions` (`account_id`, `category_id`, `recurring_id`), `recurring_expenses` (`account_id`, `category_id`), `budgets` (`category_id`), `categories` (`parent_id`).
+    - Se conserva `ON DELETE RESTRICT`. `transactions.recurring_id` usa `ON DELETE SET NULL (recurring_id)`, para no anular también `team_id`.
+    - Los filtros de D-073 se mantienen: siguen dando el 404, y la FK es la última red.
+- **Consecuencias:**
+    - Una sola migración nueva, sin editar las existentes. Antes de cambiar nada, aborta si encuentra filas cruzadas.
+    - `ConstraintViolations` no cambia: estas violaciones no las puede provocar un usuario, y si ocurren son un bug y deben dar 500.
+    - Se añaden tests de esquema en `tests/Feature/Database` para las 7 relaciones.
+    - Quedan fuera `owner_id` y `created_by`, que apuntan a `users`, no a una tabla con `team_id`.
+
 ---
 
 ## Pendientes
