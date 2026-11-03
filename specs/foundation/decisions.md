@@ -53,8 +53,9 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
 - **Decisión:** es una regla de negocio, no de autorización.
     - `AccountPolicy` **no** mira `is_personal`.
     - La action de crear cuenta rechaza con **422** una cuenta privada en un team personal.
-    - El controller expone a la UI un flag `canCreatePrivate = Gate::allows(...) && ! $team->is_personal`.
-- **Consecuencia:** ajustar el test "private accounts cannot be created in a personal team" para que espere el 422 de la action y el flag en false.
+    - El controller expone a la UI el flag `can.createPrivateAccount = ! $team->is_personal && Gate::allows(...)`.
+- **Consecuencia:** el test "private accounts cannot be created in a personal team" comprueba el flag en false. El 422 se cubre con un test propio.
+- **Estado:** parcial. La policy y el flag están implementados. El 422 está pendiente porque la action de crear cuenta aún no existe (spec `002-accounts`); su test está marcado con `->todo()`.
 
 ### D-015 · Eliminar o archivar cuentas (23 oct 2026)
 - **Decisión:** una cuenta solo se elimina si no tiene movimientos. Si tiene, se archiva.
