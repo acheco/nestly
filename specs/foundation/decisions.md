@@ -181,6 +181,16 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
     - Se añaden tests de esquema en `tests/Feature/Database` para las 7 relaciones.
     - Quedan fuera `owner_id` y `created_by`, que apuntan a `users`, no a una tabla con `team_id`, y `audit_logs.model_id`, que es polimórfico (`model_type` + `model_id`) y no admite FK.
 
+### D-075 · PostgreSQL 18 en local y en CI
+- **Fecha:** 2026-11-03
+- **Estado:** aprobada.
+- **Contexto:** el entorno local corre PostgreSQL 18 y el CI la 16, y los docs declaran la 16. Una prueba que pasa en local no demuestra el comportamiento en CI. P-001 lo dejó en evidencia: en local, un `RESTRICT` devuelve `23001`, mientras los docs dicen `23503`, y no hay una versión de referencia para resolverlo.
+- **Decisión:** el proyecto usa PostgreSQL 18 en local y en CI. Cambiar de versión mayor requiere una decisión nueva.
+- **Consecuencias:**
+    - La imagen de CI pasa a `postgres:18`.
+    - README y `CLAUDE.md` declaran la 18. El TRD conserva su texto con una nota que remite a esta decisión (D-071).
+    - Los SQLSTATE se verifican contra la 18 antes de escribir cualquier traducción de errores.
+
 ---
 
 ## Pendientes
