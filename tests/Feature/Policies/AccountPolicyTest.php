@@ -109,7 +109,7 @@ describe('a non-member', function () {
     });
 
     test('cannot create an account', function (AccountVisibility $visibility) {
-        expect($this->outsider->can('create', $visibility))->toBeFalse();
+        expect($this->outsider->can('create', [Account::class, $this->team, $visibility]))->toBeFalse();
     })->with([
         'team' => [AccountVisibility::Team],
         'private' => [AccountVisibility::Private],
