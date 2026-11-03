@@ -18,8 +18,9 @@ class AccountController extends Controller
      */
     public function index(Request $request, Team $current_team): Response
     {
-        Gate::authorize('viewAny', [Account::class, $current_team]);
+        // Loaded first so every teamRole() call in this request, the gate included, reuses it.
         $request->user()->load('teamMemberships');
+        Gate::authorize('viewAny', [Account::class, $current_team]);
 
         $accounts = $current_team->accounts()->with('owner:id,name')->orderBy('archived')->orderBy('name')->get();
 
@@ -28,7 +29,9 @@ class AccountController extends Controller
             'currency' => $current_team->currency,
             'can' => [
                 'createTeamAccount' => Gate::allows('create', [Account::class, $current_team, AccountVisibility::Team]),
-                'createPrivateAccount' => Gate::allows('create', [Account::class, $current_team, AccountVisibility::Private]),
+                // Not a policy rule: a personal team simply has no private accounts (ERD §4.3.8).
+                'createPrivateAccount' => ! $current_team->is_personal
+                    && Gate::allows('create', [Account::class, $current_team, AccountVisibility::Private]),
             ],
         ]);
     }
