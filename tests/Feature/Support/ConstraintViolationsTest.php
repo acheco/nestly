@@ -128,6 +128,21 @@ describe('against real PostgreSQL errors', function () {
 
         expect(ConstraintViolations::toValidationException($exception)?->errors())->toHaveKey('category_id');
     });
+
+    test('deleting a row held by a RESTRICT foreign key reports 23001 and is not translated', function () {
+        // P-001: pins the SQLSTATE of the supported PostgreSQL version (D-075). The action rejects this
+        // case first (D-015), so reaching the database is a bug and must stay a 500.
+        $team = Team::factory()->create();
+        $account = Account::factory()->create(['team_id' => $team->id, 'initial_balance' => '1000.00']);
+        recordExpense($team, $account, teamUser($team, TeamRole::Member));
+
+        $exception = ($this->caught)(fn () => DB::table('accounts')
+            ->where('id', $account->id)
+            ->delete());
+
+        expect($exception->getCode())->toBe('23001')
+            ->and(ConstraintViolations::toValidationException($exception))->toBeNull();
+    });
 });
 
 describe('over HTTP', function () {
