@@ -435,6 +435,25 @@ test('a transfer from another team returns a 404 on update', function () {
         ->and($this->toAccount->fresh()->current_balance)->toBe('1000.00');
 });
 
+test('an admin of the route team gets a 404 updating a transfer from another team', function () {
+    $admin = teamUser($this->team, TeamRole::Admin);
+    $otherTeam = Team::factory()->create();
+    $otherFrom = Account::factory()->create(['team_id' => $otherTeam->id, 'initial_balance' => '500.00']);
+    $otherTo = Account::factory()->create(['team_id' => $otherTeam->id, 'initial_balance' => '500.00']);
+    $foreignGroupId = recordTransfer($otherTeam, User::factory()->create(), $otherFrom, $otherTo);
+
+    $response = $this->actingAs($admin)
+        ->patch(route('transfers.update', [$this->team, $foreignGroupId]), ($this->payload)(['amount' => '250.00']));
+
+    // Balances first: an admin passes the permission check, so only the team filters protect this data.
+    expect($otherFrom->fresh()->current_balance)->toBe('400.00')
+        ->and($otherTo->fresh()->current_balance)->toBe('600.00')
+        ->and($this->fromAccount->fresh()->current_balance)->toBe('1000.00')
+        ->and($this->toAccount->fresh()->current_balance)->toBe('1000.00');
+
+    $response->assertNotFound();
+});
+
 test('update validation errors are returned for invalid input', function (array $overrides, string $field) {
     $this->travelTo(CarbonImmutable::parse('2026-10-09 12:00:00', 'UTC'));
     $transferGroupId = recordTransfer($this->team, $this->user, $this->fromAccount, $this->toAccount);
