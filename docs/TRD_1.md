@@ -966,7 +966,7 @@ de campo, no un 500.
   action). Un bug debe dar 500 y quedar en el log, no disfrazarse de error
   de formulario. El `23503` (FK `RESTRICT` al borrar) se agregará con las
   actions de borrado de cuentas y categorías, que responden 422 antes.
-  **Nota:** en PostgreSQL 18 (D-075) este borrado devuelve `23001`, no `23503`, medido en local; falta confirmarlo en CI. Ver P-001 en `specs/foundation/decisions.md`.
+  **Nota:** en PostgreSQL 18 (D-075) este borrado devuelve `23001`, no `23503`. Ver P-001 en `specs/foundation/decisions.md`.
 - **Cómo se identifica el constraint:** los mensajes de PostgreSQL están
   **localizados** según `lc_messages` (en español: «restricción»
   «teams_color_hex»), así que no se parsean: se busca cuál de los nombres

@@ -196,4 +196,8 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
 ## Pendientes
 
 ### P-001 · SQLSTATE de RESTRICT
-- Los docs dicen `23503` y en local se observó `23001`. Hay que verificar de dónde sale el `23001` (¿un trigger o un `RAISE` propio en alguna migración?) y qué devuelve Postgres 16 en CI antes de escribir la traducción del error.
+- **Estado:** cerrada el 2026-11-03.
+- **Pregunta original:** los docs dicen `23503` y en local se observó `23001`. Había que verificar de dónde sale el `23001` (¿un trigger o un `RAISE` propio en alguna migración?) y qué devuelve Postgres 16 en CI antes de escribir la traducción del error.
+- **Resultado:** en PostgreSQL 18 (D-075), borrar una fila retenida por una FK `RESTRICT` devuelve `23001`, en local y en CI. Lo fija un test en `ConstraintViolationsTest`. No viene de código propio: las migraciones no tienen triggers, `RAISE` ni funciones.
+- **Traducción:** no cambia. Ningún usuario puede provocar hoy este error y, si llega a la base, es un bug y debe dar 500. Si la action de borrado no lo rechaza antes (D-015), la traducción debe usar `23001`, no `23503`.
+- **Sin verificar:** no se midió PostgreSQL 16, así que no se sabe si el `23001` viene del cambio de versión. Con D-075 ya no afecta a nada.
