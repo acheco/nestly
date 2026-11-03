@@ -38,6 +38,9 @@ class TeamMemberController extends Controller
      */
     public function destroy(Team $team, User $user, RemoveTeamMemberAction $removeMember): RedirectResponse
     {
+        // D-073: a user outside the team is a 404 for everyone, so this runs before the role check.
+        $team->memberships()->where('user_id', $user->id)->firstOrFail();
+
         Gate::authorize('removeMember', $team);
 
         abort_if($team->owner()?->is($user), 403, __('The team owner cannot be removed.'));
