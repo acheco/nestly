@@ -12,13 +12,13 @@ final class AccountPolicy
 {
     public function viewAny(User $user, Team $team): bool
     {
-        return $user->belongsToTeam($team);
+        return $user->teamRole($team) !== null;
     }
 
     /** Name level: every member, viewers included, sees every account's name (PRD §1.6.3). */
     public function view(User $user, Account $account): bool
     {
-        return $user->belongsToTeam($account->team);
+        return $user->teamRole($account->team) !== null;
     }
 
     /** Balance level: a private account's balance is visible to its owner only, not even to the team owner. */
@@ -26,10 +26,10 @@ final class AccountPolicy
     {
         if ($account->visibility === AccountVisibility::Private) {
             // Owner only, and only while still in the team: once they leave, nobody sees it (PRD §1.6.3).
-            return $account->owner_id === $user->id && $user->belongsToTeam($account->team);
+            return $account->owner_id === $user->id && $user->teamRole($account->team) !== null;
         }
 
-        return $user->belongsToTeam($account->team);
+        return $user->teamRole($account->team) !== null;
     }
 
     public function create(User $user, Team $team, AccountVisibility $visibility): bool
