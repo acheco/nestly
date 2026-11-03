@@ -579,6 +579,7 @@ erDiagram
     `RESTRICT` (`SQLSTATE 23503` si algo se saltara la action). Quién
     puede: owner/admin en cuentas `team`; solo el dueño en cuentas
     `private` (regla 8).
+    **Nota:** en PostgreSQL 18 (D-075) este borrado devuelve `23001`, no `23503`. Ver P-001 en `specs/foundation/decisions.md`.
 19. **Categorías (v2.14, PRD §1.6.5):** las categorías del sistema
     (`is_system = true`, sembradas por `TeamObserver` para cada team) no
     se editan ni se eliminan; solo se archivan. Como cada team tiene sus
@@ -695,6 +696,8 @@ violar (montos, `budgets_no_overlap` → `category_id`, `teams_color_hex`,
 al borrar), con las actions de borrado; `22000` (fechas invertidas en
 `budgets`) no trae nombre de constraint y no debería llegar a la BD si el
 Form Request valida antes.
+
+**Nota:** en PostgreSQL 18 (D-075) la FK `RESTRICT` al borrar devuelve `23001`, no `23503`. Ver P-001 en `specs/foundation/decisions.md`.
 
 ### 4.5 Consideraciones adicionales
 

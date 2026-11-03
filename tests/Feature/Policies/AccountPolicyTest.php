@@ -109,7 +109,7 @@ describe('a non-member', function () {
     });
 
     test('cannot create an account', function (AccountVisibility $visibility) {
-        expect($this->outsider->can('create', $visibility))->toBeFalse();
+        expect($this->outsider->can('create', [Account::class, $this->team, $visibility]))->toBeFalse();
     })->with([
         'team' => [AccountVisibility::Team],
         'private' => [AccountVisibility::Private],
@@ -121,6 +121,33 @@ describe('a non-member', function () {
 
     test('cannot manage a private account', function (string $ability) {
         expect($this->outsider->can($ability, $this->privateAccount))->toBeFalse();
+    })->with('management abilities');
+});
+
+describe('an admin of another team', function () {
+    beforeEach(function () {
+        $this->foreignAdmin = teamUser(Team::factory()->create(), TeamRole::Admin);
+    });
+
+    test('cannot view an account or its balance', function (string $ability) {
+        expect($this->foreignAdmin->can($ability, $this->teamAccount))->toBeFalse()
+            ->and($this->foreignAdmin->can($ability, $this->privateAccount))->toBeFalse();
+    })->with(['view', 'viewBalance']);
+
+    test('cannot list the team accounts', function () {
+        expect($this->foreignAdmin->can('viewAny', [Account::class, $this->team]))->toBeFalse();
+    });
+
+    test('cannot create an account', function (AccountVisibility $visibility) {
+        expect($this->foreignAdmin->can('create', [Account::class, $this->team, $visibility]))->toBeFalse();
+    })->with([
+        'team' => [AccountVisibility::Team],
+        'private' => [AccountVisibility::Private],
+    ]);
+
+    test('cannot manage an account', function (string $ability) {
+        expect($this->foreignAdmin->can($ability, $this->teamAccount))->toBeFalse()
+            ->and($this->foreignAdmin->can($ability, $this->privateAccount))->toBeFalse();
     })->with('management abilities');
 });
 

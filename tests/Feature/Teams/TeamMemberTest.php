@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\TeamRole;
+use App\Models\Account;
 use App\Models\Team;
 use App\Models\User;
 
@@ -42,6 +43,42 @@ test('team member roles cannot be updated by non owners', function () {
     $response->assertForbidden();
 });
 
+test('updating the role of a user who is not a member of the team returns a 404', function () {
+    $owner = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+
+    $otherTeam = Team::factory()->create();
+    $foreignUser = teamUser($otherTeam, TeamRole::Member);
+
+    $response = $this
+        ->actingAs($owner)
+        ->patch(route('teams.members.update', [$team, $foreignUser]), [
+            'role' => TeamRole::Admin->value,
+        ]);
+
+    expect($foreignUser->fresh()->teamRole($otherTeam))->toBe(TeamRole::Member)
+        ->and($foreignUser->fresh()->belongsToTeam($team))->toBeFalse();
+
+    $response->assertNotFound();
+});
+
+test('a member without permission also gets a 404 updating a user outside the team', function () {
+    $team = Team::factory()->create();
+    $admin = teamUser($team, TeamRole::Admin);
+    $otherTeam = Team::factory()->create();
+    $foreignUser = teamUser($otherTeam, TeamRole::Member);
+
+    // D-073: the team filter runs before the role check, so a 403 here would be the wrong answer.
+    $this->actingAs($admin)
+        ->patch(route('teams.members.update', [$team, $foreignUser]), [
+            'role' => TeamRole::Admin->value,
+        ])
+        ->assertNotFound();
+
+    expect($foreignUser->fresh()->teamRole($otherTeam))->toBe(TeamRole::Member);
+});
+
 test('team members can be removed by owners', function () {
     $owner = User::factory()->create();
     $member = User::factory()->create();
@@ -74,6 +111,41 @@ test('team members cannot be removed by non owners', function () {
         ->delete(route('teams.members.destroy', [$team, $member]));
 
     $response->assertForbidden();
+});
+
+test('removing a user who is not a member of the team returns a 404', function () {
+    $owner = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+
+    $otherTeam = Team::factory()->create();
+    $foreignUser = teamUser($otherTeam, TeamRole::Member);
+    $foreignUser->update(['current_team_id' => $otherTeam->id]);
+    $foreignPrivate = Account::factory()->private()->create([
+        'team_id' => $otherTeam->id,
+        'owner_id' => $foreignUser->id,
+    ]);
+
+    $response = $this
+        ->actingAs($owner)
+        ->delete(route('teams.members.destroy', [$team, $foreignUser]));
+
+    expect($foreignUser->fresh()->belongsToTeam($otherTeam))->toBeTrue()
+        ->and($foreignUser->fresh()->current_team_id)->toBe($otherTeam->id)
+        ->and($foreignPrivate->fresh()->archived)->toBeFalse();
+
+    $response->assertNotFound();
+});
+
+test('a member without permission also gets a 404 for a user outside the team', function () {
+    $team = Team::factory()->create();
+    $admin = teamUser($team, TeamRole::Admin);
+    $foreignUser = teamUser(Team::factory()->create(), TeamRole::Member);
+
+    // D-073: the team filter runs before the role check, so a 403 here would be the wrong answer.
+    $this->actingAs($admin)
+        ->delete(route('teams.members.destroy', [$team, $foreignUser]))
+        ->assertNotFound();
 });
 
 test('team owner cannot be removed', function () {

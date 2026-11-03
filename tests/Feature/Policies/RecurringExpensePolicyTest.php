@@ -70,6 +70,25 @@ describe('a non-member', function () {
     })->with('management abilities');
 });
 
+describe('an admin of another team', function () {
+    beforeEach(function () {
+        $this->foreignAdmin = teamUser(Team::factory()->create(), TeamRole::Admin);
+    });
+
+    test('cannot view the team recurring expenses', function () {
+        expect($this->foreignAdmin->can('viewAny', [RecurringExpense::class, $this->team]))->toBeFalse()
+            ->and($this->foreignAdmin->can('view', $this->recurring))->toBeFalse();
+    });
+
+    test('cannot create a recurring expense', function () {
+        expect($this->foreignAdmin->can('create', [RecurringExpense::class, $this->team]))->toBeFalse();
+    });
+
+    test('cannot manage a recurring expense', function (string $ability) {
+        expect($this->foreignAdmin->can($ability, $this->recurring))->toBeFalse();
+    })->with('management abilities');
+});
+
 test('an admin demoted to member can no longer update the recurring expense they created', function () {
     $admin = teamUser($this->team, TeamRole::Admin);
     $recurring = newRecurringExpense($this->team, $this->account, $admin);

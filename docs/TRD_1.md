@@ -361,6 +361,7 @@ escritorio/web (MVP + v1.1), no en paralelo. Ver §3.1.1, §3.1.2 y §3.2.
   §3.4.1 para el ajuste a IDs UUID.
 - **UI**: Tailwind CSS + shadcn-vue + Radix Vue.
 - **DB**: PostgreSQL 16 (pgvector se añade en v1.2, no en el MVP).
+  **Nota:** la versión vigente es PostgreSQL 18; ver D-075 en `specs/foundation/decisions.md`.
 - **Cache/Queue**: Redis (cache + queue driver). Horizon opcional en el MVP.
 - **Storage**: S3-compatible (comprobantes, avatares).
 - **Realtime**: fuera del MVP — Reverb se evalúa junto con mobile (v1.2),
@@ -965,6 +966,7 @@ de campo, no un 500.
   action). Un bug debe dar 500 y quedar en el log, no disfrazarse de error
   de formulario. El `23503` (FK `RESTRICT` al borrar) se agregará con las
   actions de borrado de cuentas y categorías, que responden 422 antes.
+  **Nota:** en PostgreSQL 18 (D-075) este borrado devuelve `23001`, no `23503`. Ver P-001 en `specs/foundation/decisions.md`.
 - **Cómo se identifica el constraint:** los mensajes de PostgreSQL están
   **localizados** según `lc_messages` (en español: «restricción»
   «teams_color_hex»), así que no se parsean: se busca cuál de los nombres

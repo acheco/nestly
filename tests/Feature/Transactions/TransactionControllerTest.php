@@ -213,6 +213,40 @@ test('a category from another team returns a 404', function () {
     expect($this->account->fresh()->current_balance)->toBe('1000.00');
 });
 
+test('an admin gets a 404 creating a transaction on an account from another team', function () {
+    $admin = teamUser($this->team, TeamRole::Admin);
+    $foreignAccount = Account::factory()->create([
+        'team_id' => Team::factory()->create()->id,
+        'initial_balance' => '500.00',
+    ]);
+
+    $response = $this->actingAs($admin)
+        ->post(route('transactions.store', $this->team), ($this->payload)([
+            'account_id' => $foreignAccount->id,
+        ]));
+
+    $this->assertDatabaseCount('transactions', 0);
+    expect($foreignAccount->fresh()->current_balance)->toBe('500.00')
+        ->and($this->account->fresh()->current_balance)->toBe('1000.00');
+
+    $response->assertNotFound();
+});
+
+test('an admin gets a 404 creating a transaction with a category from another team', function () {
+    $admin = teamUser($this->team, TeamRole::Admin);
+    $foreignCategory = makeCategory(Team::factory()->create(), CategoryKind::Expense);
+
+    $response = $this->actingAs($admin)
+        ->post(route('transactions.store', $this->team), ($this->payload)([
+            'category_id' => $foreignCategory->id,
+        ]));
+
+    $this->assertDatabaseCount('transactions', 0);
+    expect($this->account->fresh()->current_balance)->toBe('1000.00');
+
+    $response->assertNotFound();
+});
+
 test('a transaction on an archived account fails validation', function () {
     $archivedAccount = Account::factory()->archived()->create([
         'team_id' => $this->team->id,
@@ -374,6 +408,84 @@ test('a transaction from another team returns a 404 on update', function () {
     expect($otherAccount->fresh()->current_balance)->toBe('400.00');
 });
 
+test('an admin of both teams gets a 404 updating a transaction through the wrong team', function () {
+    $admin = teamUser($this->team, TeamRole::Admin);
+    $otherTeam = Team::factory()->create();
+    $otherTeam->members()->attach($admin, ['role' => TeamRole::Admin->value]);
+    $otherAccount = Account::factory()->create(['team_id' => $otherTeam->id, 'initial_balance' => '500.00']);
+    $foreign = recordExpense($otherTeam, $otherAccount, teamUser($otherTeam, TeamRole::Member));
+
+    // The policy looks at the transaction's own team, so this actor passes it: only the team filters protect this data.
+    expect($admin->can('update', $foreign))->toBeTrue();
+
+    $response = $this->actingAs($admin)
+        ->patch(route('transactions.update', [$this->team, $foreign]), ($this->payload)(['amount' => '150.00']));
+
+    expect($foreign->fresh()->amount)->toBe('100.00')
+        ->and($foreign->fresh()->account_id)->toBe($otherAccount->id)
+        ->and($otherAccount->fresh()->current_balance)->toBe('400.00')
+        ->and($this->account->fresh()->current_balance)->toBe('1000.00');
+
+    $response->assertNotFound();
+});
+
+test('an admin gets a 404 updating a transaction from another team', function () {
+    $admin = teamUser($this->team, TeamRole::Admin);
+    $otherTeam = Team::factory()->create();
+    $otherAccount = Account::factory()->create(['team_id' => $otherTeam->id, 'initial_balance' => '500.00']);
+    $foreign = recordExpense($otherTeam, $otherAccount, teamUser($otherTeam, TeamRole::Member));
+
+    $response = $this->actingAs($admin)
+        ->patch(route('transactions.update', [$this->team, $foreign]), ($this->payload)(['amount' => '150.00']));
+
+    expect($foreign->fresh()->amount)->toBe('100.00')
+        ->and($foreign->fresh()->account_id)->toBe($otherAccount->id)
+        ->and($otherAccount->fresh()->current_balance)->toBe('400.00')
+        ->and($this->account->fresh()->current_balance)->toBe('1000.00');
+
+    $response->assertNotFound();
+});
+
+test('an admin gets a 404 moving a transaction to an account from another team', function () {
+    $admin = teamUser($this->team, TeamRole::Admin);
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+    $foreignAccount = Account::factory()->create([
+        'team_id' => Team::factory()->create()->id,
+        'initial_balance' => '500.00',
+    ]);
+
+    $response = $this->actingAs($admin)
+        ->patch(route('transactions.update', [$this->team, $transaction]), ($this->payload)([
+            'account_id' => $foreignAccount->id,
+            'amount' => '150.00',
+        ]));
+
+    expect($transaction->fresh()->account_id)->toBe($this->account->id)
+        ->and($transaction->fresh()->amount)->toBe('100.00')
+        ->and($this->account->fresh()->current_balance)->toBe('900.00')
+        ->and($foreignAccount->fresh()->current_balance)->toBe('500.00');
+
+    $response->assertNotFound();
+});
+
+test('an admin gets a 404 updating a transaction with a category from another team', function () {
+    $admin = teamUser($this->team, TeamRole::Admin);
+    $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
+    $foreignCategory = makeCategory(Team::factory()->create(), CategoryKind::Expense);
+
+    $response = $this->actingAs($admin)
+        ->patch(route('transactions.update', [$this->team, $transaction]), ($this->payload)([
+            'category_id' => $foreignCategory->id,
+            'amount' => '150.00',
+        ]));
+
+    expect($transaction->fresh()->category_id)->toBe($this->category->id)
+        ->and($transaction->fresh()->amount)->toBe('100.00')
+        ->and($this->account->fresh()->current_balance)->toBe('900.00');
+
+    $response->assertNotFound();
+});
+
 test('updating with a future date fails validation', function () {
     $transaction = recordExpense($this->team, $this->account, $this->user, $this->category);
     $this->travelTo(CarbonImmutable::parse('2026-10-09 12:00:00', 'UTC'));
@@ -475,6 +587,26 @@ test('a transaction from another team returns a 404 on delete', function () {
 
     $this->assertModelExists($foreign);
     expect($otherAccount->fresh()->current_balance)->toBe('400.00');
+});
+
+test('an admin of both teams gets a 404 deleting a transaction through the wrong team', function () {
+    $admin = teamUser($this->team, TeamRole::Admin);
+    $otherTeam = Team::factory()->create();
+    $otherTeam->members()->attach($admin, ['role' => TeamRole::Admin->value]);
+    $otherAccount = Account::factory()->create(['team_id' => $otherTeam->id, 'initial_balance' => '500.00']);
+    $foreign = recordExpense($otherTeam, $otherAccount, teamUser($otherTeam, TeamRole::Member));
+
+    // The policy looks at the transaction's own team, so this actor passes it: only the team filters protect this data.
+    expect($admin->can('delete', $foreign))->toBeTrue();
+
+    $response = $this->actingAs($admin)
+        ->delete(route('transactions.destroy', [$this->team, $foreign]));
+
+    $this->assertModelExists($foreign);
+    expect($otherAccount->fresh()->current_balance)->toBe('400.00')
+        ->and($this->account->fresh()->current_balance)->toBe('1000.00');
+
+    $response->assertNotFound();
 });
 
 test('a leg of a transfer cannot be deleted from the transactions endpoint', function () {

@@ -166,9 +166,38 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
     - Un usuario que no es miembro del team de la URL sigue recibiendo **403** de `EnsureTeamMembership`.
 - **Consecuencia:** corregir `TeamMemberController::destroy`, que hoy responde con éxito a un usuario ajeno al team. Los tests cross-team usan como actor el rol más privilegiado que puede hacer la acción.
 
+### D-074 · PostgreSQL garantiza que las referencias no crucen de team
+- **Fecha:** 2026-11-03
+- **Estado:** aprobada, pendiente de implementar. Se implementa después de la tarea 6 de `000-cross-team-hardening`, como tarea aparte con su propia rama.
+- **Contexto:** D-073 protege estas referencias solo en la aplicación. Una FK simple comprueba que la fila exista, no que sea del mismo team, así que un bug en una action podría escribir una referencia a otro team sin que la base lo impida.
+- **Decisión:** toda referencia entre tablas con `team_id` usa una FK compuesta `(columna, team_id)` hacia `(id, team_id)`.
+    - Tablas referenciadas, con un `UNIQUE (id, team_id)` nuevo: `accounts`, `categories`, `recurring_expenses`.
+    - FKs que se reemplazan: `transactions` (`account_id`, `category_id`, `recurring_id`), `recurring_expenses` (`account_id`, `category_id`), `budgets` (`category_id`), `categories` (`parent_id`).
+    - Se conserva `ON DELETE RESTRICT`. `transactions.recurring_id` usa `ON DELETE SET NULL (recurring_id)`, para no anular también `team_id`.
+    - Los filtros de D-073 se mantienen: siguen dando el 404, y la FK es la última red.
+- **Consecuencias:**
+    - Una sola migración nueva, sin editar las existentes. Antes de cambiar nada, aborta si encuentra filas cruzadas.
+    - `ConstraintViolations` no cambia: estas violaciones no las puede provocar un usuario, y si ocurren son un bug y deben dar 500.
+    - Se añaden tests de esquema en `tests/Feature/Database` para las 7 relaciones.
+    - Quedan fuera `owner_id` y `created_by`, que apuntan a `users`, no a una tabla con `team_id`, y `audit_logs.model_id`, que es polimórfico (`model_type` + `model_id`) y no admite FK.
+
+### D-075 · PostgreSQL 18 en local y en CI
+- **Fecha:** 2026-11-03
+- **Estado:** aprobada.
+- **Contexto:** el entorno local corre PostgreSQL 18 y el CI la 16, y los docs declaran la 16. Una prueba que pasa en local no demuestra el comportamiento en CI. P-001 lo dejó en evidencia: en local, un `RESTRICT` devuelve `23001`, mientras los docs dicen `23503`, y no hay una versión de referencia para resolverlo.
+- **Decisión:** el proyecto usa PostgreSQL 18 en local y en CI. Cambiar de versión mayor requiere una decisión nueva.
+- **Consecuencias:**
+    - La imagen de CI pasa a `postgres:18`.
+    - README y `CLAUDE.md` declaran la 18. El TRD conserva su texto con una nota que remite a esta decisión (D-071).
+    - Los SQLSTATE se verifican contra la 18 antes de escribir cualquier traducción de errores.
+
 ---
 
 ## Pendientes
 
 ### P-001 · SQLSTATE de RESTRICT
-- Los docs dicen `23503` y en local se observó `23001`. Hay que verificar de dónde sale el `23001` (¿un trigger o un `RAISE` propio en alguna migración?) y qué devuelve Postgres 16 en CI antes de escribir la traducción del error.
+- **Estado:** cerrada el 2026-11-03.
+- **Pregunta original:** los docs dicen `23503` y en local se observó `23001`. Había que verificar de dónde sale el `23001` (¿un trigger o un `RAISE` propio en alguna migración?) y qué devuelve Postgres 16 en CI antes de escribir la traducción del error.
+- **Resultado:** en PostgreSQL 18 (D-075), borrar una fila retenida por una FK `RESTRICT` devuelve `23001`, en local y en CI. Lo fija un test en `ConstraintViolationsTest`. No viene de código propio: las migraciones no tienen triggers, `RAISE` ni funciones.
+- **Traducción:** no cambia. Ningún usuario puede provocar hoy este error y, si llega a la base, es un bug y debe dar 500. Si la action de borrado no lo rechaza antes (D-015), la traducción debe usar `23001`, no `23503`.
+- **Sin verificar:** no se midió PostgreSQL 16, así que no se sabe si el `23001` viene del cambio de versión. Con D-075 ya no afecta a nada.
