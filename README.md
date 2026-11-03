@@ -5,8 +5,8 @@ tracks accounts, transactions, transfers, budgets and recurring expenses, with
 roles and per-member privacy.
 
 > **Status: work in progress.** The domain core (transactions, transfers and
-> balance reconciliation) is complete and tested. The Vue screens come next.
-> See [Roadmap](#roadmap).
+> balance reconciliation) and authorization are complete and tested. The Vue
+> screens are in progress, starting with accounts. See [Roadmap](#roadmap).
 
 Nestly is a portfolio project. The focus is on getting the hard parts of a
 money app right (correct balances, concurrency, multi-tenancy and privacy)
@@ -154,8 +154,8 @@ the seeder, jobs and the future mobile API go through the same checks.
 | ----- | ------------------------------------------------------- | ------- |
 | 0     | Project setup, CI, static analysis                      | Done    |
 | 1     | Transactions and transfers core, balance reconciliation | Done    |
-| 2     | Cross-cutting authorization (policies, role matrix)     | Next    |
-| 3     | Accounts: first Vue screens, i18n                       | Planned |
+| 2     | Cross-cutting authorization (policies, role matrix)     | Done    |
+| 3     | Accounts: first Vue screens, i18n                       | Current |
 | 4     | Transactions UI                                         | Planned |
 | 5     | Categories                                              | Planned |
 | 6     | Budgets                                                 | Planned |
