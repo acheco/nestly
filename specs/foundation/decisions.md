@@ -168,7 +168,7 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
 
 ### D-074 · PostgreSQL garantiza que las referencias no crucen de team
 - **Fecha:** 2026-11-03
-- **Estado:** aprobada, pendiente de implementar. Se implementa después de la tarea 6 de `000-cross-team-hardening`, como tarea aparte con su propia rama.
+- **Estado:** implementada (migración `2026_11_03_120000_add_composite_team_foreign_keys`).
 - **Contexto:** D-073 protege estas referencias solo en la aplicación. Una FK simple comprueba que la fila exista, no que sea del mismo team, así que un bug en una action podría escribir una referencia a otro team sin que la base lo impida.
 - **Decisión:** toda referencia entre tablas con `team_id` usa una FK compuesta `(columna, team_id)` hacia `(id, team_id)`.
     - Tablas referenciadas, con un `UNIQUE (id, team_id)` nuevo: `accounts`, `categories`, `recurring_expenses`.
