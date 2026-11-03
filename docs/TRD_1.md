@@ -361,6 +361,7 @@ escritorio/web (MVP + v1.1), no en paralelo. Ver §3.1.1, §3.1.2 y §3.2.
   §3.4.1 para el ajuste a IDs UUID.
 - **UI**: Tailwind CSS + shadcn-vue + Radix Vue.
 - **DB**: PostgreSQL 16 (pgvector se añade en v1.2, no en el MVP).
+  **Nota:** la versión vigente es PostgreSQL 18; ver D-075 en `specs/foundation/decisions.md`.
 - **Cache/Queue**: Redis (cache + queue driver). Horizon opcional en el MVP.
 - **Storage**: S3-compatible (comprobantes, avatares).
 - **Realtime**: fuera del MVP — Reverb se evalúa junto con mobile (v1.2),

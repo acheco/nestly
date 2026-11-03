@@ -51,10 +51,10 @@ rather than on feature count.
 | Frontend     | Inertia.js, Vue 3 (Composition API), TypeScript |
 | UI           | Tailwind CSS 4, shadcn-vue (Reka UI), Lucide    |
 | Typed routes | Laravel Wayfinder                               |
-| Database     | PostgreSQL 16                                   |
+| Database     | PostgreSQL 18                                   |
 | Testing      | Pest 4                                          |
 | Quality      | Laravel Pint, PHPStan (Larastan), vue-tsc       |
-| CI           | GitHub Actions (PHP 8.3 + PostgreSQL 16)        |
+| CI           | GitHub Actions (PHP 8.3 + PostgreSQL 18)        |
 
 A Laravel monolith with Inertia: no separate REST API in the MVP. A
 Sanctum-authenticated API for a React Native (Expo) client is planned after
@@ -67,7 +67,7 @@ the web app is complete.
 - PHP 8.3+ with the `bcmath` and `pdo_pgsql` extensions
 - Composer 2
 - Node.js 22+
-- PostgreSQL 16 with the `btree_gist` extension available (it ships with
+- PostgreSQL 18 with the `btree_gist` extension available (it ships with
   PostgreSQL's contrib modules)
 
 SQLite is **not** supported: the schema relies on PostgreSQL features
