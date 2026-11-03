@@ -17,8 +17,8 @@ use App\Models\Team;
 use App\Models\Transaction;
 use App\Models\User;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 /*

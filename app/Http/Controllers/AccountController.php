@@ -2,64 +2,34 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\AccountVisibility;
+use App\Http\Resources\AccountResource;
 use App\Models\Account;
+use App\Models\Team;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class AccountController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(): void
+    public function index(Request $request, Team $current_team): Response
     {
-        //
-    }
+        Gate::authorize('viewAny', [Account::class, $current_team]);
+        $request->user()->load('teamMemberships');
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create(): void
-    {
-        //
-    }
+        $accounts = $current_team->accounts()->with('owner:id,name')->orderBy('archived')->orderBy('name')->get();
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request): void
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(Account $account): void
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Account $account): void
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Account $account): void
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Account $account): void
-    {
-        //
+        return Inertia::render('accounts/Index', [
+            'accounts' => AccountResource::collection($accounts)->resolve(),
+            'currency' => $current_team->currency,
+            'can' => [
+                'createTeamAccount' => Gate::allows('create', [Account::class, $current_team, AccountVisibility::Team]),
+                'createPrivateAccount' => Gate::allows('create', [Account::class, $current_team, AccountVisibility::Private]),
+            ],
+        ]);
     }
 }

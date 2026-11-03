@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Teams\TeamInvitationController;
 use App\Http\Controllers\TransactionController;
@@ -31,6 +32,8 @@ Route::prefix('{current_team}')
         Route::delete('transfers/{transfer_group_id}', [TransferController::class, 'destroy'])
             ->whereUuid('transfer_group_id')
             ->name('transfers.destroy');
+
+        Route::get('accounts', [AccountController::class, 'index'])->name('accounts.index');
     });
 
 Route::middleware(['auth'])->group(function () {
