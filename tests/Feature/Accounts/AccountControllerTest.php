@@ -149,6 +149,9 @@ test('private accounts cannot be created in a personal team', function () {
         );
 });
 
+test('creating a private account in a personal team returns a 422')
+    ->todo('D-014: pendiente de spec 002-accounts');
+
 test('the number of queries does not grow with the number of accounts', function () {
     // EnsureTeamMembership switches the current team on the first visit (one extra
     // UPDATE); switching beforehand keeps both measurements on equal footing.
