@@ -16,3 +16,12 @@ Rama: `test/cross-team-hardening`. Se abre cuando `chore/adopt-sdd` esté termin
 5. [x] Invitaciones, miembros y acciones sobre teams ajenos
 6. [x] Policies de Account y RecurringExpense
 7. [x] Evaluar FKs compuestas (`account_id`, `team_id`) y (`category_id`, `team_id`) para que PostgreSQL garantice que nada apunte a otro team
+
+## Plan de implementación de D-074
+
+Va en su propia rama, después de esta. No forma parte de las tareas anteriores.
+
+1. Tests de esquema en `tests/Feature/Database`, primero en rojo: cada una de las 7 relaciones rechaza una referencia a otro team.
+2. Test de `category_id` nulo: una transacción sin categoría se sigue aceptando con la FK compuesta.
+3. Migración única con los `UNIQUE` y las FKs de D-074, que aborta si encuentra filas cruzadas.
+4. Mutation check: sin el filtro de la action, la escritura falla por la FK.
