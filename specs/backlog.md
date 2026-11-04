@@ -2,6 +2,13 @@
 
 Trabajo identificado que todavía no tiene spec.
 
+## Spec `003-user-anonymization`
+
+Pendientes de la mitigación temporal de D-060 y D-076, a resolver en esa spec:
+
+- **Team personal vacío:** borrar un usuario sin movimientos deja su team personal sin miembros. La fila sigue existiendo, junto con lo que contenga (por ejemplo, cuentas sin movimientos), y nadie puede acceder a ella.
+- **Bloqueos sin salida:** no hay rutas para borrar cuentas privadas ni gastos recurrentes, y los movimientos registrados no pueden dejar de bloquear sin perder historial. Un usuario en alguno de estos casos no puede borrar su cuenta por su cuenta, y el mensaje de error dice el motivo, pero no qué hacer. Tampoco tiene salida si el bloqueo está en un team que dejó o que se borró.
+
 ## Auditoría completa (Fase 9)
 
 El modelo `AuditLog` ya puede guardar registros, pero nada los crea todavía. Hace falta una spec que responda antes estas preguntas:
