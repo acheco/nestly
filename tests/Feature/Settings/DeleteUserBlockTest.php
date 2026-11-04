@@ -5,6 +5,7 @@ use App\Models\Account;
 use App\Models\Category;
 use App\Models\RecurringExpense;
 use App\Models\Team;
+use App\Models\Transaction;
 use App\Models\User;
 
 function deleteAccount(User $user, string $password = 'password')
@@ -112,12 +113,14 @@ test('the block message lists every reason that applies', function () {
     $user = teamUser($team, TeamRole::Owner);
     privateAccountFor($user, $team);
     recurringExpenseBy($user, $team);
+    recordExpense($team, Account::factory()->for($team)->create(), $user);
 
     deleteAccount($user)->assertSessionHasErrors('account');
 
     expect(session('errors')->first('account'))
         ->toContain('cuentas privadas')
         ->toContain('gastos recurrentes')
+        ->toContain('movimientos')
         ->toContain('único owner');
 });
 
@@ -173,7 +176,7 @@ test('a remembered user stays deleted after logging out', function () {
     expect(User::find($user->id))->toBeNull();
 });
 
-test('deleting a user keeps the team transactions and balances', function () {
+test('a user who recorded a transaction in a shared team cannot be deleted', function () {
     $team = Team::factory()->create();
     teamUser($team, TeamRole::Owner);
     $user = teamUser($team, TeamRole::Member);
@@ -181,8 +184,77 @@ test('deleting a user keeps the team transactions and balances', function () {
     $transaction = recordExpense($team, $account, $user);
     $balance = $account->fresh()->current_balance;
 
+    assertDeletionBlocked(deleteAccount($user), $user, 'movimientos');
+
+    expect($transaction->fresh()->created_by)->toBe($user->id);
+    expect($account->fresh()->current_balance)->toBe($balance);
+});
+
+test('a user who recorded a transaction in their personal team cannot be deleted', function () {
+    $user = User::factory()->create();
+    $team = $user->personalTeam();
+    $transaction = recordExpense($team, Account::factory()->for($team)->create(), $user);
+
+    assertDeletionBlocked(deleteAccount($user), $user, 'movimientos');
+
+    expect($transaction->fresh()->created_by)->toBe($user->id);
+    expect($team->fresh()->memberships()->where('user_id', $user->id)->exists())->toBeTrue();
+});
+
+test('a user who recorded a transfer cannot be deleted', function () {
+    $team = Team::factory()->create();
+    teamUser($team, TeamRole::Owner);
+    $user = teamUser($team, TeamRole::Member);
+    $from = Account::factory()->for($team)->create();
+    $to = Account::factory()->for($team)->create();
+    $groupId = recordTransfer($team, $user, $from, $to);
+
+    assertDeletionBlocked(deleteAccount($user), $user, 'movimientos');
+
+    expect(Transaction::where('transfer_group_id', $groupId)->where('created_by', $user->id)->count())->toBe(2);
+});
+
+test('a transaction in a team the user left still blocks the deletion', function () {
+    $team = Team::factory()->create();
+    teamUser($team, TeamRole::Owner);
+    $user = teamUser($team, TeamRole::Member);
+    recordExpense($team, Account::factory()->for($team)->create(), $user);
+
+    $team->memberships()->where('user_id', $user->id)->delete();
+
+    assertDeletionBlocked(deleteAccount($user), $user, 'movimientos');
+});
+
+test('a transaction in a deleted team still blocks the deletion', function () {
+    $team = Team::factory()->create();
+    teamUser($team, TeamRole::Owner);
+    $user = teamUser($team, TeamRole::Member);
+    recordExpense($team, Account::factory()->for($team)->create(), $user);
+
+    $team->delete();
+
+    assertDeletionBlocked(deleteAccount($user), $user, 'movimientos');
+});
+
+test('transactions recorded by someone else do not block the deletion', function () {
+    $team = Team::factory()->create();
+    $owner = teamUser($team, TeamRole::Owner);
+    $user = teamUser($team, TeamRole::Member);
+    $transaction = recordExpense($team, Account::factory()->for($team)->create(), $owner);
+
     deleteAccount($user)->assertSessionHasNoErrors();
 
-    expect($transaction->fresh()->created_by)->toBeNull();
-    expect($account->fresh()->current_balance)->toBe($balance);
+    expect(User::find($user->id))->toBeNull();
+    expect($transaction->fresh()->created_by)->toBe($owner->id);
+});
+
+test('deleting a user without movements leaves their personal team without members', function () {
+    $user = User::factory()->create();
+    $team = $user->personalTeam();
+
+    deleteAccount($user)->assertSessionHasNoErrors();
+
+    expect(User::find($user->id))->toBeNull();
+    expect($team->fresh())->not->toBeNull();
+    expect($team->fresh()->memberships()->count())->toBe(0);
 });

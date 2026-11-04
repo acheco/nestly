@@ -6,6 +6,7 @@ use App\Enums\TeamRole;
 use App\Models\Account;
 use App\Models\RecurringExpense;
 use App\Models\Team;
+use App\Models\Transaction;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -13,8 +14,9 @@ use Illuminate\Validation\ValidationException;
 use Throwable;
 
 /**
- * Temporary mitigation for D-060: until users are anonymized, deleting one is refused when it
- * would fail on a foreign key or leave a shared team without an owner.
+ * Temporary mitigation for D-060 and D-076: until users are anonymized, deleting one is refused
+ * when it would fail on a foreign key, leave a shared team without an owner, or erase the author
+ * of their transactions.
  */
 final class DeleteUserAction
 {
@@ -56,6 +58,10 @@ final class DeleteUserAction
 
         if (RecurringExpense::where('created_by', $user->id)->exists()) {
             $reasons[] = 'creaste gastos recurrentes'; // TODO(i18n)
+        }
+
+        if (Transaction::where('created_by', $user->id)->exists()) {
+            $reasons[] = 'registraste movimientos'; // TODO(i18n)
         }
 
         if ($this->isOnlyOwnerOfSharedTeam($user)) {

@@ -138,6 +138,16 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
 - **Estado:** pendiente de implementar (spec `003-user-anonymization`).
 - **Mitigación temporal (2026-11-02):** mientras no exista la anonimización, el borrado de cuenta se bloquea con un mensaje claro si el usuario tiene cuentas privadas, recurrentes creados o es el único owner de un team compartido. Así se evitan el 500 y los teams sin owner.
 
+### D-076 · Ampliación de la mitigación de D-060
+- **Fecha:** 2026-11-04
+- **Estado:** aprobada.
+- **Contexto:** borrar un usuario deja su team personal sin miembros y pone `created_by` en `NULL` en sus transacciones, de forma irreversible.
+- **Decisión:** mientras no exista la anonimización, el borrado también se bloquea si el usuario creó transacciones en cualquier team.
+- **Consecuencias:**
+    - No se pierde autoría ni quedan datos inaccesibles con movimientos.
+    - Puede seguir quedando un team personal vacío, sin datos financieros que perder.
+    - Se retira cuando se implemente `003-user-anonymization`.
+
 ---
 
 ## Transversal
