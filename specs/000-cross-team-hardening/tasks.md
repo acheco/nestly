@@ -33,7 +33,7 @@ Va en su propia rama, después de esta. No forma parte de las tareas anteriores.
 Rama: `fix/quick-fixes`. Se abre desde `main` actualizado, después del merge del PR #11 (D-074).
 
 1. [x] MustVerifyEmail
-2. [ ] AuditLog
+2. [x] AuditLog
 3. [ ] Validación de icon
 4. [ ] D-060: bloqueo temporal del borrado de usuario
 5. [ ] PR y merge
