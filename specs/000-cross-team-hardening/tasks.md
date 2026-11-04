@@ -34,6 +34,6 @@ Rama: `fix/quick-fixes`. Se abre desde `main` actualizado, después del merge de
 
 1. [x] MustVerifyEmail
 2. [x] AuditLog
-3. [ ] Validación de icon
+3. [x] Validación de icon
 4. [ ] D-060: bloqueo temporal del borrado de usuario
 5. [ ] PR y merge
