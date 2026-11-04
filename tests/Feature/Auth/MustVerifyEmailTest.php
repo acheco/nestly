@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\TeamRole;
+use App\Models\Account;
 use App\Models\Team;
 use App\Models\TeamInvitation;
 use App\Models\User;
@@ -51,6 +52,41 @@ test('an unverified user can open the profile to correct their email', function 
         ->get(route('profile.edit'))
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('mustVerifyEmail', true));
+});
+
+test('an unverified user can delete their account', function () {
+    $user = User::factory()->unverified()->create();
+
+    $this->actingAs($user)
+        ->delete(route('profile.destroy'), ['password' => 'password'])
+        ->assertSessionHasNoErrors()
+        ->assertRedirect(route('home'));
+
+    $this->assertGuest();
+    expect(User::find($user->id))->toBeNull();
+});
+
+test('an unverified user still needs the correct password to delete their account', function () {
+    $user = User::factory()->unverified()->create();
+
+    $this->actingAs($user)
+        ->delete(route('profile.destroy'), ['password' => 'wrong-password'])
+        ->assertSessionHasErrors('password');
+
+    expect(User::find($user->id))->not->toBeNull();
+    $this->assertAuthenticatedAs($user);
+});
+
+test('the deletion blocks also apply to an unverified user', function () {
+    $user = User::factory()->unverified()->create();
+    $team = $user->personalTeam();
+    recordExpense($team, Account::factory()->for($team)->create(), $user);
+
+    $this->actingAs($user)
+        ->delete(route('profile.destroy'), ['password' => 'password'])
+        ->assertSessionHasErrors('account');
+
+    expect(User::find($user->id))->not->toBeNull();
 });
 
 test('changing the email sends a new verification link and blocks team pages', function () {
