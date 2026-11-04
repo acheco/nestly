@@ -38,6 +38,10 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
+        if ($request->user()->wasChanged('email')) {
+            $request->user()->sendEmailVerificationNotification();
+        }
+
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Profile updated.')]);
 
         return to_route('profile.edit');
