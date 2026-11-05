@@ -4,6 +4,14 @@ Trabajo identificado que todavía no tiene spec.
 
 ## Spec `003-user-anonymization`
 
+Idea para esa spec, todavía sin aprobar: D-060 pasaría a ser híbrida. Cambiaría el comportamiento actual, pero no se implementa hasta entonces.
+
+| Caso | Qué pasa |
+|---|---|
+| Teams donde está solo (incluido el personal) | Se borran con todo su contenido, tras 30 días de gracia |
+| Teams compartidos que es owner | Debe transferir el ownership o sacar a los miembros antes |
+| Teams compartidos donde es miembro | Sus datos se quedan y se anonimiza su autoría; sus cuentas privadas se archivan |
+
 Pendientes de la mitigación temporal de D-060 y D-076, a resolver en esa spec:
 
 - **Team personal vacío:** borrar un usuario sin movimientos deja su team personal sin miembros. La fila sigue existiendo, junto con lo que contenga (por ejemplo, cuentas sin movimientos), y nadie puede acceder a ella.
