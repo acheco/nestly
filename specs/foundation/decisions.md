@@ -17,6 +17,7 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
 - **Decisión:** se conserva el modelo `Team` del starter kit y la columna `team_id`. No se renombra a `Workspace`.
 
 ### D-003 · Matriz de roles
+- **Estado:** parcialmente reemplazada por D-077 en lo que el admin puede hacer con los miembros.
 - **Decisión:**
     - **owner:** hace y ve todo.
     - **admin:** gestiona todo, excepto eliminar el team.
@@ -28,6 +29,46 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
 - **Contexto:** ERD §4.3.10 y PRD §1.6.4 hablan de cascade ("se elimina con todo su contenido"), pero el código usa soft delete y conserva cuentas y categorías.
 - **Decisión:** se mantiene el soft delete. Son datos financieros y deben poder recuperarse y auditarse.
 - **Consecuencia:** corregir ERD §4.3.10 y PRD §1.6.4. Una purga definitiva, si llega a hacer falta, será un proceso explícito aparte.
+
+### D-077 · Qué puede hacer el admin con los miembros
+- **Fecha:** 2026-11-05
+- **Estado:** aprobada. Reemplaza en parte a D-003.
+- **Contexto:** D-003 dice que el admin "gestiona todo, excepto eliminar el team", pero en el código el admin no gestiona miembros y puede invitar con cualquier rol, incluido owner. Eso permite dos bugs en `main`: un admin invita a alguien como owner y el team acaba con dos owners, y un owner se cambia el rol a sí mismo y el team se queda sin owner.
+- **Decisión:**
+    - El admin invita y elimina members y viewers, y cambia el rol entre esos dos.
+    - El admin no actúa sobre otros admins ni sobre el owner, y no puede ascender a nadie a admin.
+    - El admin solo cancela invitaciones de member y de viewer.
+    - Hasta la spec `003`, nadie puede invitar como owner ni cambiar el rol de un owner, tampoco el propio owner.
+- **Consecuencias:**
+    - `TeamPolicy` recibe también al miembro afectado y el rol asignado.
+    - Se mantiene el orden de D-073: primero el filtro por team (404), después el rol.
+    - D-016 y D-017 se aplican también cuando actúa un admin.
+    - Se ajustan los tests que esperan que el admin no pueda hacer esto, y se corrigen los dos bugs con tests primero.
+
+### D-081 · El owner no puede salir de su team
+- **Fecha:** 2026-11-05
+- **Estado:** aprobada.
+- **Contexto:** `TeamPolicy::leave` ya lo aplica, pero no había decisión.
+- **Decisión:** el owner no puede salir de su team. Hoy su única salida es eliminar el team.
+- **Consecuencia:** se revisa cuando exista la transferencia de ownership (spec `003`).
+
+### D-082 · Los teams personales no se eliminan ni se abandonan
+- **Fecha:** 2026-11-05
+- **Estado:** aprobada.
+- **Contexto:** `TeamPolicy` ya lo aplica, pero no había decisión.
+- **Decisión:** un team con `is_personal = true` no se puede eliminar ni abandonar.
+- **Consecuencia:** qué pasa con él cuando se borra el usuario se decide en la spec `003`.
+
+### D-089 · Un team tiene exactamente un owner
+- **Fecha:** 2026-11-05
+- **Estado:** aprobada.
+- **Contexto:** la constitución dice que un team siempre tiene un único owner, pero ninguna decisión lo fijaba. Se deducía de D-077 (nadie invita como owner ni cambia el rol de un owner) y de D-081 (el owner no puede salir). `main` lo incumple de dos formas: un admin puede invitar a alguien como owner, y un owner puede bajarse a sí mismo de rol.
+- **Decisión:** hasta la spec `003`, todo team tiene exactamente un owner: el usuario que lo creó. Ninguna operación puede dejarlo con cero owners ni con más de uno: invitar, aceptar una invitación, cambiar un rol, eliminar a un miembro o salir del team.
+- **Consecuencias:**
+    - Lo aplican las policies y las actions de miembros (D-077, D-081).
+    - Los dos bugs de `main` se corrigen en `fix/d-077-member-management`, con los tests primero.
+    - Ese fix añade un índice único parcial en la tabla de membresías, para que PostgreSQL impida dos owners, con un test de esquema. El índice no puede impedir que quede cero.
+    - La spec `003` la revisa si permite varios owners o transferir el ownership.
 
 ---
 
@@ -74,6 +115,25 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
 - **Decisión:** la violación del CHECK `accounts_type_valid` se traduce a **422**, igual que `categories_kind_valid`.
 - **Consecuencia:** documentar el CHECK en ERD §4.4.3.
 
+### D-084 · Moneda por cuenta
+- **Fecha:** 2026-11-05
+- **Estado:** aprobada. Se implementa en la spec `002-accounts`; el detalle está en `specs/backlog.md`.
+- **Contexto:** `teams.currency` existe con USD por defecto, pero nadie la elige ni la valida, y solo el seeder la cambia. Una familia puede tener cuentas en varias monedas, por ejemplo DOP y USD, y una moneda por team no lo permite.
+- **Decisión:**
+    - **Moneda de la cuenta:** cada cuenta tiene una moneda ISO 4217, obligatoria al crearla. Solo se aceptan las de la lista `config('nestly.currencies')` (hoy DOP, USD y EUR), que se amplía añadiendo una línea. Quedan fuera las monedas con más de 2 decimales, porque los montos son `decimal(14,2)`.
+    - **Inmutable con movimientos:** la moneda se puede cambiar mientras la cuenta no tenga movimientos. Después, la action rechaza el cambio con 422.
+    - **Transferencias entre monedas:** cada pata guarda el monto en la moneda de su cuenta: `amount` en la de origen y `to_amount` en la de destino. La tasa queda implícita, no se guarda, y no se consulta ninguna API de cambio.
+    - **Transferencias en la misma moneda:** `to_amount` es opcional. Si se omite, se copia `amount`; si llega distinto, la respuesta es 422.
+    - **Sin conversión:** los KPIs y los presupuestos se agrupan por moneda. La conversión queda para v1.1.
+    - **Presupuestos:** cada budget tiene moneda, y hay uno como máximo por categoría, moneda y periodo. `spent` suma solo las transacciones de cuentas en esa moneda.
+    - **Cuentas privadas:** su moneda es visible para el team, como su nombre. No es un saldo (D-011).
+    - **`teams.currency`:** se mantiene, sin renombrar, como moneda por defecto del team. Rellena la moneda al crear una cuenta y ordena los grupos de los KPIs. No es un invariante: se puede editar siempre y no afecta a las cuentas existentes. Los teams nuevos, incluido el personal, toman `config('nestly.default_currency')`.
+- **Consecuencias:**
+    - D-022 se lee así: en los KPIs cuenta el monto de la pata del lado team, en la moneda de su cuenta. Una transferencia team → team entre monedas sigue sin contar.
+    - La reconciliación solo exige montos iguales en las dos patas si sus cuentas tienen la misma moneda.
+    - `AccountController::index` deja de formatear todas las cuentas con la moneda del team.
+    - ERD, TRD y PRD reciben una nota que remite aquí donde hablen de una moneda por team (D-071).
+
 ---
 
 ## Transacciones y transferencias
@@ -90,12 +150,40 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
 - La pata del lado team lleva una categoría opcional.
 - No se agrega `updated_by`; la trazabilidad se lleva en `audit_logs`.
 
+### D-079 · Solo el dueño saca dinero de su cuenta privada
+- **Fecha:** 2026-11-05
+- **Estado:** aprobada.
+- **Contexto:** está en PRD §1.6.3 y en `TransferRules`, pero no había decisión.
+- **Decisión:** solo el dueño de una cuenta privada crea transferencias que salen de ella. Cualquier rol que pueda crear transacciones puede transferir hacia ella.
+- **Consecuencias:**
+    - Las ediciones también cumplen esta regla: si después de editar la transferencia sale de una cuenta privada, solo puede hacer la edición su dueño, aunque D-021 permita editar a otros.
+    - Borrar una transferencia que sale de una cuenta privada sigue D-021 (creador, dueño de la cuenta privada o admin), porque borrarla no saca dinero de la cuenta: se lo devuelve.
+
+### D-080 · La pata privada solo la ve su dueño
+- **Fecha:** 2026-11-05
+- **Estado:** aprobada.
+- **Contexto:** D-011 protege el saldo, pero `TransactionPolicy::view` solo exige poder ver el nombre de la cuenta.
+- **Decisión:** la fila de una transferencia en una cuenta privada solo la ve el dueño de la cuenta, ni siquiera el owner del team. La pata del lado team sigue visible para el team (D-022).
+- **Límite aceptado:** la pata del team muestra su monto en la moneda de su cuenta (D-084). Si las dos cuentas tienen la misma moneda, es el mismo monto que la pata privada, y un miembro puede sumar lo que entró y salió de la cuenta privada a través del team. Con monedas distintas no puede deducirlo sin conocer la tasa. En ambos casos el saldo real sigue oculto, porque `initial_balance` no es visible.
+- **Consecuencia:** cambiar `TransactionPolicy::view` antes de que exista cualquier ruta de lectura de transacciones (hoy no hay ninguna).
+
 ---
 
 ## Reconciliación
 
 ### D-030 · La reconciliación solo reporta (20 oct 2026)
 - **Decisión:** el job de reconciliación de saldos solo reporta desviaciones. La corrección es un paso manual explícito (`nestly:reconcile --fix`), nunca automático.
+
+---
+
+## Categorías
+
+### D-083 · Categorías de sistema
+- **Fecha:** 2026-11-05
+- **Estado:** aprobada.
+- **Contexto:** `CategoryPolicy` ya lo aplica, pero no había decisión.
+- **Decisión:** las categorías con `is_system = true` se pueden archivar, pero nadie puede editarlas ni eliminarlas, tampoco el owner.
+- **Consecuencia:** ninguna en el código actual.
 
 ---
 
@@ -200,6 +288,57 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
     - La imagen de CI pasa a `postgres:18`.
     - README y `CLAUDE.md` declaran la 18. El TRD conserva su texto con una nota que remite a esta decisión (D-071).
     - Los SQLSTATE se verifican contra la 18 antes de escribir cualquier traducción de errores.
+
+### D-078 · Reglas de dinero
+- **Fecha:** 2026-11-05
+- **Estado:** aprobada.
+- **Contexto:** estas reglas solo estaban en `CLAUDE.md`.
+- **Decisión:**
+    - Los montos son `decimal(14,2)` y se manejan como strings numéricos con BCMath a `Money::SCALE`. Nunca con floats.
+    - `accounts.current_balance` solo cambia con `Account::applyTransaction()` dentro de una action. Revertir es aplicar el tipo opuesto.
+    - Toda escritura bloquea las cuentas afectadas con `lockForUpdate()` dentro de `DB::transaction`. Varias cuentas se bloquean en una sola consulta ordenada por `id`.
+    - Una transferencia son dos filas que comparten `transfer_group_id`, y solo la cambian sus propias actions.
+- **Consecuencias:**
+    - Ningún cambio de código.
+    - `CLAUDE.md` remite a esta decisión.
+    - La suite no cubre el orden de los locks; está anotado en `specs/backlog.md` (Concurrencia).
+
+### D-085 · Interfaz en español en el MVP
+- **Fecha:** 2026-11-05
+- **Estado:** aprobada.
+- **Contexto:** la app mezcla español e inglés, `APP_LOCALE` es `en` y los textos en español están escritos en el código con `TODO(i18n)`.
+- **Decisión:**
+    - Toda la interfaz está en español en el MVP: pantallas, correos, mensajes de validación, toasts y el nombre del team personal.
+    - Los textos del backend van en archivos de traducción (`lang/es`) y se usan con `__()`, no escritos en el código.
+    - Cómo se traduce el frontend se decide en la spec `001`.
+    - El código, los comentarios y los commits siguen en inglés.
+- **Consecuencias:**
+    - `APP_LOCALE` pasa a `es`, y se traducen las pantallas y correos del starter kit.
+    - Los textos marcados con `TODO(i18n)` pasan a `lang/es`.
+    - El multiidioma queda fuera del MVP.
+
+### D-086 · PHP 8.5
+- **Fecha:** 2026-11-05
+- **Estado:** aprobada.
+- **Contexto:** el entorno local usa PHP 8.5 y el CI la 8.3, así que el CI no prueba el mismo entorno. `composer.json` permite desde la 8.3.
+- **Decisión:** el proyecto usa PHP 8.5 en local, en CI y en producción. `composer.json` exige `^8.5`.
+- **Consecuencias:**
+    - Cambiar `tests.yml`, `composer.json` y `composer.lock`.
+    - El TRD conserva su texto con una nota que remite aquí (D-071).
+
+### D-087 · Commits de solo documentación
+- **Fecha:** 2026-11-05
+- **Estado:** aprobada.
+- **Contexto:** `vp check` también revisa los archivos `.md`, y eso hizo fallar el CI en el PR #12.
+- **Decisión:** los commits que solo tocan documentación no ejecutan `composer ci:check`, pero sí `npm run check`.
+- **Consecuencia:** corregir `CLAUDE.md`.
+
+### D-088 · Sin umbral de cobertura
+- **Fecha:** 2026-11-05
+- **Estado:** aprobada.
+- **Contexto:** la cobertura no se mide.
+- **Decisión:** no hay umbral de cobertura. La calidad se protege con tests primero, rutas de error que comprueban que nada cambió y mutation checks.
+- **Consecuencia:** el CI sigue con `coverage: none`.
 
 ---
 

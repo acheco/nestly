@@ -2,6 +2,69 @@
 
 Trabajo identificado que todavía no tiene spec.
 
+## Spec `002-accounts`
+
+Además de crear, editar, archivar y eliminar cuentas (D-014, D-015), la spec implementa la moneda por cuenta de D-084.
+Lo que hay que tocar:
+
+**Configuración**
+
+- `config/nestly.php` nuevo, con `currencies` (lista de monedas soportadas: DOP, USD, EUR) y `default_currency`, leída
+  de `NESTLY_DEFAULT_CURRENCY`. `.env.example` la fija en DOP. `default_currency` tiene que estar en la lista.
+- Validar el código de moneda contra esa lista en los Form Requests, sin dependencias nuevas (D-072).
+
+**Teams**
+
+- `teams.currency` se mantiene sin renombrar, como moneda por defecto. Los teams nuevos, incluido el personal del
+  registro, toman `config('nestly.default_currency')`, no el `default('USD')` de la migración.
+- Editable siempre, validada contra la lista. Cambiarla no afecta a las cuentas existentes.
+
+**Cuentas**
+
+- Migración: `accounts.currency char(3) NOT NULL` con `CHECK (currency ~ '^[A-Z]{3}$')`. Las filas existentes se
+  rellenan con la moneda de su team.
+- La action de crear cuenta exige la moneda; el formulario la rellena por defecto con `teams.currency`.
+- La action de editar cuenta rechaza con 422 un cambio de moneda si la cuenta tiene movimientos.
+- `AccountResource` expone `currency`, también en cuentas privadas: es visible para el team, como el nombre.
+- `AccountController::index` deja de enviar `$current_team->currency`, e `accounts/Index.vue` formatea cada cuenta con
+  su moneda.
+
+**Transferencias**
+
+- `StoreTransferRequest`, `UpdateTransferRequest`, `CreateTransferData` y `UpdateTransferData` añaden `to_amount`
+  opcional, con las mismas reglas que `amount`.
+- `TransferRules`: con la misma moneda, si se omite `to_amount` se copia `amount`, y si es distinto da 422. Con monedas
+  distintas, `to_amount` es obligatorio. Al editar, la regla se valida contra las cuentas nuevas, porque cambiar una
+  cuenta puede cambiar el par de monedas.
+- `CreateTransferAction` y `UpdateTransferAction` escriben `to_amount` en la pata de ingreso y lo aplican al saldo de la
+  cuenta destino. `DeleteTransferAction` ya revierte cada pata con su propio monto y no cambia.
+- Helpers de `tests/Pest.php`: `transferData`, `recordTransfer` y `transferLegs`.
+
+**Reconciliación**
+
+- `BalanceReconciler::brokenGroupsFor` marca `AmountMismatch` solo si las dos cuentas tienen la misma moneda
+  (`COUNT(DISTINCT a.currency) = 1 AND COUNT(DISTINCT t.amount) <> 1`). Sigue siendo SQL independiente de las actions.
+- El cálculo de saldos no cambia: cada cuenta suma solo sus filas.
+
+**Budgets** (todavía sin rutas)
+
+- `budgets.currency char(3) NOT NULL`. La exclusión `budgets_no_overlap` añade `currency WITH =`: un budget por
+  categoría, moneda y periodo. Revisar si su entrada en `ConstraintViolations::MAP` cambia.
+- `spent` (D-040) suma solo transacciones de cuentas de la moneda del budget.
+
+**Seeders y docs**
+
+- `DemoSeeder` asigna la moneda de cada cuenta en vez de cambiar `teams.currency`.
+- Notas en ERD, TRD y PRD donde hablen de una moneda por team (D-071).
+
+## Concurrencia
+
+Los locks de las acciones de dinero no tienen tests: la suite corre en un solo proceso. Quitar el orden por `id` de los
+locks de una transferencia, o recalcular el saldo antes del lock en `BalanceReconciler::fixBalance`, deja la suite en
+verde y solo falla bajo carga. Hace falta una spec que decida cómo probarlo, por ejemplo con varios procesos contra
+PostgreSQL, y qué casos cubrir: transferencias cruzadas A→B y B→A, edición y borrado simultáneos, y `--fix` con
+escrituras concurrentes.
+
 ## Spec `003-user-anonymization`
 
 Idea para esa spec, todavía sin aprobar: D-060 pasaría a ser híbrida. Cambiaría el comportamiento actual, pero no se
