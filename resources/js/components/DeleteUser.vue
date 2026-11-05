@@ -26,7 +26,7 @@ const passwordInput = useTemplateRef('passwordInput');
         <Heading
             variant="small"
             title="Delete account"
-            description="Delete your account and all of its resources"
+            description="Elimina tu usuario y tu acceso a tus teams"
         />
         <div
             class="space-y-4 rounded-lg border border-red-100 bg-red-50 p-4 dark:border-red-200/10 dark:bg-red-700/10"
@@ -59,12 +59,17 @@ const passwordInput = useTemplateRef('passwordInput');
                                 >Are you sure you want to delete your
                                 account?</DialogTitle
                             >
+                            <!-- TODO(i18n) -->
                             <DialogDescription>
-                                Once your account is deleted, all of its
-                                resources and data will also be permanently
-                                deleted. Please enter your password to confirm
-                                you would like to permanently delete your
-                                account.
+                                Se eliminarán tu usuario y tu acceso a todos tus
+                                teams. Tu team personal no se borra: queda sin
+                                miembros y nadie podrá acceder a él. Los teams
+                                compartidos conservan sus datos. No podrás
+                                eliminar tu cuenta si tienes cuentas privadas,
+                                creaste gastos recurrentes, registraste
+                                movimientos o eres el único owner de un team
+                                compartido. Introduce tu contraseña para
+                                confirmar.
                             </DialogDescription>
                         </DialogHeader>
 
@@ -79,6 +84,7 @@ const passwordInput = useTemplateRef('passwordInput');
                                 placeholder="Password"
                             />
                             <InputError :message="errors.password" />
+                            <InputError :message="errors.account" />
                         </div>
 
                         <DialogFooter class="gap-2">

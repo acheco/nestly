@@ -27,3 +27,13 @@ Va en su propia rama, después de esta. No forma parte de las tareas anteriores.
 2. Test de `category_id` nulo: una transacción sin categoría se sigue aceptando con la FK compuesta.
 3. Migración única con los `UNIQUE` y las FKs de D-074, que aborta si encuentra filas cruzadas.
 4. Mutation check: sin el filtro de la action, la escritura falla por la FK.
+
+## Quick fixes
+
+Rama: `fix/quick-fixes`. Se abre desde `main` actualizado, después del merge del PR #11 (D-074).
+
+1. [x] MustVerifyEmail
+2. [x] AuditLog
+3. [x] Validación de icon
+4. [x] D-060: bloqueo temporal del borrado de usuario
+5. [ ] PR y merge

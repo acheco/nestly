@@ -6,6 +6,7 @@ use App\Http\Controllers\Teams\TeamInvitationController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\TransferController;
 use App\Http\Middleware\EnsureTeamMembership;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia('/', 'Welcome')->name('home');
@@ -36,7 +37,15 @@ Route::prefix('{current_team}')
         Route::get('accounts', [AccountController::class, 'index'])->name('accounts.index');
     });
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
+    // Fortify's fallback redirect after email verification steps has no team in its path.
+    Route::get('dashboard', function (Request $request) {
+        $user = $request->user();
+        $team = $user->currentTeam ?? $user->personalTeam();
+
+        return to_route('dashboard', ['current_team' => $team->slug]);
+    });
+
     Route::post('invitations/{invitation}/accept', [TeamInvitationController::class, 'accept'])->name('invitations.accept');
     Route::delete('invitations/{invitation}', [TeamInvitationController::class, 'decline'])->name('invitations.decline');
 });

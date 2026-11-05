@@ -8,21 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
-#[Fillable(['team_id', 'user_id', 'action', 'model_type', 'changes', 'ip', 'user_agent'])]
+#[Fillable(['team_id', 'user_id', 'action', 'model_type', 'model_id', 'changes', 'ip', 'user_agent'])]
 class AuditLog extends Model
 {
     use HasUuids;
 
-    public $incrementing = false;
-
-    protected static function boot(): void
-    {
-        parent::boot();
-
-        static::creating(function (AuditLog $log) {
-            $log->created_at = now();
-        });
-    }
+    public const UPDATED_AT = null;
 
     protected function casts(): array
     {
