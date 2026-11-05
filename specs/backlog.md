@@ -12,6 +12,11 @@ Idea para esa spec, todavía sin aprobar: D-060 pasaría a ser híbrida. Cambiar
 | Teams compartidos que es owner | Debe transferir el ownership o sacar a los miembros antes |
 | Teams compartidos donde es miembro | Sus datos se quedan y se anonimiza su autoría; sus cuentas privadas se archivan |
 
+Choques de esta idea con lo que existe hoy, a resolver en la spec:
+
+- **D-004:** "se borran con todo su contenido" contradice el soft delete de teams, que se decidió para poder recuperar y auditar datos financieros. D-004 admite una purga definitiva como proceso explícito aparte; hay que decidir si los 30 días de gracia terminan en esa purga.
+- **Transferir el ownership no existe:** `TeamRole::assignable()` excluye a `Owner`, y no hay ninguna ruta ni action para cambiarlo. La spec tiene que incluir esa función o depender de otra. Sacar a los miembros sí existe (`RemoveTeamMemberAction`).
+
 Pendientes de la mitigación temporal de D-060 y D-076, a resolver en esa spec:
 
 - **Team personal vacío:** borrar un usuario sin movimientos deja su team personal sin miembros. La fila sigue existiendo, junto con lo que contenga (por ejemplo, cuentas sin movimientos), y nadie puede acceder a ella.
