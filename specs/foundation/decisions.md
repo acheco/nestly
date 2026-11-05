@@ -59,6 +59,17 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
 - **Decisión:** un team con `is_personal = true` no se puede eliminar ni abandonar.
 - **Consecuencia:** qué pasa con él cuando se borra el usuario se decide en la spec `003`.
 
+### D-089 · Un team tiene exactamente un owner
+- **Fecha:** 2026-11-05
+- **Estado:** aprobada.
+- **Contexto:** la constitución dice que un team siempre tiene un único owner, pero ninguna decisión lo fijaba. Se deducía de D-077 (nadie invita como owner ni cambia el rol de un owner) y de D-081 (el owner no puede salir). `main` lo incumple de dos formas: un admin puede invitar a alguien como owner, y un owner puede bajarse a sí mismo de rol.
+- **Decisión:** hasta la spec `003`, todo team tiene exactamente un owner: el usuario que lo creó. Ninguna operación puede dejarlo con cero owners ni con más de uno: invitar, aceptar una invitación, cambiar un rol, eliminar a un miembro o salir del team.
+- **Consecuencias:**
+    - Lo aplican las policies y las actions de miembros (D-077, D-081).
+    - Los dos bugs de `main` se corrigen en `fix/d-077-member-management`, con los tests primero.
+    - Ese fix añade un índice único parcial en la tabla de membresías, para que PostgreSQL impida dos owners, con un test de esquema. El índice no puede impedir que quede cero.
+    - La spec `003` la revisa si permite varios owners o transferir el ownership.
+
 ---
 
 ## Cuentas
