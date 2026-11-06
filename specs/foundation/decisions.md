@@ -108,7 +108,9 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
 - **Fecha:** 2026-11-02
 - **Contexto:** hoy el viewer sigue viendo el saldo, pero no puede gestionar la cuenta, y los docs no cubren el caso.
 - **Decisión:** al degradar a viewer, sus cuentas privadas se archivan, igual que en D-016. Es consistente con D-011, porque un viewer no puede tener cuentas privadas.
-- **Consecuencia:** si vuelve a member, puede reactivarlas.
+- **Consecuencias:**
+    - Si vuelve a member, puede reactivarlas.
+    - El dueño sigue viendo el saldo y el historial de sus cuentas archivadas mientras sea miembro del team.
 
 ### D-018 · Validación de `accounts_type_valid`
 - **Fecha:** 2026-11-02
