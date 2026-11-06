@@ -68,6 +68,9 @@ export default defineConfig({
         htmlWhitespaceSensitivity: 'css',
         ignorePatterns: [
             '.github/**',
+            // Rewritten by `boost:update` after every `composer update`.
+            'boost.json',
+            'CLAUDE.md',
             'composer.json',
             'docs/**',
             'resources/js/components/ui/*',
