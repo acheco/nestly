@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Teams;
 
+use App\Actions\Teams\ChangeTeamMemberRoleAction;
 use App\Actions\Teams\RemoveTeamMemberAction;
 use App\Enums\TeamRole;
 use App\Http\Controllers\Controller;
@@ -17,7 +18,7 @@ class TeamMemberController extends Controller
     /**
      * Update the specified team member's role.
      */
-    public function update(UpdateTeamMemberRequest $request, Team $team, User $user): RedirectResponse
+    public function update(UpdateTeamMemberRequest $request, Team $team, User $user, ChangeTeamMemberRoleAction $changeRole): RedirectResponse
     {
         // D-073: a user outside the team is a 404 for everyone, so this runs before the role check.
         $membership = $team->memberships()->where('user_id', $user->id)->firstOrFail();
@@ -27,7 +28,7 @@ class TeamMemberController extends Controller
         // D-077 / D-089: the policy also refuses the owner as target, even for the owner themselves.
         Gate::authorize('updateMember', [$team, $user, $newRole]);
 
-        $membership->update(['role' => $newRole]);
+        $changeRole->execute($team, $membership, $newRole);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Member role updated.')]);
 
