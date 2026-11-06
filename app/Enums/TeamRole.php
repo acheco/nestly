@@ -28,6 +28,9 @@ enum TeamRole: string
             self::Owner => TeamPermission::cases(),
             self::Admin => [
                 TeamPermission::UpdateTeam,
+                // D-077: limited to members and viewers by TeamRole::canManage().
+                TeamPermission::UpdateMember,
+                TeamPermission::RemoveMember,
                 TeamPermission::CreateInvitation,
                 TeamPermission::CancelInvitation,
             ],
@@ -64,6 +67,29 @@ enum TeamRole: string
     public function isAtLeast(TeamRole $role): bool
     {
         return $this->level() >= $role->level();
+    }
+
+    /**
+     * D-077: the owner manages every role but owner; an admin manages members and viewers only.
+     * Used both for the member acted on and for the role being assigned.
+     */
+    public function canManage(TeamRole $target): bool
+    {
+        return match ($this) {
+            self::Owner => $target !== self::Owner,
+            self::Admin => $target === self::Member || $target === self::Viewer,
+            self::Member, self::Viewer => false,
+        };
+    }
+
+    /**
+     * The roles this role may assign. Never owner (D-089).
+     *
+     * @return list<TeamRole>
+     */
+    public function assignableRoles(): array
+    {
+        return array_values(array_filter(self::cases(), fn (self $role) => $this->canManage($role)));
     }
 
     /**

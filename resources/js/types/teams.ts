@@ -17,6 +17,8 @@ export type TeamMember = {
     avatar?: string | null;
     role: TeamRole;
     role_label: string;
+    can_update: boolean;
+    can_remove: boolean;
 };
 
 export type TeamInvitation = {
@@ -25,6 +27,7 @@ export type TeamInvitation = {
     role: TeamRole;
     role_label: string;
     created_at: string;
+    can_cancel: boolean;
 };
 
 export type TeamInvitationContext = {

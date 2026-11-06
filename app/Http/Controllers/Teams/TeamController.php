@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Teams;
 
 use App\Actions\Teams\CreateTeam;
 use App\Actions\Teams\RemoveTeamMemberAction;
+use App\Enums\TeamPermission;
 use App\Enums\TeamRole;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Teams\DeleteTeamRequest;
@@ -50,6 +51,13 @@ class TeamController extends Controller
     public function edit(Request $request, Team $team): Response
     {
         $user = $request->user();
+        $role = $user->teamRole($team);
+
+        // Same rules as TeamPolicy (D-077), read from the pivot role already loaded so a
+        // long member list doesn't query each member's role again.
+        $can = fn (TeamPermission $permission, TeamRole $target): bool => $role !== null
+            && $role->hasPermission($permission)
+            && $role->canManage($target);
 
         return Inertia::render('teams/Edit', [
             'team' => [
@@ -58,7 +66,7 @@ class TeamController extends Controller
                 'slug' => $team->slug,
                 'isPersonal' => $team->is_personal,
             ],
-            'members' => $team->members()->get()->map(function (User $member) {
+            'members' => $team->members()->get()->map(function (User $member) use ($can) {
                 /** @var Membership $membership */
                 $membership = $member->getRelation('pivot');
 
@@ -69,6 +77,8 @@ class TeamController extends Controller
                     'avatar' => $member->avatar ?? null,
                     'role' => $membership->role->value,
                     'role_label' => $membership->role->label(),
+                    'can_update' => $can(TeamPermission::UpdateMember, $membership->role),
+                    'can_remove' => $can(TeamPermission::RemoveMember, $membership->role),
                 ];
             }),
             'invitations' => $team->invitations()
@@ -80,9 +90,13 @@ class TeamController extends Controller
                     'role' => $invitation->role->value,
                     'role_label' => $invitation->role->label(),
                     'created_at' => $invitation->created_at->toISOString(),
+                    'can_cancel' => Gate::allows('cancelInvitation', [$team, $invitation]),
                 ]),
             'permissions' => $user->toTeamPermissions($team),
-            'availableRoles' => TeamRole::assignable(),
+            'availableRoles' => array_map(
+                fn (TeamRole $assignable) => ['value' => $assignable->value, 'label' => $assignable->label()],
+                $role?->assignableRoles() ?? [],
+            ),
         ]);
     }
 

@@ -22,11 +22,13 @@ class TeamInvitationController extends Controller
      */
     public function store(CreateTeamInvitationRequest $request, Team $team): RedirectResponse
     {
-        Gate::authorize('inviteMember', $team);
+        $role = TeamRole::from($request->validated('role'));
+
+        Gate::authorize('inviteMember', [$team, $role]);
 
         $invitation = $team->invitations()->create([
             'email' => $request->validated('email'),
-            'role' => TeamRole::from($request->validated('role')),
+            'role' => $role,
             'invited_by' => $request->user()->id,
             'expires_at' => now()->addDays(3),
         ]);
@@ -46,7 +48,7 @@ class TeamInvitationController extends Controller
     {
         abort_unless($invitation->team_id === $team->id, 404);
 
-        Gate::authorize('cancelInvitation', $team);
+        Gate::authorize('cancelInvitation', [$team, $invitation]);
 
         $invitation->delete();
 

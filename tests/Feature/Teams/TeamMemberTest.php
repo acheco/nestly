@@ -24,7 +24,7 @@ test('team member roles can be updated by owners', function () {
     expect($team->members()->where('user_id', $member->id)->first()->pivot->role->value)->toEqual(TeamRole::Admin->value);
 });
 
-test('team member roles cannot be updated by non owners', function () {
+test('an admin cannot promote a member to admin', function () {
     $owner = User::factory()->create();
     $admin = User::factory()->create();
     $member = User::factory()->create();
@@ -96,21 +96,24 @@ test('team members can be removed by owners', function () {
     expect($member->fresh()->belongsToTeam($team))->toBeFalse();
 });
 
-test('team members cannot be removed by non owners', function () {
+test('team members cannot be removed by members', function () {
     $owner = User::factory()->create();
-    $admin = User::factory()->create();
     $member = User::factory()->create();
+    $viewer = User::factory()->create();
     $team = Team::factory()->create();
 
     $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
-    $team->members()->attach($admin, ['role' => TeamRole::Admin->value]);
     $team->members()->attach($member, ['role' => TeamRole::Member->value]);
+    $team->members()->attach($viewer, ['role' => TeamRole::Viewer->value]);
 
+    // D-077 lets admins remove members and viewers; a member still can't remove anyone.
     $response = $this
-        ->actingAs($admin)
-        ->delete(route('teams.members.destroy', [$team, $member]));
+        ->actingAs($member)
+        ->delete(route('teams.members.destroy', [$team, $viewer]));
 
     $response->assertForbidden();
+
+    expect($viewer->fresh()->belongsToTeam($team))->toBeTrue();
 });
 
 test('removing a user who is not a member of the team returns a 404', function () {
@@ -199,3 +202,31 @@ test('removed member current team is set to personal team', function () {
 
     expect($member->fresh()->current_team_id)->toEqual($personalTeam->id);
 });
+
+test('nobody can change the role of the team owner', function (TeamRole $role) {
+    $owner = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+
+    $actor = $owner;
+
+    if ($role !== TeamRole::Owner) {
+        $actor = User::factory()->create();
+        $team->members()->attach($actor, ['role' => $role->value]);
+    }
+
+    // D-077 / D-089: an owner demoting themselves would leave the team with no owner.
+    $response = $this
+        ->actingAs($actor)
+        ->patch(route('teams.members.update', [$team, $owner]), [
+            'role' => TeamRole::Viewer->value,
+        ]);
+
+    $response->assertForbidden();
+
+    expect($team->members()->where('user_id', $owner->id)->first()->pivot->role)->toBe(TeamRole::Owner)
+        ->and($team->fresh()->owner()?->is($owner))->toBeTrue();
+})->with([
+    'owner on themselves' => [TeamRole::Owner],
+    'admin' => [TeamRole::Admin],
+]);

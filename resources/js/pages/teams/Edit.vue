@@ -192,12 +192,7 @@ const confirmCancelInvitation = (invitation: TeamInvitation) => {
                     </div>
 
                     <div class="flex items-center gap-2">
-                        <DropdownMenu
-                            v-if="
-                                member.role !== 'owner' &&
-                                permissions.canUpdateMember
-                            "
-                        >
+                        <DropdownMenu v-if="member.can_update">
                             <DropdownMenuTrigger as-child>
                                 <Button
                                     data-test="member-role-trigger"
@@ -227,12 +222,7 @@ const confirmCancelInvitation = (invitation: TeamInvitation) => {
                             {{ member.role_label }}
                         </Badge>
 
-                        <TooltipProvider
-                            v-if="
-                                member.role !== 'owner' &&
-                                permissions.canRemoveMember
-                            "
-                        >
+                        <TooltipProvider v-if="member.can_remove">
                             <Tooltip>
                                 <TooltipTrigger as-child>
                                     <Button
@@ -285,7 +275,7 @@ const confirmCancelInvitation = (invitation: TeamInvitation) => {
                         </div>
                     </div>
 
-                    <TooltipProvider v-if="permissions.canCancelInvitation">
+                    <TooltipProvider v-if="invitation.can_cancel">
                         <Tooltip>
                             <TooltipTrigger as-child>
                                 <Button

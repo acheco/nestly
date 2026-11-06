@@ -22,9 +22,12 @@ class TeamMemberController extends Controller
         // D-073: a user outside the team is a 404 for everyone, so this runs before the role check.
         $membership = $team->memberships()->where('user_id', $user->id)->firstOrFail();
 
-        Gate::authorize('updateMember', $team);
+        $newRole = TeamRole::from($request->validated('role'));
 
-        $membership->update(['role' => TeamRole::from($request->validated('role'))]);
+        // D-077 / D-089: the policy also refuses the owner as target, even for the owner themselves.
+        Gate::authorize('updateMember', [$team, $user, $newRole]);
+
+        $membership->update(['role' => $newRole]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Member role updated.')]);
 
@@ -39,9 +42,8 @@ class TeamMemberController extends Controller
         // D-073: a user outside the team is a 404 for everyone, so this runs before the role check.
         $team->memberships()->where('user_id', $user->id)->firstOrFail();
 
-        Gate::authorize('removeMember', $team);
-
-        abort_if($team->owner()?->is($user), 403, __('The team owner cannot be removed.'));
+        // D-077: the policy refuses the owner as target, and admins as target unless the actor is the owner.
+        Gate::authorize('removeMember', [$team, $user]);
 
         $removeMember->execute($team, $user);
 

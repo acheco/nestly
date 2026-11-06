@@ -154,7 +154,7 @@ test('a co-owner can be deleted because the team keeps an owner', function () {
 
     expect(User::find($user->id))->toBeNull();
     expect($team->fresh()->owner()?->is($otherOwner))->toBeTrue();
-});
+})->skip('D-089: a team has exactly one owner until spec 003, so co-owners cannot exist');
 
 test('owning a deleted shared team does not block the deletion', function () {
     $team = Team::factory()->create();
