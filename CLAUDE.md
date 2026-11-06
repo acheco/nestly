@@ -82,7 +82,7 @@ Private accounts are the main source of edge cases (D-011 to D-017, D-021, D-022
 - Their name is visible to the team, but their balance only to their owner, not even the team owner. This is why `AccountPolicy` splits `view` from `viewBalance`, and `AccountResource` nulls the balances.
 - They only take transfers: team → private or private → team, never private → private.
 - They can't exist in personal teams (`is_personal`).
-- They are archived when their owner leaves the team or is removed (`RemoveTeamMemberAction`).
+- They are archived when their owner leaves the team or is removed (`RemoveTeamMemberAction`, D-016), or is demoted to viewer (`ChangeTeamMemberRoleAction`, D-017). The owner still sees their balance and history while a member of the team.
 
 ### Integrity in two layers
 
