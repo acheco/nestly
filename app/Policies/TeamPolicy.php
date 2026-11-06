@@ -3,7 +3,9 @@
 namespace App\Policies;
 
 use App\Enums\TeamPermission;
+use App\Enums\TeamRole;
 use App\Models\Team;
+use App\Models\TeamInvitation;
 use App\Models\User;
 
 class TeamPolicy
@@ -59,35 +61,55 @@ class TeamPolicy
     }
 
     /**
-     * Determine whether the user can update a member's role in the team.
+     * Determine whether the user can give the member the new role (D-077). Nobody changes the owner (D-089).
      */
-    public function updateMember(User $user, Team $team): bool
+    public function updateMember(User $user, Team $team, User $member, TeamRole $newRole): bool
     {
-        return $user->hasTeamPermission($team, TeamPermission::UpdateMember);
+        $role = $user->teamRole($team);
+        $current = $member->teamRole($team);
+
+        return $role !== null && $current !== null
+            && $role->hasPermission(TeamPermission::UpdateMember)
+            && $role->canManage($current)
+            && $role->canManage($newRole);
     }
 
     /**
-     * Determine whether the user can remove a member from the team.
+     * Determine whether the user can remove the member from the team (D-077). Nobody removes the owner.
      */
-    public function removeMember(User $user, Team $team): bool
+    public function removeMember(User $user, Team $team, User $member): bool
     {
-        return $user->hasTeamPermission($team, TeamPermission::RemoveMember);
+        $role = $user->teamRole($team);
+        $current = $member->teamRole($team);
+
+        return $role !== null && $current !== null
+            && $role->hasPermission(TeamPermission::RemoveMember)
+            && $role->canManage($current);
     }
 
     /**
-     * Determine whether the user can invite members to the team.
+     * Determine whether the user can invite someone with the given role (D-077).
      */
-    public function inviteMember(User $user, Team $team): bool
+    public function inviteMember(User $user, Team $team, TeamRole $invitedRole): bool
     {
-        return $user->hasTeamPermission($team, TeamPermission::CreateInvitation);
+        $role = $user->teamRole($team);
+
+        return $role !== null
+            && $role->hasPermission(TeamPermission::CreateInvitation)
+            && $role->canManage($invitedRole);
     }
 
     /**
-     * Determine whether the user can cancel invitations.
+     * Determine whether the user can cancel the invitation (D-077).
+     * The owner cancels any, including an owner invitation created before D-089.
      */
-    public function cancelInvitation(User $user, Team $team): bool
+    public function cancelInvitation(User $user, Team $team, TeamInvitation $invitation): bool
     {
-        return $user->hasTeamPermission($team, TeamPermission::CancelInvitation);
+        $role = $user->teamRole($team);
+
+        return $role !== null
+            && $role->hasPermission(TeamPermission::CancelInvitation)
+            && ($role === TeamRole::Owner || $role->canManage($invitation->role));
     }
 
     /**
