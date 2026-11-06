@@ -24,6 +24,9 @@ class TeamMemberController extends Controller
 
         Gate::authorize('updateMember', $team);
 
+        // D-077 / D-089: changing the owner's role, even their own, would leave the team without one.
+        abort_if($team->owner()?->is($user), 403, __('The team owner role cannot be changed.'));
+
         $membership->update(['role' => TeamRole::from($request->validated('role'))]);
 
         Inertia::flash('toast', ['type' => 'success', 'message' => __('Member role updated.')]);

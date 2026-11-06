@@ -7,7 +7,8 @@ use App\Models\User;
 
 beforeEach(function () {
     $this->team = Team::factory()->create();
-    $this->budget = newBudget($this->team, teamUser($this->team, TeamRole::Owner));
+    // Created by an admin: the 'owner' dataset adds the team's only owner (D-089), and these policies ignore created_by.
+    $this->budget = newBudget($this->team, teamUser($this->team, TeamRole::Admin));
     $this->outsider = User::factory()->create();
 });
 

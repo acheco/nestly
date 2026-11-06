@@ -11,7 +11,8 @@ beforeEach(function () {
 
     $this->account = Account::factory()->create(['team_id' => $this->team->id]);
 
-    $this->recurring = newRecurringExpense($this->team, $this->account, teamUser($this->team, TeamRole::Owner));
+    // Created by an admin: the 'owner' dataset adds the team's only owner (D-089), and these policies ignore created_by.
+    $this->recurring = newRecurringExpense($this->team, $this->account, teamUser($this->team, TeamRole::Admin));
 
     $this->outsider = User::factory()->create();
 });

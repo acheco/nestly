@@ -24,7 +24,8 @@ class CreateTeamInvitationRequest extends FormRequest
 
         return [
             'email' => ['required', 'string', 'email', 'max:255', new UniqueTeamInvitation($team)],
-            'role' => ['required', 'string', Rule::enum(TeamRole::class)],
+            // D-077 / D-089: never owner, so accepting an invitation can't add a second one.
+            'role' => ['required', 'string', Rule::in(array_column(TeamRole::assignable(), 'value'))],
         ];
     }
 }

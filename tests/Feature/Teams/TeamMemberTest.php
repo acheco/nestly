@@ -199,3 +199,31 @@ test('removed member current team is set to personal team', function () {
 
     expect($member->fresh()->current_team_id)->toEqual($personalTeam->id);
 });
+
+test('nobody can change the role of the team owner', function (TeamRole $role) {
+    $owner = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+
+    $actor = $owner;
+
+    if ($role !== TeamRole::Owner) {
+        $actor = User::factory()->create();
+        $team->members()->attach($actor, ['role' => $role->value]);
+    }
+
+    // D-077 / D-089: an owner demoting themselves would leave the team with no owner.
+    $response = $this
+        ->actingAs($actor)
+        ->patch(route('teams.members.update', [$team, $owner]), [
+            'role' => TeamRole::Viewer->value,
+        ]);
+
+    $response->assertForbidden();
+
+    expect($team->members()->where('user_id', $owner->id)->first()->pivot->role)->toBe(TeamRole::Owner)
+        ->and($team->fresh()->owner()?->is($owner))->toBeTrue();
+})->with([
+    'owner on themselves' => [TeamRole::Owner],
+    'admin' => [TeamRole::Admin],
+]);

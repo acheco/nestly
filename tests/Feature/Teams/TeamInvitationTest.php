@@ -330,3 +330,34 @@ test('expired invitations cannot be accepted', function () {
 
     expect($invitedUser->fresh()->belongsToTeam($team))->toBeFalse();
 });
+
+test('nobody can invite someone as owner', function (TeamRole $role) {
+    Notification::fake();
+
+    $owner = User::factory()->create();
+    $team = Team::factory()->create();
+    $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+
+    $actor = $owner;
+
+    if ($role !== TeamRole::Owner) {
+        $actor = User::factory()->create();
+        $team->members()->attach($actor, ['role' => $role->value]);
+    }
+
+    // D-077 / D-089: accepting an owner invitation would leave the team with two owners.
+    $response = $this
+        ->actingAs($actor)
+        ->post(route('teams.invitations.store', $team), [
+            'email' => 'invited@example.com',
+            'role' => TeamRole::Owner->value,
+        ]);
+
+    $response->assertSessionHasErrors('role');
+
+    expect($team->invitations()->count())->toBe(0);
+    Notification::assertNothingSent();
+})->with([
+    'owner' => [TeamRole::Owner],
+    'admin' => [TeamRole::Admin],
+]);
