@@ -48,7 +48,9 @@ return [
 
     'guidelines' => [
         // No deployment target has been decided; the Laravel Cloud guidance doesn't apply.
-        'exclude' => ['deployments'],
+        // Herd only exists on one developer's machine (Boost adds it when APP_URL ends in .test),
+        // so its rules live in the unversioned CLAUDE.local.md instead.
+        'exclude' => ['deployments', 'herd'],
     ],
 
     /*
