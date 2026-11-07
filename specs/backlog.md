@@ -122,22 +122,3 @@ spec que muestre fechas de movimientos.
 
 La spec 001 redirige `/` al login o al Inicio y borra la página de bienvenida del starter kit. Una portada pública
 mínima, con capturas reales y acceso a la demo, serviría para enseñar el proyecto. Se evalúa cerca del despliegue.
-
-## Entorno y CLAUDE.md
-
-Pendientes que salieron del spike de la spec 001 (PR #17). Los tres son del entorno local del usuario (Windows +
-Herd), no del proyecto: el CI corre en Linux. Por eso van a `CLAUDE.local.md`, que no se versiona, y no al `CLAUDE.md`
-versionado.
-
-- **Reglas de Herd fuera del `CLAUDE.md` versionado:** `boost:update`, que ejecuta el `post-update-cmd` de Composer,
-  añade un bloque `=== herd rules ===` a `CLAUDE.md`. Boost lo incluye cuando `APP_URL` contiene `.test`, Herd está
-  instalado y no se usa Sail (`GuidelineComposer.php` de laravel/boost), así que aparece en local
-  (`APP_URL=http://nestly.test`) pero no en CI. Se excluye añadiendo `herd` a `guidelines.exclude` en
-  `config/boost.php`; `boost.json` solo activa o desactiva las guías en bloque. Las reglas se copian a mano a
-  `CLAUDE.local.md`.
-- **Composer en Windows, para `CLAUDE.local.md`:** "Las restricciones de versión se escriben editando `composer.json`
-  y ejecutando `composer update <paquete>`. Nunca con `composer require "x:^y"`: `composer` y `php` son `.bat` en
-  Herd, y `cmd.exe` elimina el `^`, así que se guarda una versión exacta."
-- **PowerShell, para `CLAUDE.local.md`:** "Encadena los comandos con `&&` y no con `;`, para que un paso no se ejecute
-  si el anterior falla." En el spike, un `git commit` falló y el `git push` que iba detrás con `;` se ejecutó
-  igualmente.
