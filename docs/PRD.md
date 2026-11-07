@@ -19,6 +19,7 @@ colorlinks: true
 **Fecha:** 2026
 **Stack:** Laravel 13 (PHP 8.3+) · Vue 3 · TypeScript · Tailwind · shadcn-vue · PostgreSQL 16
 **Nota:** la versión vigente es PostgreSQL 18; ver D-075 en `specs/foundation/decisions.md`.
+**Nota:** la versión vigente es PHP 8.5; ver D-086 en `specs/foundation/decisions.md`.
 **Estado:** Draft
 **Nota de versión 2.9:** categorías (sesión del 23 oct). (1) Las
 **categorías del sistema** (las que se siembran al crear cada team) no se
@@ -129,6 +130,7 @@ import CSV bajado a nice-to-have.)
 **Fecha:** 2026
 **Estado:** Draft
 **Stack objetivo:** Laravel 13 (PHP 8.3+) + Vue 3 + TypeScript + Tailwind + shadcn-vue + PostgreSQL
+**Nota:** la versión vigente es PHP 8.5; ver D-086 en `specs/foundation/decisions.md`.
 
 ### 1.1 Resumen Ejecutivo
 

@@ -47,14 +47,14 @@ rather than on feature count.
 
 | Layer        | Technology                                      |
 | ------------ | ----------------------------------------------- |
-| Backend      | Laravel 13, PHP 8.3+ (BCMath)                   |
+| Backend      | Laravel 13, PHP 8.5 (BCMath)                    |
 | Frontend     | Inertia.js, Vue 3 (Composition API), TypeScript |
 | UI           | Tailwind CSS 4, shadcn-vue (Reka UI), Lucide    |
 | Typed routes | Laravel Wayfinder                               |
 | Database     | PostgreSQL 18                                   |
 | Testing      | Pest 4                                          |
 | Quality      | Laravel Pint, PHPStan (Larastan), vue-tsc       |
-| CI           | GitHub Actions (PHP 8.3 + PostgreSQL 18)        |
+| CI           | GitHub Actions (PHP 8.5 + PostgreSQL 18)        |
 
 A Laravel monolith with Inertia: no separate REST API in the MVP. A
 Sanctum-authenticated API for a React Native (Expo) client is planned after
@@ -64,7 +64,7 @@ the web app is complete.
 
 ### Requirements
 
-- PHP 8.3+ with the `bcmath` and `pdo_pgsql` extensions
+- PHP 8.5 with the `bcmath` and `pdo_pgsql` extensions
 - Composer 2
 - Node.js 22+
 - PostgreSQL 18 with the `btree_gist` extension available (it ships with

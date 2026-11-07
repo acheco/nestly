@@ -254,6 +254,9 @@ implementación de las sesiones del 26–29 sep:
    dependencias como si corriera PHP 8.3 aunque el entorno local use una
    versión mayor (8.5). Verificado con `composer why-not php 8.3`: ningún
    paquete instalado exige más de 8.3.
+
+   **Nota:** el proyecto usa PHP 8.5 en local, CI y producción, y `composer.json` exige `^8.5`; `config.platform.php`
+   no está en `composer.json`. Ver D-086 en `specs/foundation/decisions.md`.
 2. **Manejo de dinero con BCMath** (`ext-bcmath` como requisito explícito
    en `composer.json`). Montos como `string` de punta a punta: columna
    `decimal`, cast `decimal:2` y funciones `bc*` con escala explícita.
@@ -327,6 +330,8 @@ escritorio/web (MVP + v1.1), no en paralelo. Ver §3.1.1, §3.1.2 y §3.2.
 
 **Versión:** 2.20
 **Stack:** Laravel 13 (PHP 8.3+) + Inertia.js + Vue 3 + TypeScript + Tailwind + shadcn-vue + Wayfinder + PostgreSQL
+
+**Nota:** la versión vigente es PHP 8.5; ver D-086 en `specs/foundation/decisions.md`.
 
 ### 3.1 Arquitectura General
 
@@ -450,6 +455,8 @@ el cliente mobile y se abre a terceros en v1.4 — ver §3.1.2.)*
 | Vector/Semantic Search | pgvector | v1.3 | Búsqueda semántica en descripciones |
 | API pública abierta a terceros | Contratos REST/JSON:API completos (ver ERD/API Spec §5) | v1.4 | La API ya existe desde v1.2 (mobile); aquí se documenta y abre formalmente |
 | AI (futuro) | Laravel AI SDK | v2.0 | Insights, forecasting |
+
+**Nota:** el backend usa PHP 8.5, no 8.3+; ver D-086 en `specs/foundation/decisions.md`.
 
 ### 3.3 Modelo de Multi-tenancy
 
@@ -1258,6 +1265,9 @@ El job de backend corre sobre **PHP 8.3**, la versión mínima declarada,
 para detectar cualquier uso accidental de sintaxis o funciones de
 versiones posteriores (§3.13).
 
+**Nota:** el CI corre sobre PHP 8.5, la misma versión que local y producción; ver D-086 en
+`specs/foundation/decisions.md`.
+
 ### 3.11 Observabilidad
 
 - **Logs**: JSON estructurado, canal dedicado.
@@ -1273,6 +1283,9 @@ versiones posteriores (§3.13).
 | preview | PR review | Efímero |
 | staging | QA | Anonimizado |
 | production | Live (PHP 8.3+) | Reales |
+
+**Nota:** todos los entornos usan PHP 8.5, y Composer ya no resuelve como 8.3; ver D-086 en
+`specs/foundation/decisions.md`.
 
 ### 3.13 Riesgos Técnicos
 
@@ -1290,6 +1303,9 @@ versiones posteriores (§3.13).
 | Confundir el diseño de la futura API con Sanctum (v1.2/v1.4) con cómo funciona el MVP | Separación explícita en §3.5.4; rutas `/api/v1` no existen hasta v1.2 |
 | Empezar mobile antes de cerrar el app de escritorio/web y diluir el enfoque | Secuencia explícita: MVP + v1.1 (desktop/web) completos antes de v1.2 (mobile) |
 | ~~PHP 8.3 vs 8.4 en Laravel 13.3+~~ **Cerrado (v2.7)** | Se mantiene PHP 8.3 como mínimo. `composer why-not php 8.3` confirmó que ningún paquete instalado exige más. `composer.json` fija `"php": "^8.3"` + `config.platform.php = 8.3.0` para que futuras actualizaciones no introduzcan dependencias de 8.4+ en silencio; PhpStorm usa language level 8.3 y CI corre en 8.3. |
+
+**Nota:** el riesgo de versión de PHP lo cierra D-086: PHP 8.5 en local, CI y producción, con `"php": "^8.5"` y sin
+`config.platform.php`. Ver `specs/foundation/decisions.md`.
 
 ### 3.14 Features de Laravel 13 relevantes para Nestly
 
