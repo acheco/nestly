@@ -108,3 +108,36 @@ estas preguntas:
 
 A resolver también: `audit_logs.user_agent` es `varchar(255)`, así que un user agent más largo daría error al insertar.
 Hoy no pasa porque nada escribe en esa columna.
+
+## Zona horaria del usuario
+
+`users.timezone` existe (por defecto `UTC`) y `User::today()` la usa para D-020, pero nada la rellena: ni el registro
+ni el perfil la piden. Hoy todos los usuarios están en UTC, así que en República Dominicana (UTC−4) "hoy" cambia de día
+a las 20:00. La spec 001 deja fuera de dónde sale; sus helpers de fecha reciben la zona como argumento.
+
+Hay que decidir de dónde sale (detectada en el navegador, elegida en el perfil o ambas) y quién la edita, en la primera
+spec que muestre fechas de movimientos.
+
+## Landing pública para el portafolio
+
+La spec 001 redirige `/` al login o al Inicio y borra la página de bienvenida del starter kit. Una portada pública
+mínima, con capturas reales y acceso a la demo, serviría para enseñar el proyecto. Se evalúa cerca del despliegue.
+
+## Entorno y CLAUDE.md
+
+Pendientes que salieron del spike de la spec 001 (PR #17). Los tres son del entorno local del usuario (Windows +
+Herd), no del proyecto: el CI corre en Linux. Por eso van a `CLAUDE.local.md`, que no se versiona, y no al `CLAUDE.md`
+versionado.
+
+- **Reglas de Herd fuera del `CLAUDE.md` versionado:** `boost:update`, que ejecuta el `post-update-cmd` de Composer,
+  añade un bloque `=== herd rules ===` a `CLAUDE.md`. Boost lo incluye cuando `APP_URL` contiene `.test`, Herd está
+  instalado y no se usa Sail (`GuidelineComposer.php` de laravel/boost), así que aparece en local
+  (`APP_URL=http://nestly.test`) pero no en CI. Se excluye añadiendo `herd` a `guidelines.exclude` en
+  `config/boost.php`; `boost.json` solo activa o desactiva las guías en bloque. Las reglas se copian a mano a
+  `CLAUDE.local.md`.
+- **Composer en Windows, para `CLAUDE.local.md`:** "Las restricciones de versión se escriben editando `composer.json`
+  y ejecutando `composer update <paquete>`. Nunca con `composer require "x:^y"`: `composer` y `php` son `.bat` en
+  Herd, y `cmd.exe` elimina el `^`, así que se guarda una versión exacta."
+- **PowerShell, para `CLAUDE.local.md`:** "Encadena los comandos con `&&` y no con `;`, para que un paso no se ejecute
+  si el anterior falla." En el spike, un `git commit` falló y el `git push` que iba detrás con `;` se ejecutó
+  igualmente.
