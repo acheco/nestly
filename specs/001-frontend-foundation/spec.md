@@ -297,12 +297,12 @@ Todo lo que construye o toca la 001 cumple WCAG 2.2 AA. Además del contraste (R
 
 Cada criterio se prueba en el nivel más barato posible:
 
-| Nivel               | Herramienta                | Qué cubre en la 001                                                                                                                                                                                        |
-| ------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Funciones puras     | Vitest (`vp test`)         | `t()` y sus reemplazos, claves sin traducir, formato de dinero, fechas relativas                                                                                                                           |
-| HTTP                | Pest feature               | `<html lang>`, HTML traducido con SSR, paridad de `lang/es`, tema sin parpadeo, redirección de `/`, códigos y props de error, 404 idéntico, 419, 500 con fallback, 503, página de muestra fuera de `local` |
-| Layout o JavaScript | Pest + pest-plugin-browser | Cambio en `md`, `aria-current`, teclado, `:focus-visible`, `prefers-reduced-motion`, foco no tapado, 24×24 px, Toaster en autenticación                                                                    |
-| Visual              | Manual                     | Comparación con `design/`, correos con `MAIL_MAILER=log`                                                                                                                                                   |
+| Nivel               | Herramienta                | Qué cubre en la 001                                                                                                                                                                |
+| ------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Funciones puras     | Vitest (`vp test`)         | `t()` y sus reemplazos, claves sin traducir, formato de dinero, fechas relativas                                                                                                   |
+| HTTP                | Pest feature               | `<html lang>`, paridad de `lang/es`, tema sin parpadeo, redirección de `/`, códigos y props de error, 404 idéntico, 419, 500 con fallback, 503, página de muestra fuera de `local` |
+| Layout o JavaScript | Pest + pest-plugin-browser | Cambio en `md`, `aria-current`, teclado, `:focus-visible`, `prefers-reduced-motion`, foco no tapado, 24×24 px, Toaster en autenticación                                            |
+| Visual              | Manual                     | Comparación con `design/`, correos con `MAIL_MAILER=log`                                                                                                                           |
 
 - Vitest ya viene dentro de vite-plus: no es una dependencia nueva.
 - Sin tests de componentes Vue en la 001: no se añaden `@vue/test-utils` ni un DOM simulado.
