@@ -82,7 +82,11 @@ Cada criterio indica cómo se verifica. Los niveles de test siguen la tabla de R
   llamada a `t()` cuya clave no sea un literal. Una clave sin traducir rompe el CI; no cae al texto en inglés en
   silencio. _(Vitest)_
 - Sin pluralización hasta que una spec la necesite.
-- Funciona igual con SSR y en el cliente. _(Pest feature: el HTML del servidor trae el texto traducido.)_
+- Funciona igual con SSR y en el cliente. _(Manual: con `composer dev`, el HTML del servidor trae el texto
+  traducido.)_
+- **Enmienda (2026-11-10, `plan.md`):** la verificación de SSR pasa de un test Pest feature a una verificación manual,
+  porque en los tests no hay bundle ni servidor de SSR. Sustituye también a "HTML traducido con SSR" en la fila HTTP de
+  la tabla de R13.
 
 ### R3 · Textos de Laravel en español
 
