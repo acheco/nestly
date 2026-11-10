@@ -344,6 +344,70 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
 
 ---
 
+## Frontend
+
+### D-090 · Identidad visual propia
+- **Fecha:** 2026-11-10
+- **Estado:** aprobada.
+- **Contexto:** `docs/Design_System_Tokens_CSS.md` define una paleta (azul `#4F7CFF`, oscuro por defecto, Inter y JetBrains Mono) que nunca se aplicó: el código usa los tokens neutros del starter kit. El usuario diseñó en Figma una identidad propia.
+- **Decisión:** la identidad visual de Nestly es la de la spec 001 (tokens de R4, fuentes y radios), con las capturas de `specs/001-frontend-foundation/design/` como referencia visual. Reemplaza a `docs/Design_System_Tokens_CSS.md`. Cualquier color nuevo se añade como token con valor para los dos temas y su contraste calculado.
+- **Consecuencias:**
+    - `docs/Design_System_Tokens_CSS.md` recibe una nota que remite a esta decisión (D-071).
+    - La apariencia por defecto sigue siendo la del sistema.
+
+### D-091 · Traducción del frontend
+- **Fecha:** 2026-11-10
+- **Estado:** aprobada.
+- **Contexto:** D-085 deja a la spec 001 decidir cómo se traduce el frontend. Hay un solo idioma en el MVP.
+- **Decisión:** el frontend traduce con un helper propio, `t()`, sobre `lang/es.json`, la misma fuente que `__()`. Las claves son el texto en inglés, los reemplazos siguen la sintaxis de Laravel y la firma es compatible con `trans()` de laravel-vue-i18n. No hay pluralización. Una clave sin traducir rompe el CI.
+- **Consecuencias:**
+    - No se añade ninguna librería de i18n (D-072). Si llega el multiidioma, migrar a laravel-vue-i18n es buscar y reemplazar.
+    - La constitución, en §2 "Idioma", remite a esta decisión.
+
+### D-092 · Textos de Laravel en español por copia única
+- **Fecha:** 2026-11-10
+- **Estado:** aprobada.
+- **Contexto:** los mensajes de validación, autenticación y correos de Laravel y Fortify suman cientos de líneas. `laravel-lang` los trae traducidos, pero `lang:update` sobrescribe las correcciones a mano y el paquete depende de dos paquetes abandonados.
+- **Decisión:** `lang/es` se genera una vez con `laravel-lang/lang` y `laravel-lang/starter-kits`, que se desinstalan en el mismo commit. A partir de ahí los archivos se mantienen a mano. Un test de paridad avisa cuando el framework añade claves a `auth`, `pagination`, `passwords` o `validation`.
+- **Consecuencias:**
+    - No queda dependencia en `composer.json`.
+    - `lang/` lleva una nota de procedencia con versiones y licencia MIT.
+
+### D-093 · Formato regional es-DO
+- **Fecha:** 2026-11-10
+- **Estado:** aprobada.
+- **Contexto:** la moneda por defecto es DOP (D-084) y hacía falta fijar cómo se muestran dinero y fechas.
+- **Decisión:** el dinero y las fechas se formatean con el locale `es-DO`. Los montos se pasan a `Intl` como string y con `currencyDisplay: 'symbol'`. Las fechas de movimientos son relativas hasta 6 días y absolutas desde 7.
+- **Consecuencia:** ningún componente formatea dinero o fechas por su cuenta: usan los helpers de la spec 001.
+
+### D-094 · Estrategia de tests de frontend y E2E
+- **Fecha:** 2026-11-10
+- **Estado:** aprobada.
+- **Contexto:** la constitución deja la estrategia de tests de frontend y E2E para la spec 001.
+- **Decisión:** cada criterio se prueba en el nivel más barato: Vitest (incluido en vite-plus) para funciones puras, Pest feature para lo que es HTTP y `pestphp/pest-plugin-browser` con Playwright solo para lo que necesita layout o JavaScript. No hay tests de componentes Vue. En CI se instala solo el headless shell de Chromium.
+- **Consecuencias:**
+    - Dos dependencias de desarrollo nuevas: `pestphp/pest-plugin-browser` y `playwright`.
+    - El CI tarda unos 30 s más por run (PR #17, una medición).
+    - La constitución resume esta decisión en §5 "Frontend y E2E", que deja de remitir a la spec 001, y el punto se quita de su sección "Pendiente".
+
+### D-095 · Accesibilidad WCAG 2.2 AA
+- **Fecha:** 2026-11-10
+- **Estado:** aprobada.
+- **Contexto:** los docs piden WCAG 2.1 AA, pero ninguna decisión lo fija ni dice cómo se verifica.
+- **Decisión:** toda la UI cumple WCAG 2.2 AA. El contraste se calcula con números para los dos temas. Foco visible, movimiento reducido, foco no tapado (2.4.11) y tamaño de objetivos (2.5.8) se prueban en el navegador. axe complementa esos tests; no los sustituye.
+- **Consecuencias:**
+    - Cada token de color nuevo trae su contraste calculado.
+    - La constitución la añade a §5 como criterio de calidad.
+
+### D-096 · Entradas de navegación
+- **Fecha:** 2026-11-10
+- **Estado:** aprobada.
+- **Contexto:** el menú del starter kit enlaza a recursos externos, y las capturas de Figma muestran secciones que todavía no existen.
+- **Decisión:** el menú solo enlaza a páginas que existen. La barra inferior móvil tiene como máximo 3 secciones más "Más". Cada spec que añade una sección declara si va en la barra o en "Más". Mover una sección de la barra a "Más" requiere aprobación del usuario.
+- **Consecuencia:** al cerrar la spec 001 el menú solo tiene Inicio.
+
+---
+
 ## Pendientes
 
 ### P-001 · SQLSTATE de RESTRICT

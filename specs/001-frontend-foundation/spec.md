@@ -1,9 +1,9 @@
 # Spec 001 · Base del frontend
 
-- **Estado:** borrador, pendiente de aprobación.
+- **Estado:** aprobada (2026-11-10).
 - **Fecha:** 2026-11-07.
-- **Referencias:** D-014, D-020, D-070, D-071, D-072, D-073, D-078, D-084, D-085, D-086, D-088; constitución §2 y §5;
-  capturas en `design/`; PR #17 (spike de tests de navegador).
+- **Referencias:** D-014, D-020, D-070, D-071, D-072, D-073, D-078, D-084, D-085, D-086, D-088, D-090 a D-096;
+  constitución §2 y §5; capturas en `design/`; PR #17 (spike de tests de navegador).
 
 ## Objetivo
 
@@ -15,7 +15,8 @@ Dejar la base del frontend lista para las pantallas de dominio:
 - navegación de escritorio y móvil;
 - toasts y páginas de error dentro de la app;
 - accesibilidad WCAG 2.2 AA;
-- una estrategia de tests de frontend y E2E, que la constitución deja pendiente para esta spec.
+- una estrategia de tests de frontend y E2E, que la constitución dejaba pendiente para esta spec y ahora queda en
+  D-094.
 
 ## Precondición
 
@@ -104,10 +105,10 @@ paquete corregidas a mano (`Processor::store()` + `Arr::merge`), y el paquete ar
 
 ### R4 · Identidad visual
 
-Reemplaza a `docs/Design_System_Tokens_CSS.md` (ver la decisión propuesta "Identidad visual propia"). Las capturas de
-`design/` son referencia de identidad visual: colores, tipografía, radios, espaciado, tarjetas, montos y el patrón de
-sidebar en escritorio y barra inferior en móvil. Los ítems de navegación y los datos que aparecen en ellas son de
-ejemplo. Los valores que mandan son los de esta tabla, no los del archivo de Figma.
+Reemplaza a `docs/Design_System_Tokens_CSS.md` (D-090). Las capturas de `design/` son referencia de identidad visual:
+colores, tipografía, radios, espaciado, tarjetas, montos y el patrón de sidebar en escritorio y barra inferior en
+móvil. Los ítems de navegación y los datos que aparecen en ellas son de ejemplo. Los valores que mandan son los de esta
+tabla, no los del archivo de Figma.
 
 | Token                | Oscuro           | Claro            | Uso                                                |
 | -------------------- | ---------------- | ---------------- | -------------------------------------------------- |
@@ -323,102 +324,18 @@ Cada criterio se prueba en el nivel más barato posible:
   (`vendor/pestphp/pest-plugin-browser/src/Api/Concerns/MakesConsoleAssertions.php`, línea 95) y ejecuta
   `axe.run()`.
 
-## Decisiones nuevas propuestas
+## Decisiones
 
-En el formato de `decisions.md`, sin numerar. Se numeran al aprobarlas.
+Las decisiones que propuso esta spec se aprobaron el 2026-11-10. Su texto está en `specs/foundation/decisions.md`,
+sección "Frontend":
 
-### Identidad visual propia
-
-- **Fecha:** 2026-11-07
-- **Estado:** propuesta.
-- **Contexto:** `docs/Design_System_Tokens_CSS.md` define una paleta (azul `#4F7CFF`, oscuro por defecto, Inter y
-  JetBrains Mono) que nunca se aplicó: el código usa los tokens neutros del starter kit. El usuario diseñó en Figma una
-  identidad propia.
-- **Decisión:** la identidad visual de Nestly es la de la spec 001 (tokens de R4, fuentes y radios), con las capturas
-  de `specs/001-frontend-foundation/design/` como referencia visual. Reemplaza a `docs/Design_System_Tokens_CSS.md`.
-  Cualquier color nuevo se añade como token con valor para los dos temas y su contraste calculado.
-- **Consecuencias:**
-    - `docs/Design_System_Tokens_CSS.md` recibe una nota que remite a esta decisión (D-071).
-    - La apariencia por defecto sigue siendo la del sistema.
-    - **Constitución:** sin cambios.
-
-### Traducción del frontend
-
-- **Fecha:** 2026-11-07
-- **Estado:** propuesta.
-- **Contexto:** D-085 deja a la spec 001 decidir cómo se traduce el frontend. Hay un solo idioma en el MVP.
-- **Decisión:** el frontend traduce con un helper propio, `t()`, sobre `lang/es.json`, la misma fuente que `__()`. Las
-  claves son el texto en inglés, los reemplazos siguen la sintaxis de Laravel y la firma es compatible con `trans()`
-  de laravel-vue-i18n. No hay pluralización. Una clave sin traducir rompe el CI.
-- **Consecuencias:**
-    - No se añade ninguna librería de i18n (D-072). Si llega el multiidioma, migrar a laravel-vue-i18n es buscar y
-      reemplazar.
-    - **Constitución:** §2 "Idioma" remite a esta decisión.
-
-### Textos de Laravel en español por copia única
-
-- **Fecha:** 2026-11-07
-- **Estado:** propuesta.
-- **Contexto:** los mensajes de validación, autenticación y correos de Laravel y Fortify suman cientos de líneas.
-  `laravel-lang` los trae traducidos, pero `lang:update` sobrescribe las correcciones a mano y el paquete depende de
-  dos paquetes abandonados.
-- **Decisión:** `lang/es` se genera una vez con `laravel-lang/lang` y `laravel-lang/starter-kits`, que se desinstalan
-  en el mismo commit. A partir de ahí los archivos se mantienen a mano. Un test de paridad avisa cuando el framework
-  añade claves a `auth`, `pagination`, `passwords` o `validation`.
-- **Consecuencias:**
-    - No queda dependencia en `composer.json`.
-    - `lang/` lleva una nota de procedencia con versiones y licencia MIT.
-    - **Constitución:** sin cambios.
-
-### Formato regional es-DO
-
-- **Fecha:** 2026-11-07
-- **Estado:** propuesta.
-- **Contexto:** la moneda por defecto es DOP (D-084) y hacía falta fijar cómo se muestran dinero y fechas.
-- **Decisión:** el dinero y las fechas se formatean con el locale `es-DO`. Los montos se pasan a `Intl` como string y
-  con `currencyDisplay: 'symbol'`. Las fechas de movimientos son relativas hasta 6 días y absolutas desde 7.
-- **Consecuencias:**
-    - Ningún componente formatea dinero o fechas por su cuenta: usan los helpers de la spec 001.
-    - **Constitución:** sin cambios.
-
-### Estrategia de tests de frontend y E2E
-
-- **Fecha:** 2026-11-07
-- **Estado:** propuesta.
-- **Contexto:** la constitución deja la estrategia de tests de frontend y E2E para la spec 001.
-- **Decisión:** cada criterio se prueba en el nivel más barato: Vitest (incluido en vite-plus) para funciones puras,
-  Pest feature para lo que es HTTP y `pestphp/pest-plugin-browser` con Playwright solo para lo que necesita layout o
-  JavaScript. No hay tests de componentes Vue. En CI se instala solo el headless shell de Chromium.
-- **Consecuencias:**
-    - Dos dependencias de desarrollo nuevas: `pestphp/pest-plugin-browser` y `playwright`.
-    - El CI tarda unos 30 s más por run (PR #17, una medición).
-    - **Constitución:** §5 "Frontend y E2E" deja de remitir a la spec 001 y resume esta decisión, y el punto se quita de
-      la sección "Pendiente".
-
-### Accesibilidad WCAG 2.2 AA
-
-- **Fecha:** 2026-11-07
-- **Estado:** propuesta.
-- **Contexto:** los docs piden WCAG 2.1 AA, pero ninguna decisión lo fija ni dice cómo se verifica.
-- **Decisión:** toda la UI cumple WCAG 2.2 AA. El contraste se calcula con números para los dos temas. Foco visible,
-  movimiento reducido, foco no tapado (2.4.11) y tamaño de objetivos (2.5.8) se prueban en el navegador. axe
-  complementa esos tests; no los sustituye.
-- **Consecuencias:**
-    - Cada token de color nuevo trae su contraste calculado.
-    - **Constitución:** se añade a §5 como criterio de calidad.
-
-### Entradas de navegación
-
-- **Fecha:** 2026-11-07
-- **Estado:** propuesta.
-- **Contexto:** el menú del starter kit enlaza a recursos externos, y las capturas de Figma muestran secciones que
-  todavía no existen.
-- **Decisión:** el menú solo enlaza a páginas que existen. La barra inferior móvil tiene como máximo 3 secciones más
-  "Más". Cada spec que añade una sección declara si va en la barra o en "Más". Mover una sección de la barra a "Más"
-  requiere aprobación del usuario.
-- **Consecuencias:**
-    - Al cerrar la spec 001 el menú solo tiene Inicio.
-    - **Constitución:** sin cambios.
+- D-090 · Identidad visual propia.
+- D-091 · Traducción del frontend.
+- D-092 · Textos de Laravel en español por copia única.
+- D-093 · Formato regional es-DO.
+- D-094 · Estrategia de tests de frontend y E2E.
+- D-095 · Accesibilidad WCAG 2.2 AA.
+- D-096 · Entradas de navegación.
 
 ## Preguntas abiertas
 
@@ -431,10 +348,10 @@ estado hover del botón primario) quedaron resueltas. Si aparece alguna al plani
 - **Traducciones desactualizadas:** la copia de laravel-lang no se actualiza sola. El test de paridad cubre los cuatro
   archivos PHP, pero no los textos JSON de los correos y de Fortify.
 - **Tests de navegador:** Playwright puede comportarse distinto en Windows y en CI. Hubo un cuelgue sin explicar en el
-  spike (ver R13), y los +17 s de CI se midieron una sola vez.
-- **`boost:update` modifica `CLAUDE.md`:** al instalar el plugin, el `post-update-cmd` de Composer ejecuta
-  `boost:update`, que añade un bloque de reglas de Herd al `CLAUDE.md` versionado. El PR de implementación no debe
-  incluirlas: se descartan antes del commit mientras no se resuelva el pendiente de `specs/backlog.md`.
+  spike (ver R13), y los +17 s del paso de checks (de unos 30 s más en total) se midieron una sola vez.
+- **`boost:update` modifica `CLAUDE.md`** _(resuelto en el PR #20)_: al instalar el plugin, el `post-update-cmd` de
+  Composer ejecuta `boost:update`, que añadía un bloque de reglas de Herd al `CLAUDE.md` versionado. Ya no lo añade:
+  `config/boost.php` excluye la guía `herd`.
 - **Fechas en UTC:** mientras ninguna spec decida de dónde sale `users.timezone`, "hoy" se calcula en UTC, y en
   República Dominicana cambia de día a las 20:00.
 - **Figma y la spec se desincronizan:** `input-border`, `primary-foreground` y el ajuste de `text-subtle` no están
@@ -446,22 +363,22 @@ estado hover del botón primario) quedaron resueltas. Si aparece alguna al plani
 
 ## Resumen
 
-### Decisiones propuestas y su efecto en la constitución
+### Decisiones y su efecto en la constitución
 
-| Decisión propuesta                           | Cambio en la constitución                              |
-| -------------------------------------------- | ------------------------------------------------------ |
-| Identidad visual propia                      | Ninguno                                                |
-| Traducción del frontend                      | §2 "Idioma" remite a ella                              |
-| Textos de Laravel en español por copia única | Ninguno                                                |
-| Formato regional es-DO                       | Ninguno                                                |
-| Estrategia de tests de frontend y E2E        | §5 "Frontend y E2E" la resume; se quita de "Pendiente" |
-| Accesibilidad WCAG 2.2 AA                    | Se añade a §5                                          |
-| Entradas de navegación                       | Ninguno                                                |
+| Decisión | Cambio en la constitución                              |
+| -------- | ------------------------------------------------------ |
+| D-090    | Ninguno                                                |
+| D-091    | §2 "Idioma" remite a ella                              |
+| D-092    | Ninguno                                                |
+| D-093    | Ninguno                                                |
+| D-094    | §5 "Frontend y E2E" la resume; se quita de "Pendiente" |
+| D-095    | Se añade a §5                                          |
+| D-096    | Ninguno                                                |
 
 ### Lo que se añade a `specs/backlog.md`
 
 - **Landing pública para el portafolio:** capturas reales y acceso de demo, a evaluar cerca del despliegue.
 - **Zona horaria del usuario:** decidir de dónde sale y quién edita `users.timezone`, en la primera spec que muestre
   fechas de movimientos (D-020).
-- **Entorno y `CLAUDE.md`:** sacar las reglas de Herd del `CLAUDE.md` versionado y llevar a `CLAUDE.local.md` esas
-  reglas y dos más sobre Composer y PowerShell en Windows, porque solo valen en el entorno local.
+- **Entorno y `CLAUDE.md`** _(resuelto en el PR #20)_: sacar las reglas de Herd del `CLAUDE.md` versionado y llevar a
+  `CLAUDE.local.md` esas reglas y dos más sobre Composer y PowerShell en Windows, porque solo valen en el entorno local.
