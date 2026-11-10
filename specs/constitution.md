@@ -31,7 +31,7 @@ Cuando dos fuentes se contradicen, manda la de más arriba:
 - **Plataforma fija:** PostgreSQL 18 (D-075) y PHP 8.5 (D-086), iguales en local, CI y producción.
 - **Dependencias justificadas:** no se instala nada por estar en el TRD; cada dependencia la justifica una spec (D-072).
 - **Idioma:** la interfaz está en español y sus textos van en archivos de traducción; el código, los comentarios y los
-  commits van en inglés (D-085).
+  commits van en inglés (D-085). El frontend traduce con el helper `t()` (D-091).
 - **Sin escrituras offline en el MVP** (D-070).
 
 ## 3. Reglas no negociables
@@ -101,7 +101,9 @@ está en la columna de notas.
 
 - **Tests primero.** Todo cambio de código empieza por un test que falla.
 - **Tests de feature con Pest** sobre PostgreSQL real, nunca SQLite.
-- **Frontend y E2E:** su estrategia de tests se define en la spec `001`.
+- **Frontend y E2E:** cada criterio se prueba en el nivel más barato: Vitest para funciones puras, Pest feature para
+  HTTP y tests de navegador solo para lo que necesita layout o JavaScript (D-094).
+- **Accesibilidad:** toda la UI cumple WCAG 2.2 AA, y se verifica con tests, no solo con axe (D-095).
 - **Rutas de error:** cada test de error comprueba que saldos y filas quedaron intactos.
 - **Mutation checks:** los tests que protegen seguridad o dinero se validan rompiendo a propósito el código que
   protegen, confirmando que fallan y revirtiendo.
@@ -126,6 +128,5 @@ está en la columna de notas.
 Temas que la constitución todavía no fija, a la espera de su spec:
 
 - Varios owners y transferencia de ownership: spec `003`.
-- Estrategia de tests de frontend y E2E: spec `001`.
 - Seguridad base: spec `012`.
 - Tests de concurrencia: `specs/backlog.md`.
