@@ -171,8 +171,9 @@ En `resources/css/app.css`, la tabla de R4 se define como variables propias (`--
   `<script>` en línea que pone la clase `dark` según la preferencia del sistema se mantiene. El `<link>` de `app.css`
   está en el `<head>` y bloquea el render, así que el fondo sale bien sin el estilo en línea. Se comprueba a mano en
   los dos temas, con y sin caché.
-- El PR muestra el grep de colores directos fuera de `app.css` vacío, salvo las vistas Blade del 503 y del fallback del
-  500 (fase 7).
+- El PR muestra el grep de colores directos fuera de `app.css`, que solo encuentra `pages/Welcome.vue` (se borra en la
+  fase 6). El grep completo, que solo encuentra `app.css` y las vistas Blade del 503 y del fallback del 500, va en el
+  PR de la fase 7.
 
 **Contraste (R5)**
 
@@ -295,7 +296,7 @@ En `resources/css/app.css`, la tabla de R4 se define como variables propias (`--
 | R1        | 2    | Pest feature (`<html lang>`), grep de `TODO(i18n)`, recorrido manual         |
 | R2        | 2    | Vitest (reemplazos, claves, literales); SSR a mano con `composer dev`        |
 | R3        | 2    | Pest (paridad), diff de Composer, revisión de la procedencia, correos a mano |
-| R4        | 3    | grep de colores directos, revisión visual                                    |
+| R4        | 3, 7 | grep de colores directos (completo en la fase 7), revisión visual            |
 | R5        | 3    | Vitest (contraste desde `app.css`)                                           |
 | R6        | 5    | Pest feature (404 fuera de `local`), comparación manual con `design/`        |
 | R7        | 3    | Pest feature (cookie `dark` y `light`)                                       |
