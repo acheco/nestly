@@ -82,7 +82,11 @@ Cada criterio indica cómo se verifica. Los niveles de test siguen la tabla de R
   llamada a `t()` cuya clave no sea un literal. Una clave sin traducir rompe el CI; no cae al texto en inglés en
   silencio. _(Vitest)_
 - Sin pluralización hasta que una spec la necesite.
-- Funciona igual con SSR y en el cliente. _(Pest feature: el HTML del servidor trae el texto traducido.)_
+- Funciona igual con SSR y en el cliente. _(Manual: con `composer dev`, el HTML del servidor trae el texto
+  traducido.)_
+- **Enmienda (2026-11-10, `plan.md`):** la verificación de SSR pasa de un test Pest feature a una verificación manual,
+  porque en los tests no hay bundle ni servidor de SSR. Sustituye también a "HTML traducido con SSR" en la fila HTTP de
+  la tabla de R13.
 
 ### R3 · Textos de Laravel en español
 
@@ -293,12 +297,12 @@ Todo lo que construye o toca la 001 cumple WCAG 2.2 AA. Además del contraste (R
 
 Cada criterio se prueba en el nivel más barato posible:
 
-| Nivel               | Herramienta                | Qué cubre en la 001                                                                                                                                                                                        |
-| ------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Funciones puras     | Vitest (`vp test`)         | `t()` y sus reemplazos, claves sin traducir, formato de dinero, fechas relativas                                                                                                                           |
-| HTTP                | Pest feature               | `<html lang>`, HTML traducido con SSR, paridad de `lang/es`, tema sin parpadeo, redirección de `/`, códigos y props de error, 404 idéntico, 419, 500 con fallback, 503, página de muestra fuera de `local` |
-| Layout o JavaScript | Pest + pest-plugin-browser | Cambio en `md`, `aria-current`, teclado, `:focus-visible`, `prefers-reduced-motion`, foco no tapado, 24×24 px, Toaster en autenticación                                                                    |
-| Visual              | Manual                     | Comparación con `design/`, correos con `MAIL_MAILER=log`                                                                                                                                                   |
+| Nivel               | Herramienta                | Qué cubre en la 001                                                                                                                                                                |
+| ------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Funciones puras     | Vitest (`vp test`)         | `t()` y sus reemplazos, claves sin traducir, formato de dinero, fechas relativas                                                                                                   |
+| HTTP                | Pest feature               | `<html lang>`, paridad de `lang/es`, tema sin parpadeo, redirección de `/`, códigos y props de error, 404 idéntico, 419, 500 con fallback, 503, página de muestra fuera de `local` |
+| Layout o JavaScript | Pest + pest-plugin-browser | Cambio en `md`, `aria-current`, teclado, `:focus-visible`, `prefers-reduced-motion`, foco no tapado, 24×24 px, Toaster en autenticación                                            |
+| Visual              | Manual                     | Comparación con `design/`, correos con `MAIL_MAILER=log`                                                                                                                           |
 
 - Vitest ya viene dentro de vite-plus: no es una dependencia nueva.
 - Sin tests de componentes Vue en la 001: no se añaden `@vue/test-utils` ni un DOM simulado.
