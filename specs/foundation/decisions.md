@@ -387,7 +387,7 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
 - **Decisión:** cada criterio se prueba en el nivel más barato: Vitest (incluido en vite-plus) para funciones puras, Pest feature para lo que es HTTP y `pestphp/pest-plugin-browser` con Playwright solo para lo que necesita layout o JavaScript. No hay tests de componentes Vue. En CI se instala solo el headless shell de Chromium.
 - **Consecuencias:**
     - Dos dependencias de desarrollo nuevas: `pestphp/pest-plugin-browser` y `playwright`.
-    - El CI tarda unos 30 s más por run (PR #17, una medición).
+    - El CI tarda unos 30 s más por run (PR #17, una medición). Medido de nuevo en el PR #24 (3 runs contra la mediana de 5 de main): unos 16 s atribuibles al paso de Chromium; el resto queda dentro del ruido.
     - La constitución resume esta decisión en §5 "Frontend y E2E", que deja de remitir a la spec 001, y el punto se quita de su sección "Pendiente".
 
 ### D-095 · Accesibilidad WCAG 2.2 AA
