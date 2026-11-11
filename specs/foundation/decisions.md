@@ -406,6 +406,17 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
 - **Decisión:** el menú solo enlaza a páginas que existen. La barra inferior móvil tiene como máximo 3 secciones más "Más". Cada spec que añade una sección declara si va en la barra o en "Más". Mover una sección de la barra a "Más" requiere aprobación del usuario.
 - **Consecuencia:** al cerrar la spec 001 el menú solo tiene Inicio.
 
+### D-097 · Playwright fijado en 1.61.1 por Smart App Control
+- **Fecha:** 2026-11-10
+- **Estado:** aprobada.
+- **Contexto:** el equipo de desarrollo tiene Smart App Control activado. Bloquea el Chromium de Playwright 1.65.0 (revisión 1254) por falta de reputación: Code Integrity registra el bloqueo (eventos 3033 y 3077) y Node lo reporta como `spawn UNKNOWN`. El Chromium de Playwright 1.61.1 (revisión 1228) sí arranca. En el spike del PR #17 la 1.65 corrió en Windows; lo más probable es que Smart App Control estuviera entonces en modo evaluación. `pest-plugin-browser` exige como mínimo Playwright 1.59.1, y Smart App Control no admite excepciones por archivo.
+- **Decisión:** `playwright` se fija a la versión exacta `1.61.1` en `package.json`, sin `^`, en local y en CI.
+- **Consecuencias:**
+    - Antes de subir Playwright se comprueba que el Chromium de la nueva versión arranca con Smart App Control activado (`specs/backlog.md`).
+    - El CI instala el headless shell de esa misma versión.
+    - Dependabot solo vigila las GitHub Actions, así que no propondrá subirla.
+    - Smart App Control no se desactiva: en Windows 11 no se puede volver a activar sin reinstalar.
+
 ---
 
 ## Pendientes

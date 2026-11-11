@@ -118,6 +118,11 @@ a las 20:00. La spec 001 deja fuera de dónde sale; sus helpers de fecha reciben
 Hay que decidir de dónde sale (detectada en el navegador, elegida en el perfil o ambas) y quién la edita, en la primera
 spec que muestre fechas de movimientos.
 
+## Tests de navegador en Windows
+
+- **Subir Playwright:** antes de subir, comprobar que el Chromium de la nueva versión arranca con Smart App Control
+  activado (D-097).
+
 ## Landing pública para el portafolio
 
 La spec 001 redirige `/` al login o al Inicio y borra la página de bienvenida del starter kit. Una portada pública
