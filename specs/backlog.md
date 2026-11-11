@@ -122,6 +122,8 @@ spec que muestre fechas de movimientos.
 
 - **Subir Playwright:** antes de subir, comprobar que el Chromium de la nueva versión arranca con Smart App Control
   activado (D-097).
+- **`public/hot` huérfano:** en Windows, `public/hot` queda huérfano al cortar `composer dev` y rompe los tests de
+  navegador en local. Evaluar que la suite `Browser` ignore el hot file.
 
 ## Landing pública para el portafolio
 
