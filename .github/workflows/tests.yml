@@ -51,7 +51,7 @@ jobs:
         with:
           php-version: '8.5'
           tools: composer:v2
-          extensions: pdo_pgsql, bcmath
+          extensions: pdo_pgsql, bcmath, sockets
           coverage: none
 
       - name: Setup Node
@@ -61,6 +61,9 @@ jobs:
 
       - name: Setup Application
         run: composer setup
+
+      - name: Install Chromium for browser tests
+        run: npx playwright install --with-deps --only-shell chromium
 
       - name: Run CI Checks
         run: composer ci:check
