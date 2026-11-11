@@ -45,7 +45,7 @@ Rama: `chore/001-test-tooling`.
 
 Rama: `feat/001-language`.
 
-1. [ ] **Locale.** Test (Pest feature): una página trae `<html lang="es">`. Después, `APP_LOCALE=es` y
+1. [x] **Locale.** Test (Pest feature): una página trae `<html lang="es">`. Después, `APP_LOCALE=es` y
        `APP_FALLBACK_LOCALE=es` en `.env.example` y `'es'` por defecto en `config/app.php`.
 2. [ ] **Textos de Laravel (copia única).** Primero el test de paridad (Pest): las claves de
        `lang/es/{auth,pagination,passwords,validation}.php` contra las de
