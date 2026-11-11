@@ -53,7 +53,7 @@ Rama: `feat/001-language`.
        `laravel-lang/lang` y `laravel-lang/starter-kits`, ejecutar `php artisan lang:add es`, revisar los archivos,
        desinstalar los paquetes y añadir `lang/README.md` con la procedencia (paquetes, versiones exactas y licencia
        MIT con su aviso de copyright).
-3. [ ] **Helper `t()`.** Tests (Vitest) de los reemplazos `:name`, `:Name` y `:NAME`, de que las claves más largas se
+3. [x] **Helper `t()`.** Tests (Vitest) de los reemplazos `:name`, `:Name` y `:NAME`, de que las claves más largas se
        sustituyen primero y de que una clave sin traducción devuelve la clave. Después, `resources/js/lib/i18n.ts`, que
        importa `lang/es.json`.
 4. [ ] **Test de claves.** Test (Vitest) que recorre `resources/js` (salvo `components/ui`, `actions`, `routes` y
