@@ -47,7 +47,7 @@ Rama: `feat/001-language`.
 
 1. [x] **Locale.** Test (Pest feature): una página trae `<html lang="es">`. Después, `APP_LOCALE=es` y
        `APP_FALLBACK_LOCALE=es` en `.env.example` y `'es'` por defecto en `config/app.php`.
-2. [ ] **Textos de Laravel (copia única).** Primero el test de paridad (Pest): las claves de
+2. [x] **Textos de Laravel (copia única).** Primero el test de paridad (Pest): las claves de
        `lang/es/{auth,pagination,passwords,validation}.php` contra las de
        `vendor/laravel/framework/src/Illuminate/Translation/lang/en/`. Después, en el mismo commit: instalar
        `laravel-lang/lang` y `laravel-lang/starter-kits`, ejecutar `php artisan lang:add es`, revisar los archivos,
