@@ -30,8 +30,9 @@ Cuando dos fuentes se contradicen, manda la de más arriba:
   restricciones de exclusión. Las violaciones que un usuario puede provocar se traducen a 422.
 - **Plataforma fija:** PostgreSQL 18 (D-075) y PHP 8.5 (D-086), iguales en local, CI y producción.
 - **Dependencias justificadas:** no se instala nada por estar en el TRD; cada dependencia la justifica una spec (D-072).
-- **Idioma:** la interfaz está en español y sus textos van en archivos de traducción; el código, los comentarios y los
-  commits van en inglés (D-085). El frontend traduce con el helper `t()` (D-091).
+- **Idioma:** la interfaz está en español, trata al usuario de usted (D-098) y sus textos van en archivos de
+  traducción; el código, los comentarios y los commits van en inglés (D-085). El frontend traduce con el helper `t()`
+  (D-091).
 - **Sin escrituras offline en el MVP** (D-070).
 
 ## 3. Reglas no negociables

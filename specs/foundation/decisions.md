@@ -417,6 +417,16 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
     - Dependabot solo vigila las GitHub Actions, así que no propondrá subirla.
     - Smart App Control no se desactiva: en Windows 11 no se puede volver a activar sin reinstalar.
 
+### D-098 · Tratamiento de usted en la interfaz
+- **Fecha:** 2026-11-11
+- **Estado:** aprobada.
+- **Contexto:** la copia de laravel-lang (D-092) trata al usuario de usted; la guía de tono de `docs/Design_System_Tokens_CSS.md` usa tú. Ninguna decisión lo fijaba.
+- **Decisión:** la interfaz trata al usuario de usted en pantallas, correos, validación y toasts. El pronombre se omite cuando el verbo basta («Ha abandonado el equipo», no «Usted ha abandonado el equipo»).
+- **Consecuencias:**
+    - La copia de laravel-lang se mantiene en usted; no hay commit de adaptación de tratamiento.
+    - Todo texto nuevo (`TODO(i18n)`, claves de `t()`) se escribe en usted.
+    - `docs/Design_System_Tokens_CSS.md` §6.7 recibe una nota que remite aquí (D-071).
+
 ---
 
 ## Pendientes

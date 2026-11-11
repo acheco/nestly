@@ -62,7 +62,10 @@ Rama: `feat/001-language`.
        commit.
 5. [ ] **Backend.** Las 34 marcas `TODO(i18n)` pasan a `__()`, con sus textos en `lang/es.json`. También la
        notificación `TeamInvitation` y el nombre del team personal (`CreateNewUser`). Los tests existentes que comparan
-       esos textos siguen pasando.
+       esos textos siguen pasando. Además:
+    - «Usted ha abandonado el equipo» pasa a «Ha abandonado el equipo» (D-098), en `lang/es.json` y en su test.
+    - `attributes` de `lang/es/validation.php` traduce todos los nombres de campo que usan los Form Requests
+      existentes, con un test por cada formulario afectado que comprueba el mensaje en español.
 6. [ ] **Pantallas de autenticación.** Todos los textos de `pages/auth` y `layouts/auth` pasan a `t()`.
 7. [ ] **Resto de pantallas.** Ajustes, teams, Inicio, `TeamSwitcher`, `NavUser`, `UserMenuContent` y los modales
        pasan a `t()`.
