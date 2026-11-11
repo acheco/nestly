@@ -56,7 +56,7 @@ Rama: `feat/001-language`.
 3. [x] **Helper `t()`.** Tests (Vitest) de los reemplazos `:name`, `:Name` y `:NAME`, de que las claves más largas se
        sustituyen primero y de que una clave sin traducción devuelve la clave. Después, `resources/js/lib/i18n.ts`, que
        importa `lang/es.json`.
-4. [ ] **Test de claves.** Test (Vitest) que recorre `resources/js` (salvo `components/ui`, `actions`, `routes` y
+4. [x] **Test de claves.** Test (Vitest) que recorre `resources/js` (salvo `components/ui`, `actions`, `routes` y
        `wayfinder`), y falla si una clave de `t()` no está en `lang/es.json` o si no es un literal de texto. Se
        comprueba que falla con una clave inventada y con una clave en una variable, y se quitan esos casos antes del
        commit.
@@ -66,6 +66,8 @@ Rama: `feat/001-language`.
     - «Usted ha abandonado el equipo» pasa a «Ha abandonado el equipo» (D-098), en `lang/es.json` y en su test.
     - `attributes` de `lang/es/validation.php` traduce todos los nombres de campo que usan los Form Requests
       existentes, con un test por cada formulario afectado que comprueba el mensaje en español.
+    - Un test de guarda equivalente al de la tarea 4 para el backend: extrae las claves de `__()` en `app/` y falla si
+      no están en `lang/es.json`, con su mutation check.
 6. [ ] **Pantallas de autenticación.** Todos los textos de `pages/auth` y `layouts/auth` pasan a `t()`.
 7. [ ] **Resto de pantallas.** Ajustes, teams, Inicio, `TeamSwitcher`, `NavUser`, `UserMenuContent` y los modales
        pasan a `t()`.

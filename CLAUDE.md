@@ -112,6 +112,7 @@ Form Requests validate input, and PostgreSQL enforces invariants with `CHECK` an
 ## Conventions
 
 - User-facing strings are currently hardcoded in Spanish and marked `TODO(i18n)`.
+- The identifier `t` is reserved for the translation helper (D-091); don't use it for variables, parameters or loop aliases.
 - Dates are `CarbonImmutable` globally. Transactions and transfers can't be dated in the future, where "today" is in the recording user's timezone (D-020).
 
 ## Laravel Boost
