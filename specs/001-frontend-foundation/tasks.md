@@ -24,11 +24,12 @@
 
 Rama: `chore/001-test-tooling`.
 
-1. [ ] **Vitest.** Bloque `test` en `vite.config.ts` (`include: ['tests/js/**/*.test.ts']`, `environment: 'node'`,
+1. [x] **Vitest.** Bloque `test` en `vite.config.ts` (`include: ['tests/js/**/*.test.ts']`, `environment: 'node'`,
        alias `@`). Script `"test": "vp test"` en `package.json`, que `composer ci:check` ejecuta después de
        `npm run types:check`. Un test trivial en `tests/js/smoke.test.ts`.
-2. [ ] **Tests de navegador y CI.** En un solo commit, para que el CI no corra un test de navegador sin Chromium:
-    - `pestphp/pest-plugin-browser` `^4.3` en `require-dev` y `playwright` en `devDependencies`;
+2. [x] **Tests de navegador y CI.** En un solo commit, para que el CI no corra un test de navegador sin Chromium:
+    - `pestphp/pest-plugin-browser` `^4.3` en `require-dev` y `playwright` `1.61.1` exacto (D-097) en
+      `devDependencies`;
     - suite `Browser` en `phpunit.xml` para `tests/Browser`, con un test trivial: visitar el login y ver el
       formulario;
     - en CI, la extensión `sockets` en `setup-php` y el paso

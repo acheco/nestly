@@ -4,33 +4,38 @@ import tailwindcss from '@tailwindcss/vite';
 import vue from '@vitejs/plugin-vue';
 import laravel from 'laravel-vite-plugin';
 import { bunny } from 'laravel-vite-plugin/fonts';
+import { fileURLToPath } from 'node:url';
 import { defineConfig, lazyPlugins } from 'vite-plus';
 
 export default defineConfig({
-    plugins: lazyPlugins(() => [
-        laravel({
-            input: ['resources/css/app.css', 'resources/js/app.ts'],
-            refresh: true,
-            fonts: [
-                bunny('Instrument Sans', {
-                    weights: [400, 500, 600],
-                }),
-            ],
-        }),
-        inertia(),
-        tailwindcss(),
-        vue({
-            template: {
-                transformAssetUrls: {
-                    base: null,
-                    includeAbsolute: false,
-                },
-            },
-        }),
-        wayfinder({
-            formVariants: true,
-        }),
-    ]),
+    // Vitest only runs pure-function tests (spec 001, R13), so it skips the app's plugins.
+    // laravel-vite-plugin also refuses to start a Vite server when CI is set.
+    plugins: process.env.VITEST
+        ? []
+        : lazyPlugins(() => [
+              laravel({
+                  input: ['resources/css/app.css', 'resources/js/app.ts'],
+                  refresh: true,
+                  fonts: [
+                      bunny('Instrument Sans', {
+                          weights: [400, 500, 600],
+                      }),
+                  ],
+              }),
+              inertia(),
+              tailwindcss(),
+              vue({
+                  template: {
+                      transformAssetUrls: {
+                          base: null,
+                          includeAbsolute: false,
+                      },
+                  },
+              }),
+              wayfinder({
+                  formVariants: true,
+              }),
+          ]),
     server: {
         watch: {
             ignored: [
@@ -40,6 +45,13 @@ export default defineConfig({
                 '**/.junie/**',
                 '**/vendor/**',
             ],
+        },
+    },
+    test: {
+        include: ['tests/js/**/*.test.ts'],
+        environment: 'node',
+        alias: {
+            '@': fileURLToPath(new URL('./resources/js', import.meta.url)),
         },
     },
     lint: {

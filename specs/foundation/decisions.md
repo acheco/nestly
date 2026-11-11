@@ -387,7 +387,7 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
 - **Decisión:** cada criterio se prueba en el nivel más barato: Vitest (incluido en vite-plus) para funciones puras, Pest feature para lo que es HTTP y `pestphp/pest-plugin-browser` con Playwright solo para lo que necesita layout o JavaScript. No hay tests de componentes Vue. En CI se instala solo el headless shell de Chromium.
 - **Consecuencias:**
     - Dos dependencias de desarrollo nuevas: `pestphp/pest-plugin-browser` y `playwright`.
-    - El CI tarda unos 30 s más por run (PR #17, una medición).
+    - El CI tarda unos 30 s más por run (PR #17, una medición). Medido de nuevo en el PR #24 (3 runs contra la mediana de 5 de main): unos 16 s atribuibles al paso de Chromium; el resto queda dentro del ruido.
     - La constitución resume esta decisión en §5 "Frontend y E2E", que deja de remitir a la spec 001, y el punto se quita de su sección "Pendiente".
 
 ### D-095 · Accesibilidad WCAG 2.2 AA
@@ -405,6 +405,17 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
 - **Contexto:** el menú del starter kit enlaza a recursos externos, y las capturas de Figma muestran secciones que todavía no existen.
 - **Decisión:** el menú solo enlaza a páginas que existen. La barra inferior móvil tiene como máximo 3 secciones más "Más". Cada spec que añade una sección declara si va en la barra o en "Más". Mover una sección de la barra a "Más" requiere aprobación del usuario.
 - **Consecuencia:** al cerrar la spec 001 el menú solo tiene Inicio.
+
+### D-097 · Playwright fijado en 1.61.1 por Smart App Control
+- **Fecha:** 2026-11-10
+- **Estado:** aprobada.
+- **Contexto:** el equipo de desarrollo tiene Smart App Control activado. Bloquea el Chromium de Playwright 1.65.0 (revisión 1254) por falta de reputación: Code Integrity registra el bloqueo (eventos 3033 y 3077) y Node lo reporta como `spawn UNKNOWN`. El Chromium de Playwright 1.61.1 (revisión 1228) sí arranca. En el spike del PR #17 la 1.65 corrió en Windows; lo más probable es que Smart App Control estuviera entonces en modo evaluación. `pest-plugin-browser` exige como mínimo Playwright 1.59.1, y Smart App Control no admite excepciones por archivo.
+- **Decisión:** `playwright` se fija a la versión exacta `1.61.1` en `package.json`, sin `^`, en local y en CI.
+- **Consecuencias:**
+    - Antes de subir Playwright se comprueba que el Chromium de la nueva versión arranca con Smart App Control activado (`specs/backlog.md`).
+    - El CI instala el headless shell de esa misma versión.
+    - Dependabot solo vigila las GitHub Actions, así que no propondrá subirla.
+    - Smart App Control no se desactiva: en Windows 11 no se puede volver a activar sin reinstalar.
 
 ---
 

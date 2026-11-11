@@ -70,7 +70,8 @@ Primero, porque las demás fases escriben sus tests con estas herramientas.
 
 - `pestphp/pest-plugin-browser` `^4.3` en `require-dev`, escrito en `composer.json` y aplicado con
   `composer update pestphp/pest-plugin-browser` (no con `composer require`, por el `^` en Windows). `playwright` en
-  `devDependencies` de npm. El spike del PR #17 resolvió `^4.3` a la v4.3.1, con Playwright 1.65.0.
+  `devDependencies` de npm. El spike del PR #17 resolvió `^4.3` a la v4.3.1, con Playwright 1.65.0. La versión que se
+  usa es la 1.61.1 exacta (D-097).
 - Los tests van en `tests/Browser`, en una suite `Browser` nueva de `phpunit.xml`. `php artisan test` la ejecuta con
   las demás.
 - CI: la extensión `sockets` en `setup-php` y un paso
