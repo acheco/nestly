@@ -19,6 +19,7 @@ use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Vite;
 use Tests\TestCase;
 
 /*
@@ -35,6 +36,13 @@ use Tests\TestCase;
 pest()->extend(TestCase::class)
     ->use(RefreshDatabase::class)
     ->in('Feature', 'Browser');
+
+// Browser tests always render public/build, as in CI: following public/hot would test a running
+// `composer dev` (or break on an orphaned hot file) instead. Run `npm run build` before running
+// them outside `composer ci:check`, which builds first.
+pest()->beforeEach(function () {
+    Vite::useHotFile(storage_path('framework/testing/no-vite-hot'));
+})->in('Browser');
 
 /*
 |--------------------------------------------------------------------------

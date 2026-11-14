@@ -13,7 +13,7 @@ php artisan db:seed            # local only: demo family team, seeded through th
                                # (ana|luis|mariana@nestly.test / password)
 
 composer test                  # Pint check + PHPStan + Pest
-composer ci:check              # everything CI runs: frontend checks + composer test
+composer ci:check              # everything CI runs: frontend checks + build + composer test
 composer lint                  # format PHP with Pint
 composer types:check           # PHPStan (level 7)
 npm run check                  # frontend lint + format check (vite-plus); check:fix to apply
@@ -27,7 +27,7 @@ php artisan nestly:reconcile [--fix] [--team=<slug>]   # report balance drift; -
 
 Tests need a real PostgreSQL database named `nestly_testing` (see `phpunit.xml`). SQLite does not work: the schema uses exclusion constraints (`btree_gist`), `BOOL_AND` and generated range columns.
 
-There are no frontend tests.
+Frontend tests: Vitest (`tests/js`, `npm run test`) covers pure functions and the translation guards; Pest browser tests (`tests/Browser`, Playwright pinned by D-097) render pages in Chromium (D-094). Browser tests always run against `public/build`, never the Vite dev server: run `npm run build` first when running them outside `composer ci:check`.
 
 ## Sources of truth
 
@@ -40,12 +40,17 @@ Some decisions describe the target and are not implemented yet (for example D-01
 ## Workflow
 
 - **Features:** spec → plan → tasks → implementation, one task at a time, in `specs/NNN-name/`. Don't move to the next phase without my approval.
+- Each task starts with a plan in plan mode. Don't touch code until I approve it.
+- When turning an interview into a spec or plan, every condition attached to an answer must appear in it. Reread all answers before presenting it.
+- If an answer depends on a verification, run it and paste the raw output. If a premise changes, reopen the question.
+- If a spec, plan or document departs from the structure I asked for, propose the new outline in a few lines and wait before writing it.
 - **Small fixes:** go direct, no spec.
 - If docs and code disagree and `decisions.md` doesn't resolve it, **stop and ask me**. Don't pick a side.
-- Don't implement a business rule that isn't in `decisions.md` or an approved spec. Never edit `decisions.md` on your own: propose new decisions in its format (ID, context, decision, consequences) and wait for approval.
+- Don't implement a business rule that isn't in `decisions.md` or an approved spec. Never edit `decisions.md` on your own: propose new decisions in its format (ID, context, decision, consequences), say which constitution changes each one implies, and wait for approval.
 - Tests first. `composer ci:check` must pass before every commit that touches code. Docs-only commits skip it but must pass `npm run check`, which also formats Markdown (D-087).
-- One commit per task, referencing the spec or decision: `feat(002): ...`, `fix(D-014): ...`.
-- After each task, summarize what changed and why.
+- One commit per task, referencing the spec or decision: `feat(002): ...`, `fix(D-014): ...`. Tick the task's checkbox in `tasks.md` in that same commit. Then stop: summarize what changed and why, and show me the diff. Corrections to the task amend its commit (`git commit --amend`) instead of adding a new one, as long as the branch is not pushed.
+- Never push or open a PR (draft included) unless I ask.
+- Project rules live in this file or in `decisions.md`, not in the agent's memory. Memory holds only state: branch, tasks done, next task, open risks.
 - Work not ready yet is marked with `->todo()` or `->skip('reason')` in Pest. Never leave CI red.
 - Code, comments, and commits in English (D-085).
 
@@ -86,7 +91,7 @@ Private accounts are the main source of edge cases (D-011 to D-017, D-021, D-022
 
 ### Integrity in two layers
 
-Form Requests validate input, and PostgreSQL enforces invariants with `CHECK` and exclusion constraints added through raw `DB::statement` in migrations. `bootstrap/app.php` maps constraint violations users can trigger to 422 field errors through `app/Support/ConstraintViolations.php`. A new user-triggerable constraint needs an entry in its `MAP`. Matching is by constraint name, because PostgreSQL localizes its messages.
+Form Requests validate input, and PostgreSQL enforces invariants with `CHECK` and exclusion constraints added through raw `DB::statement` in migrations. `bootstrap/app.php` maps constraint violations users can trigger to 422 field errors through `app/Support/ConstraintViolations.php`. A new user-triggerable constraint needs an entry in its `MAP` and a translated message in `message()`; PHPStan fails if the `match` misses it. Matching is by constraint name, because PostgreSQL localizes its messages.
 
 ### Frontend
 
@@ -101,12 +106,13 @@ Form Requests validate input, and PostgreSQL enforces invariants with `CHECK` an
 - Create movements through the real actions (`recordExpense`, `recordTransfer`) so balances stay coherent. Use `driftBalance` only to corrupt a balance on purpose.
 - Error paths must assert that balances and rows were left untouched.
 - Team-role lookups are memoized. Load `teamMemberships` before authorization in endpoints that check roles repeatedly, as `AccountController::index` does; `TeamRoleMemoizationTest` covers the memoization.
-- Tests that guard security or money invariants (cross-team access, balances, locks) need a mutation check: temporarily break the guarded code, confirm the test fails, revert, and show an empty diff.
+- Invariant and drift tests need a mutation check: tests whose purpose is to catch a broken guarantee rather than describe a feature (cross-team isolation, balances, locks, translation parity, CI guards such as missing-key detection). Temporarily break the guarded code, confirm the test fails, revert, and show an empty diff. The task's plan includes it; it is never optional.
 - Cross-team access tests must use the most privileged role (owner or admin) as the actor, so a role check can't hide a missing team filter.
 
 ## Conventions
 
-- User-facing strings are currently hardcoded in Spanish and marked `TODO(i18n)`.
+- User-facing text lives in `lang/es.json` with English keys (D-091): `__()` in PHP, `t()` from `@/lib/i18n` in Vue and TS, always with a string literal as the key. Spanish values address the user as usted (D-098) and use the D-099 glossary. CI fails on a missing or non-literal key (`TranslationKeysTest`, `tests/js/translationKeys.test.ts`) and on template text outside `t()` (`tests/js/untranslatedText.test.ts`; `components/ui` is excluded until after v1.0).
+- The identifier `t` is reserved for the translation helper (D-091); don't use it for variables, parameters or loop aliases.
 - Dates are `CarbonImmutable` globally. Transactions and transfers can't be dated in the future, where "today" is in the recording user's timezone (D-020).
 
 ## Laravel Boost

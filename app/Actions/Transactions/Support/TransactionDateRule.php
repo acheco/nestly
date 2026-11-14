@@ -20,7 +20,7 @@ final class TransactionDateRule
     {
         if ($date->toDateString() > $user->localToday()) {
             throw ValidationException::withMessages([
-                'date' => 'La fecha no puede ser posterior a hoy.', // TODO(i18n)
+                'date' => __('The date cannot be later than today.'),
             ]);
         }
     }

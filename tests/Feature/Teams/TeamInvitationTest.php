@@ -47,7 +47,7 @@ test('invitation email for existing users uses login route', function () {
     $mail = (new TeamInvitationNotification($invitation))->toMail($invitedUser);
 
     expect($mail->actionUrl)->toBe(route('login', ['invitation' => $invitation->code]));
-    $this->assertStringContainsString('dashboard', implode(' ', $mail->introLines));
+    $this->assertStringContainsString('panel', implode(' ', $mail->introLines));
 });
 
 test('invitation email for unknown users uses login route', function () {
@@ -65,7 +65,25 @@ test('invitation email for unknown users uses login route', function () {
     $mail = (new TeamInvitationNotification($invitation))->toMail((object) []);
 
     expect($mail->actionUrl)->toBe(route('login', ['invitation' => $invitation->code]));
-    $this->assertStringContainsString('log in', strtolower(implode(' ', $mail->introLines)));
+    $this->assertStringContainsString('inicie sesión', mb_strtolower(implode(' ', $mail->introLines)));
+});
+
+// D-098: usted, without the pronoun when the verb is enough.
+test('invitation email subject is in Spanish', function () {
+    $owner = User::factory()->create();
+    $team = Team::factory()->create(['name' => 'Familia']);
+
+    $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+
+    $invitation = TeamInvitation::factory()->create([
+        'team_id' => $team->id,
+        'email' => 'unknown@example.com',
+        'invited_by' => $owner->id,
+    ]);
+
+    $mail = (new TeamInvitationNotification($invitation))->toMail((object) []);
+
+    expect($mail->subject)->toBe('Ha sido invitado a unirse a Familia');
 });
 
 test('team invitations can be created by admins', function () {
@@ -209,7 +227,7 @@ test('team invitations can be accepted', function () {
         ->post(route('invitations.accept', $invitation));
 
     $response->assertRedirect(route('dashboard'));
-    $response->assertInertiaFlash('toast', ['type' => 'success', 'message' => 'Invitation accepted.']);
+    $response->assertInertiaFlash('toast', ['type' => 'success', 'message' => 'Invitación aceptada.']);
 
     expect($invitedUser->fresh()->belongsToTeam($team))->toBeTrue();
     expect($invitation->fresh()->accepted_at)->not->toBeNull();

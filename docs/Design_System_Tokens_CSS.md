@@ -254,6 +254,9 @@ sm: 640px   md: 768px   lg: 1024px   xl: 1280px   2xl: 1536px
 
 ### 6.7 Contenido y tono
 
+**Nota:** la interfaz trata al usuario de usted, no de tú; los ejemplos de esta sección no se adaptaron. Ver D-098 en
+`specs/foundation/decisions.md`.
+
 - Voz: cercana pero profesional, sin jerga financiera innecesaria.
 - Formato de moneda: `Intl.NumberFormat(locale, { style: 'currency', currency })`.
 - Fechas: relativas ("hace 2 días") en listas, absolutas en detalle.

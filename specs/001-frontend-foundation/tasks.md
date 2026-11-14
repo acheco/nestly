@@ -45,29 +45,39 @@ Rama: `chore/001-test-tooling`.
 
 Rama: `feat/001-language`.
 
-1. [ ] **Locale.** Test (Pest feature): una página trae `<html lang="es">`. Después, `APP_LOCALE=es` y
+1. [x] **Locale.** Test (Pest feature): una página trae `<html lang="es">`. Después, `APP_LOCALE=es` y
        `APP_FALLBACK_LOCALE=es` en `.env.example` y `'es'` por defecto en `config/app.php`.
-2. [ ] **Textos de Laravel (copia única).** Primero el test de paridad (Pest): las claves de
+2. [x] **Textos de Laravel (copia única).** Primero el test de paridad (Pest): las claves de
        `lang/es/{auth,pagination,passwords,validation}.php` contra las de
        `vendor/laravel/framework/src/Illuminate/Translation/lang/en/`. Después, en el mismo commit: instalar
        `laravel-lang/lang` y `laravel-lang/starter-kits`, ejecutar `php artisan lang:add es`, revisar los archivos,
        desinstalar los paquetes y añadir `lang/README.md` con la procedencia (paquetes, versiones exactas y licencia
        MIT con su aviso de copyright).
-3. [ ] **Helper `t()`.** Tests (Vitest) de los reemplazos `:name`, `:Name` y `:NAME`, de que las claves más largas se
+3. [x] **Helper `t()`.** Tests (Vitest) de los reemplazos `:name`, `:Name` y `:NAME`, de que las claves más largas se
        sustituyen primero y de que una clave sin traducción devuelve la clave. Después, `resources/js/lib/i18n.ts`, que
        importa `lang/es.json`.
-4. [ ] **Test de claves.** Test (Vitest) que recorre `resources/js` (salvo `components/ui`, `actions`, `routes` y
+4. [x] **Test de claves.** Test (Vitest) que recorre `resources/js` (salvo `components/ui`, `actions`, `routes` y
        `wayfinder`), y falla si una clave de `t()` no está en `lang/es.json` o si no es un literal de texto. Se
        comprueba que falla con una clave inventada y con una clave en una variable, y se quitan esos casos antes del
        commit.
-5. [ ] **Backend.** Las 34 marcas `TODO(i18n)` pasan a `__()`, con sus textos en `lang/es.json`. También la
+5. [x] **Backend.** Las 34 marcas `TODO(i18n)` pasan a `__()`, con sus textos en `lang/es.json`. También la
        notificación `TeamInvitation` y el nombre del team personal (`CreateNewUser`). Los tests existentes que comparan
-       esos textos siguen pasando.
-6. [ ] **Pantallas de autenticación.** Todos los textos de `pages/auth` y `layouts/auth` pasan a `t()`.
-7. [ ] **Resto de pantallas.** Ajustes, teams, Inicio, `TeamSwitcher`, `NavUser`, `UserMenuContent` y los modales
-       pasan a `t()`.
-8. [ ] **`CLAUDE.md`.** La línea de Conventions que describe `TODO(i18n)` pasa a describir `lang/es.json`, `__()` y
-       `t()`.
+       esos textos siguen pasando. Además:
+    - «Usted ha abandonado el equipo» pasa a «Ha abandonado el equipo» (D-098), en `lang/es.json` y en su test.
+    - `attributes` de `lang/es/validation.php` traduce todos los nombres de campo que usan los Form Requests
+      existentes, con un test por cada formulario afectado que comprueba el mensaje en español.
+    - Un test de guarda equivalente al de la tarea 4 para el backend: extrae las claves de `__()` en `app/` y falla si
+      no están en `lang/es.json`, con su mutation check.
+6. [x] **Pantallas de autenticación.** Todos los textos de `pages/auth` y `layouts/auth` pasan a `t()`. Incluye
+       `PasskeyVerify`, `TeamInvitationAlert` y `PasswordInput`.
+7. [x] **Resto de pantallas.** Ajustes, teams, Inicio, `TeamSwitcher`, `NavUser`, `UserMenuContent` y los modales
+       pasan a `t()`. También los nombres de rol (`TeamRole::label()`, D-099) y una guarda Vitest de texto sin `t()`
+       en las plantillas. Quedan fuera, hasta que la fase 6 los borre, los cinco archivos de R11 y los enlaces
+       Repository/Documentation del sidebar; la tarea 6.3 los quita de la lista de excepciones de la guarda.
+8. [x] **`CLAUDE.md`.** La línea de Conventions que describe `TODO(i18n)` pasa a describir `lang/es.json`, `__()` y
+       `t()`. También se corrigen la línea de `MAP` (el mensaje traducido en `message()`) y la que decía que no hay tests
+       de frontend; la constitución cita D-099, y D-099 añade remove → «quitar», con sus claves corregidas en
+       `lang/es.json`.
 
 **PR:**
 

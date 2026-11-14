@@ -100,7 +100,7 @@ test('the only owner of a shared team cannot be deleted', function (bool $withOt
         teamUser($team, TeamRole::Admin);
     }
 
-    assertDeletionBlocked(deleteAccount($user), $user, 'único owner');
+    assertDeletionBlocked(deleteAccount($user), $user, 'único propietario');
 
     expect($user->fresh()->belongsToTeam($team))->toBeTrue();
 })->with([
@@ -120,8 +120,8 @@ test('the block message lists every reason that applies', function () {
     expect(session('errors')->first('account'))
         ->toContain('cuentas privadas')
         ->toContain('gastos recurrentes')
-        ->toContain('movimientos')
-        ->toContain('único owner');
+        ->toContain('transacciones')
+        ->toContain('único propietario');
 });
 
 test('a wrong password is reported before any block', function () {
@@ -184,7 +184,7 @@ test('a user who recorded a transaction in a shared team cannot be deleted', fun
     $transaction = recordExpense($team, $account, $user);
     $balance = $account->fresh()->current_balance;
 
-    assertDeletionBlocked(deleteAccount($user), $user, 'movimientos');
+    assertDeletionBlocked(deleteAccount($user), $user, 'transacciones');
 
     expect($transaction->fresh()->created_by)->toBe($user->id);
     expect($account->fresh()->current_balance)->toBe($balance);
@@ -195,7 +195,7 @@ test('a user who recorded a transaction in their personal team cannot be deleted
     $team = $user->personalTeam();
     $transaction = recordExpense($team, Account::factory()->for($team)->create(), $user);
 
-    assertDeletionBlocked(deleteAccount($user), $user, 'movimientos');
+    assertDeletionBlocked(deleteAccount($user), $user, 'transacciones');
 
     expect($transaction->fresh()->created_by)->toBe($user->id);
     expect($team->fresh()->memberships()->where('user_id', $user->id)->exists())->toBeTrue();
@@ -209,7 +209,7 @@ test('a user who recorded a transfer cannot be deleted', function () {
     $to = Account::factory()->for($team)->create();
     $groupId = recordTransfer($team, $user, $from, $to);
 
-    assertDeletionBlocked(deleteAccount($user), $user, 'movimientos');
+    assertDeletionBlocked(deleteAccount($user), $user, 'transacciones');
 
     expect(Transaction::where('transfer_group_id', $groupId)->where('created_by', $user->id)->count())->toBe(2);
 });
@@ -222,7 +222,7 @@ test('a transaction in a team the user left still blocks the deletion', function
 
     $team->memberships()->where('user_id', $user->id)->delete();
 
-    assertDeletionBlocked(deleteAccount($user), $user, 'movimientos');
+    assertDeletionBlocked(deleteAccount($user), $user, 'transacciones');
 });
 
 test('a transaction in a deleted team still blocks the deletion', function () {
@@ -233,7 +233,7 @@ test('a transaction in a deleted team still blocks the deletion', function () {
 
     $team->delete();
 
-    assertDeletionBlocked(deleteAccount($user), $user, 'movimientos');
+    assertDeletionBlocked(deleteAccount($user), $user, 'transacciones');
 });
 
 test('transactions recorded by someone else do not block the deletion', function () {

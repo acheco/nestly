@@ -7,14 +7,16 @@ use Illuminate\Validation\ValidationException;
 
 final class ConstraintViolations
 {
-    // TODO(i18n)
+    /**
+     * Constraint name => the field that receives the error. Its message comes from message().
+     */
     private const array MAP = [
-        'transactions_amount_positive' => ['amount', 'El monto debe ser mayor que cero.'],
-        'recurring_expenses_amount_positive' => ['amount', 'El monto debe ser mayor que cero.'],
-        'budgets_limit_amount_positive' => ['limit_amount', 'El límite debe ser mayor que cero.'],
-        'budgets_no_overlap' => ['category_id', 'Ya existe un presupuesto para esta categoría en el periodo indicado.'],
-        'teams_color_hex' => ['color', 'El color debe tener el formato #RRGGBB.'],
-        'categories_kind_valid' => ['kind', 'El tipo de categoría no es válido.'],
+        'transactions_amount_positive' => 'amount',
+        'recurring_expenses_amount_positive' => 'amount',
+        'budgets_limit_amount_positive' => 'limit_amount',
+        'budgets_no_overlap' => 'category_id',
+        'teams_color_hex' => 'color',
+        'categories_kind_valid' => 'kind',
     ];
 
     public static function toValidationException(QueryException $exception): ?ValidationException
@@ -25,15 +27,33 @@ final class ConstraintViolations
 
         $name = self::constraintName($exception);
 
-        if ($name === null || ! array_key_exists($name, self::MAP)) {
+        if ($name === null) {
             return null;
         }
 
-        [$field, $message] = self::MAP[$name];
-
-        return ValidationException::withMessages([$field => $message]);
+        return ValidationException::withMessages([self::MAP[$name] => self::message($name)]);
     }
 
+    /**
+     * One literal __() per constraint, so the translation-key guard can check them. No default arm:
+     * a constraint added to MAP without its message fails PHPStan (match.unhandled).
+     *
+     * @param  key-of<self::MAP>  $constraint
+     */
+    private static function message(string $constraint): string
+    {
+        return match ($constraint) {
+            'transactions_amount_positive', 'recurring_expenses_amount_positive' => __('The amount must be greater than zero.'),
+            'budgets_limit_amount_positive' => __('The limit must be greater than zero.'),
+            'budgets_no_overlap' => __('A budget already exists for this category in that period.'),
+            'teams_color_hex' => __('The color must use the #RRGGBB format.'),
+            'categories_kind_valid' => __('The category type is not valid.'),
+        };
+    }
+
+    /**
+     * @return key-of<self::MAP>|null
+     */
     private static function constraintName(QueryException $exception): ?string
     {
         // PostgreSQL localizes its messages (a Spanish server says «restricción» «teams_color_hex»),

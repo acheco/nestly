@@ -17,6 +17,7 @@ import {
     DialogTrigger,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { t } from '@/lib/i18n';
 
 const passwordInput = useTemplateRef('passwordInput');
 </script>
@@ -25,22 +26,26 @@ const passwordInput = useTemplateRef('passwordInput');
     <div class="space-y-6">
         <Heading
             variant="small"
-            title="Delete account"
-            description="Elimina tu usuario y tu acceso a tus teams"
+            :title="t('Delete account')"
+            :description="t('Delete your user and your access to your teams')"
         />
         <div
             class="space-y-4 rounded-lg border border-red-100 bg-red-50 p-4 dark:border-red-200/10 dark:bg-red-700/10"
         >
             <div class="relative space-y-0.5 text-red-600 dark:text-red-100">
-                <p class="font-medium">Warning</p>
+                <p class="font-medium">{{ t('Warning') }}</p>
                 <p class="text-sm">
-                    Please proceed with caution, this cannot be undone.
+                    {{
+                        t('Please proceed with caution, this cannot be undone.')
+                    }}
                 </p>
             </div>
             <Dialog>
                 <DialogTrigger as-child>
-                    <Button variant="destructive" data-test="delete-user-button"
-                        >Delete account</Button
+                    <Button
+                        variant="destructive"
+                        data-test="delete-user-button"
+                        >{{ t('Delete account') }}</Button
                     >
                 </DialogTrigger>
                 <DialogContent>
@@ -55,33 +60,29 @@ const passwordInput = useTemplateRef('passwordInput');
                         v-slot="{ errors, processing, reset, clearErrors }"
                     >
                         <DialogHeader class="space-y-3">
-                            <DialogTitle
-                                >Are you sure you want to delete your
-                                account?</DialogTitle
-                            >
-                            <!-- TODO(i18n) -->
+                            <DialogTitle>{{
+                                t(
+                                    'Are you sure you want to delete your account?',
+                                )
+                            }}</DialogTitle>
                             <DialogDescription>
-                                Se eliminarán tu usuario y tu acceso a todos tus
-                                teams. Tu team personal no se borra: queda sin
-                                miembros y nadie podrá acceder a él. Los teams
-                                compartidos conservan sus datos. No podrás
-                                eliminar tu cuenta si tienes cuentas privadas,
-                                creaste gastos recurrentes, registraste
-                                movimientos o eres el único owner de un team
-                                compartido. Introduce tu contraseña para
-                                confirmar.
+                                {{
+                                    t(
+                                        'Your user and your access to all your teams will be deleted. Your personal team is not deleted: it is left without members and nobody will be able to access it. Shared teams keep their data. You cannot delete your account if you have private accounts, created recurring expenses, recorded transactions or are the only owner of a shared team. Enter your password to confirm.',
+                                    )
+                                }}
                             </DialogDescription>
                         </DialogHeader>
 
                         <div class="grid gap-2">
-                            <Label for="password" class="sr-only"
-                                >Password</Label
-                            >
+                            <Label for="password" class="sr-only">{{
+                                t('Password')
+                            }}</Label>
                             <PasswordInput
                                 id="password"
                                 name="password"
                                 ref="passwordInput"
-                                placeholder="Password"
+                                :placeholder="t('Password')"
                             />
                             <InputError :message="errors.password" />
                             <InputError :message="errors.account" />
@@ -98,7 +99,7 @@ const passwordInput = useTemplateRef('passwordInput');
                                         }
                                     "
                                 >
-                                    Cancel
+                                    {{ t('Cancel') }}
                                 </Button>
                             </DialogClose>
 
@@ -108,7 +109,7 @@ const passwordInput = useTemplateRef('passwordInput');
                                 :disabled="processing"
                                 data-test="confirm-delete-user-button"
                             >
-                                Delete account
+                                {{ t('Delete account') }}
                             </Button>
                         </DialogFooter>
                     </Form>

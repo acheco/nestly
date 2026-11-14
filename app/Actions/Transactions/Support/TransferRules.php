@@ -18,7 +18,7 @@ final class TransferRules
     public function assertValidInput(User $user, string $fromId, string $toId, CarbonInterface $date): void
     {
         if ($fromId === $toId) {
-            throw ValidationException::withMessages(['from_account_id' => 'Las cuentas deben ser diferentes']); // TODO(i18n)
+            throw ValidationException::withMessages(['from_account_id' => __('The accounts must be different.')]);
         }
 
         $this->dateRule->assertNotInFuture($user, $date);
@@ -27,7 +27,7 @@ final class TransferRules
     public function assertAccounts(User $user, Account $from, Account $to): void
     {
         if ($from->visibility === AccountVisibility::Private && $user->id !== $from->owner_id) {
-            throw new AuthorizationException('Solo el dueño puede transferir desde una cuenta privada.'); // TODO(i18n)
+            throw new AuthorizationException(__('Only the owner can transfer from a private account.'));
         }
 
         /**
@@ -36,15 +36,15 @@ final class TransferRules
          *  moving money out of someone else's private account gets 403, not a hint about the destination.
          */
         if ($from->visibility === AccountVisibility::Private && $to->visibility === AccountVisibility::Private) {
-            throw ValidationException::withMessages(['to_account_id' => 'No se puede transferir entre dos cuentas privadas.']); // TODO(i18n)
+            throw ValidationException::withMessages(['to_account_id' => __('Transfers between two private accounts are not allowed.')]);
         }
 
         if ($from->archived) {
-            throw ValidationException::withMessages(['from_account_id' => 'No se puede transferir desde una cuenta archivada.']); // TODO(i18n)
+            throw ValidationException::withMessages(['from_account_id' => __('Transfers from an archived account are not allowed.')]);
         }
 
         if ($to->archived) {
-            throw ValidationException::withMessages(['to_account_id' => 'No se puede transferir a una cuenta archivada.']); // TODO(i18n)
+            throw ValidationException::withMessages(['to_account_id' => __('Transfers to an archived account are not allowed.')]);
         }
     }
 
@@ -68,7 +68,7 @@ final class TransferRules
             $category = $team->categories()->findOrFail($categoryId);
 
             if ($from->visibility === $to->visibility) {
-                throw ValidationException::withMessages(['category_id' => 'Una transferencia entre cuentas del team no lleva categoría.']); // TODO(i18n)
+                throw ValidationException::withMessages(['category_id' => __('A transfer between team accounts has no category.')]);
             }
 
             // The team-side leg is the expense when money leaves the team, the income when it enters.
@@ -77,7 +77,7 @@ final class TransferRules
                 : TransactionType::Income;
 
             if ($category->kind->value !== $teamLegType->value) {
-                throw ValidationException::withMessages(['category_id' => 'El tipo de categoría no coincide con la transferencia. Selecciona una categoría válida para este registro.']); // TODO(i18n)
+                throw ValidationException::withMessages(['category_id' => __('The category type does not match the transfer. Select a valid category for this record.')]);
             }
 
             if ($teamLegType === TransactionType::Expense) {

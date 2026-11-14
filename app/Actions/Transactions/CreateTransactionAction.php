@@ -29,13 +29,13 @@ class CreateTransactionAction
 
             if ($account->archived) {
                 throw ValidationException::withMessages([
-                    'account_id' => 'No se pueden registrar transacciones en una cuenta archivada.', // TODO(i18n)
+                    'account_id' => __('Transactions cannot be recorded in an archived account.'),
                 ]);
             }
 
             if ($account->visibility === AccountVisibility::Private && $data->transfer_group_id === null) {
                 throw ValidationException::withMessages([
-                    'account_id' => 'No puedes registrar transacciones en una cuenta privada sin un grupo de transferencia.', // TODO(i18n)
+                    'account_id' => __('Transactions on a private account must belong to a transfer.'),
                 ]);
             }
 
@@ -46,7 +46,7 @@ class CreateTransactionAction
 
                 if ($category->kind->value !== $data->type->value) {
                     throw ValidationException::withMessages([
-                        'category_id' => 'El tipo de categoría no coincide con la transacción. Selecciona una categoría válida para este registro.', // TODO(i18n)
+                        'category_id' => __('The category type does not match the transaction. Select a valid category for this record.'),
                     ]);
                 }
             }

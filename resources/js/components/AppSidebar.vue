@@ -16,6 +16,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+import { t } from '@/lib/i18n';
 import { dashboard } from '@/routes';
 import type { NavItem } from '@/types';
 
@@ -27,7 +28,7 @@ const dashboardUrl = computed(() =>
 
 const mainNavItems = computed<NavItem[]>(() => [
     {
-        title: 'Dashboard',
+        title: t('Dashboard'),
         href: dashboardUrl.value,
         icon: LayoutGrid,
     },

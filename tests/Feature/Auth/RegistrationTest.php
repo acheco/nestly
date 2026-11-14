@@ -46,3 +46,15 @@ test('new users can register', function () {
     $user = User::where('email', 'test@example.com')->first();
     $response->assertRedirect(route('dashboard'));
 });
+
+// Spec 001, R1: the personal team name is built through __() (lang/es.json).
+test('the personal team of a new user is named in Spanish', function () {
+    $this->post(route('register.store'), [
+        'name' => 'Ana',
+        'email' => 'ana@example.com',
+        'password' => 'password',
+        'password_confirmation' => 'password',
+    ]);
+
+    expect(User::where('email', 'ana@example.com')->first()->personalTeam()->name)->toBe('Equipo de Ana');
+});

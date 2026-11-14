@@ -100,7 +100,7 @@ class TransactionController extends Controller
 
         $updateTransaction->execute($current_team, $request->user(), $transaction->id, $transactionData);
 
-        return back()->with('success', 'Transacción actualizada.'); // TODO(i18n)
+        return back()->with('success', __('Transaction updated.'));
     }
 
     /**
@@ -112,6 +112,6 @@ class TransactionController extends Controller
 
         $deleteTransaction->execute($current_team, $transaction->id);
 
-        return back()->with('success', 'Transacción eliminada.'); // TODO(i18n)
+        return back()->with('success', __('Transaction deleted.'));
     }
 }
