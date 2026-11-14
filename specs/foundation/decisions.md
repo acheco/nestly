@@ -427,6 +427,24 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
     - Todo texto nuevo (`TODO(i18n)`, claves de `t()`) se escribe en usted.
     - `docs/Design_System_Tokens_CSS.md` §6.7 recibe una nota que remite aquí (D-071).
 
+### D-099 · Glosario de la interfaz
+- **Fecha:** 2026-11-14
+- **Estado:** aprobada.
+- **Contexto:** los textos del backend mezclaban «team», «owner», «borrar» y «movimientos» con «equipo» y «propietario» de la copia de laravel-lang (D-092). Al traducir las pantallas (spec 001, tareas 2.5 a 2.7) hace falta un término único para cada concepto.
+- **Decisión:** la interfaz usa estos términos:
+    - team → «equipo»; owner → «propietario»;
+    - delete → «eliminar» (nunca «borrar»);
+    - transactions → «transacciones» (nunca «movimientos»);
+    - passkey → «llave de acceso»; two-factor authentication → «autenticación de dos factores»; recovery code → «código de recuperación»;
+    - Dashboard → «Inicio» (D-096); Settings → «Ajustes»; Profile → «Perfil»; Security → «Seguridad»; Teams → «Equipos»; Appearance → «Apariencia»;
+    - temas: «Claro», «Oscuro», «Sistema»;
+    - roles: Owner → «Propietario», Admin → «Administrador», Member → «Miembro», Viewer → «Lector».
+- **Consecuencias:**
+    - Las claves de `lang/es.json` siguen en inglés (D-091); el glosario fija solo los valores en español.
+    - `TeamRole::label()` devuelve el nombre del rol traducido con `__()`.
+    - Un término nuevo, o un cambio de uno de estos, se añade a esta lista antes de usarlo.
+    - La constitución, en §2 "Idioma", puede remitir a esta decisión (propuesta pendiente de aprobación).
+
 ---
 
 ## Pendientes
