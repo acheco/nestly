@@ -13,7 +13,7 @@ php artisan db:seed            # local only: demo family team, seeded through th
                                # (ana|luis|mariana@nestly.test / password)
 
 composer test                  # Pint check + PHPStan + Pest
-composer ci:check              # everything CI runs: frontend checks + composer test
+composer ci:check              # everything CI runs: frontend checks + build + composer test
 composer lint                  # format PHP with Pint
 composer types:check           # PHPStan (level 7)
 npm run check                  # frontend lint + format check (vite-plus); check:fix to apply
@@ -27,7 +27,7 @@ php artisan nestly:reconcile [--fix] [--team=<slug>]   # report balance drift; -
 
 Tests need a real PostgreSQL database named `nestly_testing` (see `phpunit.xml`). SQLite does not work: the schema uses exclusion constraints (`btree_gist`), `BOOL_AND` and generated range columns.
 
-Frontend tests: Vitest (`tests/js`, `npm run test`) covers pure functions and the translation guards; Pest browser tests (`tests/Browser`, Playwright pinned by D-097) render pages in Chromium (D-094).
+Frontend tests: Vitest (`tests/js`, `npm run test`) covers pure functions and the translation guards; Pest browser tests (`tests/Browser`, Playwright pinned by D-097) render pages in Chromium (D-094). Browser tests always run against `public/build`, never the Vite dev server: run `npm run build` first when running them outside `composer ci:check`.
 
 ## Sources of truth
 

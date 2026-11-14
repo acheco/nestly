@@ -122,14 +122,18 @@ spec que muestre fechas de movimientos.
 
 - **Subir Playwright:** antes de subir, comprobar que el Chromium de la nueva versión arranca con Smart App Control
   activado (D-097).
-- **`public/hot` huérfano:** en Windows, `public/hot` queda huérfano al cortar `composer dev` y rompe los tests de
-  navegador en local. Evaluar que la suite `Browser` ignore el hot file.
+- ~~**`public/hot` huérfano:**~~ resuelto el 2026-11-14: la suite `Browser` apunta Vite a un hot file que no existe
+  (`tests/Pest.php`) y `composer ci:check` compila antes de los tests.
 - **Cuelgue intermitente de la suite `Browser`:** a veces la suite se queda colgada sin fallar ni terminar. Hace falta
   reproducirlo y encontrar la causa.
     - 2026-11-10: una vez, dentro de `composer ci:check`.
     - 2026-11-14: `php artisan test --testsuite=Browser` con un solo test (`SmokeTest`) seguía sin terminar a los 300 s.
       Al pararlo no quedaron procesos de Playwright ni de Chromium. El reintento inmediato pasó en 5 s. `composer dev`
-      estaba en marcha; no se sabe si influye.
+      estaba en marcha.
+    - 2026-11-14, dos veces más, con `composer dev` parado (así que no es la causa): `composer ci:check` seguía sin
+      terminar a los 5 min, con el proceso `playwright run-server` vivo y ningún Chromium; y un test suelto de la suite
+      sin `visit()` seguía sin terminar a los 120 s. El cuelgue ocurre al arrancar Playwright, antes de abrir el
+      navegador.
     - Entorno: Windows 11 con Smart App Control activado y Playwright 1.61.1 (D-097). En CI (Linux) no se ha visto.
     - Mientras tanto: lanzar la suite y `composer ci:check` con límite de tiempo, y matar el árbol de procesos si se
       cuelga.
