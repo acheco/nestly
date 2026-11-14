@@ -68,7 +68,8 @@ Rama: `feat/001-language`.
       existentes, con un test por cada formulario afectado que comprueba el mensaje en español.
     - Un test de guarda equivalente al de la tarea 4 para el backend: extrae las claves de `__()` en `app/` y falla si
       no están en `lang/es.json`, con su mutation check.
-6. [ ] **Pantallas de autenticación.** Todos los textos de `pages/auth` y `layouts/auth` pasan a `t()`.
+6. [x] **Pantallas de autenticación.** Todos los textos de `pages/auth` y `layouts/auth` pasan a `t()`. Incluye
+       `PasskeyVerify`, `TeamInvitationAlert` y `PasswordInput`.
 7. [ ] **Resto de pantallas.** Ajustes, teams, Inicio, `TeamSwitcher`, `NavUser`, `UserMenuContent` y los modales
        pasan a `t()`.
 8. [ ] **`CLAUDE.md`.** La línea de Conventions que describe `TODO(i18n)` pasa a describir `lang/es.json`, `__()` y
