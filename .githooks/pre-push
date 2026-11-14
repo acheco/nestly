@@ -1,0 +1,19 @@
+#!/bin/sh
+# Versioned pre-push hook (D-100): the full `composer ci:check` must pass before anything is pushed.
+# `composer setup` points git at this folder (core.hooksPath). Never bypass it with --no-verify.
+#
+# On Windows with PowerShell 7, the run goes through scripts/run-tests.ps1, which kills the whole
+# process tree if the Browser suite hangs (specs/backlog.md). Elsewhere (Linux, macOS, CI), or
+# without pwsh, it runs `composer ci:check` directly instead of failing.
+
+case "$(uname -s)" in
+    MINGW* | MSYS* | CYGWIN*) on_windows=1 ;;
+    *) on_windows=0 ;;
+esac
+
+if [ "$on_windows" = 1 ] && command -v pwsh > /dev/null 2>&1; then
+    exec pwsh -NoProfile -File scripts/run-tests.ps1 -Command "composer ci:check" -TimeoutSeconds 300
+fi
+
+echo "pre-push: running composer ci:check directly (no pwsh on Windows, or not Windows): no time limit." >&2
+exec composer ci:check

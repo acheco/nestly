@@ -330,7 +330,7 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
 
 ### D-087 · Commits de solo documentación
 - **Fecha:** 2026-11-05
-- **Estado:** aprobada.
+- **Estado:** reemplazada por D-100.
 - **Contexto:** `vp check` también revisa los archivos `.md`, y eso hizo fallar el CI en el PR #12.
 - **Decisión:** los commits que solo tocan documentación no ejecutan `composer ci:check`, pero sí `npm run check`.
 - **Consecuencia:** corregir `CLAUDE.md`.
@@ -443,7 +443,44 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
     - Las claves de `lang/es.json` siguen en inglés (D-091); el glosario fija solo los valores en español.
     - `TeamRole::label()` devuelve el nombre del rol traducido con `__()`.
     - Un término nuevo, o un cambio de uno de estos, se añade a esta lista antes de usarlo.
-    - La constitución, en §2 "Idioma", puede remitir a esta decisión (propuesta pendiente de aprobación).
+    - La constitución, en §2 "Idioma", remite a esta decisión.
+
+### D-100 · Cuándo se ejecutan los tests
+- **Fecha:** 2026-11-14
+- **Estado:** aprobada. Reemplaza a D-087.
+- **Contexto:** `composer ci:check` corre en cada commit y tarda varios minutos con la suite Browser, que además se cuelga a veces en Windows (backlog). Con un commit por tarea, esperar la suite completa en cada uno frena el trabajo sin aportar más seguridad que ejecutarla antes de subir.
+- **Decisión:**
+    - Cada tarea se cierra con los tests de lo que toca en verde (los archivos de test afectados y las guardas relacionadas), ejecutados con el subagente `test-runner`.
+    - Un hook de git `pre-push` ejecuta `composer ci:check` completo; si falla, el push no sale.
+    - En Windows con PowerShell 7, el hook ejecuta `ci:check` a través de `scripts/run-tests.ps1`, con un límite de 300 s y cierre del árbol de procesos si se cuelga. En otros sistemas, o en Windows sin `pwsh`, lo ejecuta directamente y sin límite de tiempo, avisando por stderr. El script solo existe por el cuelgue de la suite Browser en Windows (backlog).
+    - El CI del PR sigue siendo la última barrera: no se mergea sin CI en verde.
+- **Consecuencias:**
+    - La regla de `CLAUDE.md` y de la constitución que pedía `composer ci:check` antes de cada commit con código se sustituye por el `pre-push` (no había ningún hook de `pre-commit`: era una regla escrita).
+    - D-087 pasa a "reemplazada": la excepción de los commits de solo documentación ya no hace falta, porque los commits no ejecutan `ci:check`.
+    - Fuera de Windows, un cuelgue en el `pre-push` hay que cortarlo a mano (Ctrl+C), lo que aborta el push. Se acepta porque el cuelgue solo se ha visto en Windows.
+    - `CLAUDE.md` describe este flujo en su sección Workflow.
+
+### D-101 · Subagentes del flujo de trabajo
+- **Fecha:** 2026-11-14
+- **Estado:** aprobada.
+- **Contexto:** cerrar cada tarea exige ejecutar sus tests y comprobar que el diff cumple el plan. Hacerlo en el contexto principal gasta contexto, y el agente que implementó acaba revisando su propio trabajo. D-100 saca la suite completa del commit y deja los tests afectados al cierre de cada tarea.
+- **Decisión:** hay dos subagentes, versionados en `.claude/agents/`, y ninguno más:
+    - `test-runner` (modelo `haiku`; herramientas `Bash` y `Read`): ejecuta los tests que se le indican, siempre a través de `scripts/run-tests.ps1`, y devuelve solo el comando, la duración, los pasados, fallidos y omitidos y, por cada fallo, `archivo:línea` y el mensaje. No edita archivos ni intenta arreglar fallos.
+    - `reviewer` (modelo `opus`; herramientas `Read`, `Grep`, `Glob`, y `Bash` solo para `git diff`, `git log`, `git show` y `git grep`). Recibe la tarea, el plan aprobado, el rango de commits, el borrador del resumen de la tarea y las salidas de `test-runner` en rojo (antes del cambio) y en verde (después). Comprueba:
+        - (a) que el diff cumple el plan y cada punto pedido, y que el borrador del resumen no omite ninguno;
+        - (b) que cada decisión citada existe en `decisions.md` y dice lo que se afirma;
+        - (c) que los tests nuevos estuvieron en rojo, con la salida en rojo de `test-runner` y no con lo que diga el resumen, y que los mutation checks se revirtieron (`git grep` de las sondas). Si la tarea no añade tests (docs, chores), (c) se marca "N/A: la tarea no añade tests";
+        - (d) la constitución, D-098 y D-099;
+        - (e) las afirmaciones del borrador del resumen sin evidencia, contrastando las de tests con las salidas en rojo y en verde;
+        - (f) los cambios de comprobaciones en runtime por tipos estáticos.
+
+      Devuelve hallazgos 🔴 bloquea, 🟡 ajustar y ✅ verificado, con `archivo:línea`. No edita ni propone código completo.
+    - **Flujo de cada tarea:** `test-runner` en rojo (los tests nuevos, antes del cambio) → implementación → `test-runner` en verde (los tests afectados) → `reviewer` → se enseña el diff al usuario. En otros momentos, los subagentes solo se usan si el usuario lo pide.
+    - **No se añaden subagentes con roles de desarrollo** (implementar, planificar, diseñar): el agente principal implementa y los subagentes solo verifican. Un rol nuevo, o cambiar las herramientas o el modelo de uno de estos, requiere una decisión nueva.
+- **Consecuencias:**
+    - El resumen de cada tarea incluye el resultado de `test-runner` y los hallazgos del `reviewer`. Un 🔴 se corrige antes de enseñar el diff; un 🟡 se enseña junto al diff.
+    - **Riesgo aceptado:** el campo `tools` del frontmatter solo admite nombres de herramienta; la documentación de subagentes de Claude Code no admite patrones como `Bash(git diff:*)` (una entrada que no resuelve a una herramienta impide lanzar el subagente). La restricción de `Bash` del `reviewer` a comandos de lectura de git es solo una instrucción en `reviewer.md`. Si hiciera falta forzarla, el mecanismo documentado es un hook `PreToolUse` en el frontmatter del subagente; requeriría una decisión nueva.
+    - `CLAUDE.md` describe el flujo en Workflow.
 
 ---
 

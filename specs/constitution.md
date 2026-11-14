@@ -111,8 +111,9 @@ está en la columna de notas.
 - **Tests cross-team** con el rol más privilegiado como actor, para que un chequeo de rol no esconda un filtro de team
   ausente (D-073).
 - **Sin umbral de cobertura** (D-088).
-- **CI siempre verde.** `composer ci:check` pasa antes de cada commit con código; los commits de solo documentación
-  pasan `npm run check` (D-087). El trabajo pendiente se marca con `->todo()` o `->skip()`.
+- **CI siempre verde.** Cada tarea se cierra con sus tests afectados en verde, y `composer ci:check` pasa en el
+  `pre-push` antes de subir (D-100); no se mergea sin el CI del PR en verde. El trabajo pendiente se marca con
+  `->todo()` o `->skip()`.
 - **Trazabilidad:** un commit por tarea, que cita su spec o su decisión.
 
 ## 6. Cómo se cambia esta constitución
