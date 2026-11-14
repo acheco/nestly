@@ -466,12 +466,12 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
 - **Contexto:** cerrar cada tarea exige ejecutar sus tests y comprobar que el diff cumple el plan. Hacerlo en el contexto principal gasta contexto, y el agente que implementó acaba revisando su propio trabajo. D-100 saca la suite completa del commit y deja los tests afectados al cierre de cada tarea.
 - **Decisión:** hay dos subagentes, versionados en `.claude/agents/`, y ninguno más:
     - `test-runner` (modelo `haiku`; herramientas `Bash` y `Read`): ejecuta los tests que se le indican, siempre a través de `scripts/run-tests.ps1`, y devuelve solo el comando, la duración, los pasados, fallidos y omitidos y, por cada fallo, `archivo:línea` y el mensaje. No edita archivos ni intenta arreglar fallos.
-    - `reviewer` (modelo `opus`; herramientas `Read`, `Grep`, `Glob`, y `Bash` solo para `git diff`, `git log`, `git show` y `git grep`). Recibe la tarea, el plan aprobado, el rango de commits, el borrador del resumen de la tarea y la salida en rojo de `test-runner` (antes del cambio). Comprueba:
+    - `reviewer` (modelo `opus`; herramientas `Read`, `Grep`, `Glob`, y `Bash` solo para `git diff`, `git log`, `git show` y `git grep`). Recibe la tarea, el plan aprobado, el rango de commits, el borrador del resumen de la tarea y las salidas de `test-runner` en rojo (antes del cambio) y en verde (después). Comprueba:
         - (a) que el diff cumple el plan y cada punto pedido, y que el borrador del resumen no omite ninguno;
         - (b) que cada decisión citada existe en `decisions.md` y dice lo que se afirma;
-        - (c) que los tests nuevos estuvieron en rojo, con la salida en rojo de `test-runner` y no con lo que diga el resumen, y que los mutation checks se revirtieron (`git grep` de las sondas);
+        - (c) que los tests nuevos estuvieron en rojo, con la salida en rojo de `test-runner` y no con lo que diga el resumen, y que los mutation checks se revirtieron (`git grep` de las sondas). Si la tarea no añade tests (docs, chores), (c) se marca "N/A: la tarea no añade tests";
         - (d) la constitución, D-098 y D-099;
-        - (e) las afirmaciones del borrador del resumen sin evidencia;
+        - (e) las afirmaciones del borrador del resumen sin evidencia, contrastando las de tests con las salidas en rojo y en verde;
         - (f) los cambios de comprobaciones en runtime por tipos estáticos.
 
       Devuelve hallazgos 🔴 bloquea, 🟡 ajustar y ✅ verificado, con `archivo:línea`. No edita ni propone código completo.
