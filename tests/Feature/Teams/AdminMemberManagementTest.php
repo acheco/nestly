@@ -210,8 +210,8 @@ test('the settings page only offers an admin what D-077 allows', function () {
         ->get(route('teams.edit', $this->team))
         ->assertInertia(fn (Assert $page) => $page
             ->where('availableRoles', [
-                ['value' => 'member', 'label' => 'Member'],
-                ['value' => 'viewer', 'label' => 'Viewer'],
+                ['value' => 'member', 'label' => 'Miembro'],
+                ['value' => 'viewer', 'label' => 'Lector'],
             ])
             ->where('members', fn ($members) => collect($members)->every(function (array $row) {
                 $manageable = in_array($row['id'], [$this->member->id, $this->viewer->id], true);
@@ -227,9 +227,9 @@ test('the settings page offers the owner every member but themselves', function 
         ->get(route('teams.edit', $this->team))
         ->assertInertia(fn (Assert $page) => $page
             ->where('availableRoles', [
-                ['value' => 'admin', 'label' => 'Admin'],
-                ['value' => 'member', 'label' => 'Member'],
-                ['value' => 'viewer', 'label' => 'Viewer'],
+                ['value' => 'admin', 'label' => 'Administrador'],
+                ['value' => 'member', 'label' => 'Miembro'],
+                ['value' => 'viewer', 'label' => 'Lector'],
             ])
             ->where('members', fn ($members) => collect($members)->every(function (array $row) {
                 $manageable = $row['id'] !== $this->owner->id;

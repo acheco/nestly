@@ -11,6 +11,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import { t } from '@/lib/i18n';
 import { leave as leaveTeamAction } from '@/routes/teams';
 import type { Team } from '@/types';
 
@@ -43,9 +44,9 @@ const leaveTeam = () => {
     <Dialog :open="props.open" @update:open="emit('update:open', $event)">
         <DialogContent>
             <DialogHeader>
-                <DialogTitle>Leave team</DialogTitle>
+                <DialogTitle>{{ t('Leave team') }}</DialogTitle>
                 <DialogDescription>
-                    Are you sure you want to leave
+                    {{ t('Are you sure you want to leave') }}
                     <strong>{{ props.team?.name }}</strong
                     >?
                 </DialogDescription>
@@ -53,7 +54,7 @@ const leaveTeam = () => {
 
             <DialogFooter class="gap-2">
                 <DialogClose as-child>
-                    <Button variant="secondary"> Cancel </Button>
+                    <Button variant="secondary"> {{ t('Cancel') }} </Button>
                 </DialogClose>
 
                 <Button
@@ -62,7 +63,7 @@ const leaveTeam = () => {
                     :disabled="processing"
                     @click="leaveTeam"
                 >
-                    Leave team
+                    {{ t('Leave team') }}
                 </Button>
             </DialogFooter>
         </DialogContent>

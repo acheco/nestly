@@ -10,11 +10,16 @@ enum TeamRole: string
     case Viewer = 'viewer';
 
     /**
-     * Get the display label for the role.
+     * Get the display label for the role, translated (D-099).
      */
     public function label(): string
     {
-        return ucfirst($this->value);
+        return match ($this) {
+            self::Owner => __('Owner'),
+            self::Admin => __('Admin'),
+            self::Member => __('Member'),
+            self::Viewer => __('Viewer'),
+        };
     }
 
     /**

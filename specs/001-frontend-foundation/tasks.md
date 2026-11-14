@@ -70,8 +70,10 @@ Rama: `feat/001-language`.
       no están en `lang/es.json`, con su mutation check.
 6. [x] **Pantallas de autenticación.** Todos los textos de `pages/auth` y `layouts/auth` pasan a `t()`. Incluye
        `PasskeyVerify`, `TeamInvitationAlert` y `PasswordInput`.
-7. [ ] **Resto de pantallas.** Ajustes, teams, Inicio, `TeamSwitcher`, `NavUser`, `UserMenuContent` y los modales
-       pasan a `t()`.
+7. [x] **Resto de pantallas.** Ajustes, teams, Inicio, `TeamSwitcher`, `NavUser`, `UserMenuContent` y los modales
+       pasan a `t()`. También los nombres de rol (`TeamRole::label()`, D-099) y una guarda Vitest de texto sin `t()`
+       en las plantillas. Quedan fuera, hasta que la fase 6 los borre, los cinco archivos de R11 y los enlaces
+       Repository/Documentation del sidebar; la tarea 6.3 los quita de la lista de excepciones de la guarda.
 8. [ ] **`CLAUDE.md`.** La línea de Conventions que describe `TODO(i18n)` pasa a describir `lang/es.json`, `__()` y
        `t()`.
 
