@@ -124,6 +124,29 @@ spec que muestre fechas de movimientos.
   activado (D-097).
 - **`public/hot` huérfano:** en Windows, `public/hot` queda huérfano al cortar `composer dev` y rompe los tests de
   navegador en local. Evaluar que la suite `Browser` ignore el hot file.
+- **Cuelgue intermitente de la suite `Browser`:** a veces la suite se queda colgada sin fallar ni terminar. Hace falta
+  reproducirlo y encontrar la causa.
+    - 2026-11-10: una vez, dentro de `composer ci:check`.
+    - 2026-11-14: `php artisan test --testsuite=Browser` con un solo test (`SmokeTest`) seguía sin terminar a los 300 s.
+      Al pararlo no quedaron procesos de Playwright ni de Chromium. El reintento inmediato pasó en 5 s. `composer dev`
+      estaba en marcha; no se sabe si influye.
+    - Entorno: Windows 11 con Smart App Control activado y Playwright 1.61.1 (D-097). En CI (Linux) no se ha visto.
+    - Mientras tanto: lanzar la suite y `composer ci:check` con límite de tiempo, y matar el árbol de procesos si se
+      cuelga.
+
+## Textos de shadcn sin traducir (después de v1.0)
+
+`resources/js/components/ui` es código vendorizado de shadcn-vue y queda fuera de la traducción de la spec 001 y de la
+guarda de textos sin `t()`. Sus textos en inglés se leen con lector de pantalla, así que chocan con D-095 (WCAG 2.2 AA:
+el idioma de la página es español). Se dejan para después de v1.0. Lista de un grep rápido del 2026-11-14:
+
+- «Close» (`sr-only`): `dialog/DialogContent.vue`, `dialog/DialogScrollContent.vue`, `sheet/SheetContent.vue`.
+- «More» (`sr-only`): `breadcrumb/BreadcrumbEllipsis.vue`.
+- «Toggle sidebar» (`sr-only`): `sidebar/SidebarTrigger.vue`.
+- «Toggle Sidebar» (`aria-label` y `title`): `sidebar/SidebarRail.vue`.
+- «Sidebar» (`SheetTitle`): `sidebar/Sidebar.vue`.
+- «breadcrumb» (`aria-label`): `breadcrumb/Breadcrumb.vue`.
+- «Loading» (`aria-label`): `spinner/Spinner.vue`.
 
 ## Dependabot
 
