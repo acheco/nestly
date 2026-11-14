@@ -433,7 +433,7 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
 - **Contexto:** los textos del backend mezclaban «team», «owner», «borrar» y «movimientos» con «equipo» y «propietario» de la copia de laravel-lang (D-092). Al traducir las pantallas (spec 001, tareas 2.5 a 2.7) hace falta un término único para cada concepto.
 - **Decisión:** la interfaz usa estos términos:
     - team → «equipo»; owner → «propietario»;
-    - delete → «eliminar» (nunca «borrar»);
+    - delete → «eliminar» (nunca «borrar»); remove → «quitar» (sacar algo de donde está: un miembro de un equipo, una llave de acceso de una cuenta);
     - transactions → «transacciones» (nunca «movimientos»);
     - passkey → «llave de acceso»; two-factor authentication → «autenticación de dos factores»; recovery code → «código de recuperación»;
     - Dashboard → «Inicio» (D-096); Settings → «Ajustes»; Profile → «Perfil»; Security → «Seguridad»; Teams → «Equipos»; Appearance → «Apariencia»;

@@ -27,7 +27,7 @@ php artisan nestly:reconcile [--fix] [--team=<slug>]   # report balance drift; -
 
 Tests need a real PostgreSQL database named `nestly_testing` (see `phpunit.xml`). SQLite does not work: the schema uses exclusion constraints (`btree_gist`), `BOOL_AND` and generated range columns.
 
-There are no frontend tests.
+Frontend tests: Vitest (`tests/js`, `npm run test`) covers pure functions and the translation guards; Pest browser tests (`tests/Browser`, Playwright pinned by D-097) render pages in Chromium (D-094).
 
 ## Sources of truth
 
@@ -91,7 +91,7 @@ Private accounts are the main source of edge cases (D-011 to D-017, D-021, D-022
 
 ### Integrity in two layers
 
-Form Requests validate input, and PostgreSQL enforces invariants with `CHECK` and exclusion constraints added through raw `DB::statement` in migrations. `bootstrap/app.php` maps constraint violations users can trigger to 422 field errors through `app/Support/ConstraintViolations.php`. A new user-triggerable constraint needs an entry in its `MAP`. Matching is by constraint name, because PostgreSQL localizes its messages.
+Form Requests validate input, and PostgreSQL enforces invariants with `CHECK` and exclusion constraints added through raw `DB::statement` in migrations. `bootstrap/app.php` maps constraint violations users can trigger to 422 field errors through `app/Support/ConstraintViolations.php`. A new user-triggerable constraint needs an entry in its `MAP` and a translated message in `message()`; PHPStan fails if the `match` misses it. Matching is by constraint name, because PostgreSQL localizes its messages.
 
 ### Frontend
 
@@ -111,7 +111,7 @@ Form Requests validate input, and PostgreSQL enforces invariants with `CHECK` an
 
 ## Conventions
 
-- User-facing strings are currently hardcoded in Spanish and marked `TODO(i18n)`.
+- User-facing text lives in `lang/es.json` with English keys (D-091): `__()` in PHP, `t()` from `@/lib/i18n` in Vue and TS, always with a string literal as the key. Spanish values address the user as usted (D-098) and use the D-099 glossary. CI fails on a missing or non-literal key (`TranslationKeysTest`, `tests/js/translationKeys.test.ts`) and on template text outside `t()` (`tests/js/untranslatedText.test.ts`; `components/ui` is excluded until after v1.0).
 - The identifier `t` is reserved for the translation helper (D-091); don't use it for variables, parameters or loop aliases.
 - Dates are `CarbonImmutable` globally. Transactions and transfers can't be dated in the future, where "today" is in the recording user's timezone (D-020).
 

@@ -74,8 +74,10 @@ Rama: `feat/001-language`.
        pasan a `t()`. También los nombres de rol (`TeamRole::label()`, D-099) y una guarda Vitest de texto sin `t()`
        en las plantillas. Quedan fuera, hasta que la fase 6 los borre, los cinco archivos de R11 y los enlaces
        Repository/Documentation del sidebar; la tarea 6.3 los quita de la lista de excepciones de la guarda.
-8. [ ] **`CLAUDE.md`.** La línea de Conventions que describe `TODO(i18n)` pasa a describir `lang/es.json`, `__()` y
-       `t()`.
+8. [x] **`CLAUDE.md`.** La línea de Conventions que describe `TODO(i18n)` pasa a describir `lang/es.json`, `__()` y
+       `t()`. También se corrigen la línea de `MAP` (el mensaje traducido en `message()`) y la que decía que no hay tests
+       de frontend; la constitución cita D-099, y D-099 añade remove → «quitar», con sus claves corregidas en
+       `lang/es.json`.
 
 **PR:**
 
