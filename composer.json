@@ -51,7 +51,8 @@
             "@php artisan key:generate",
             "@php artisan migrate --force",
             "npm install",
-            "npm run build"
+            "npm run build",
+            "@php -r \"if (is_dir('.git')) { passthru('git config core.hooksPath .githooks'); }\""
         ],
         "dev": [
             "Composer\\Config::disableProcessTimeout",
