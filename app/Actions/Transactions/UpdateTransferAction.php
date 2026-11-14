@@ -71,17 +71,17 @@ readonly class UpdateTransferAction
             $isAdmin = $user->teamRole($team)?->isAtLeast(TeamRole::Admin) ?? false;
 
             if (! $isCreator && ! $ownInvolvedAccount && ! $isAdmin) {
-                throw new AuthorizationException('No tienes permiso para editar esta transferencia'); // TODO(i18n)
+                throw new AuthorizationException(__('You are not allowed to edit this transfer.'));
             }
 
             if ($oldFromAccount->archived) {
                 throw ValidationException::withMessages([
-                    'from_account_id' => 'La cuenta de origen está archivada, primero active la cuenta', // TODO(i18n)
+                    'from_account_id' => __('The source account is archived. Reactivate the account first.'),
                 ]);
             }
 
             if ($oldToAccount->archived) {
-                throw ValidationException::withMessages(['to_account_id' => 'La cuenta destino está archivada, primero active la cuenta']); // TODO(i18n)
+                throw ValidationException::withMessages(['to_account_id' => __('The destination account is archived. Reactivate the account first.')]);
             }
 
             $this->rules->assertAccounts($user, $newFromAccount, $newToAccount);

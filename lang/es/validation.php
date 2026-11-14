@@ -161,7 +161,20 @@ return [
 
     // Added by hand, not part of the laravel-lang copy (D-085: field names in Spanish too).
     'attributes' => [
+        'account_id' => 'cuenta',
+        'amount' => 'monto',
+        'category_id' => 'categoría',
+        'current_password' => 'contraseña actual',
+        'date' => 'fecha',
+        'description' => 'descripción',
         'email' => 'correo electrónico',
+        'from_account_id' => 'cuenta de origen',
+        'icon' => 'icono',
+        'name' => 'nombre',
+        'notes' => 'notas',
         'password' => 'contraseña',
+        'role' => 'rol',
+        'to_account_id' => 'cuenta de destino',
+        'type' => 'tipo',
     ],
 ];

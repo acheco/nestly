@@ -103,6 +103,6 @@ test('--team only reconciles the given team', function () {
 
 test('an unknown --team fails with an error', function () {
     $this->artisan('nestly:reconcile', ['--team' => 'unknown'])
-        ->expectsOutputToContain("No existe ningún team con el slug 'unknown'")
+        ->expectsOutputToContain("No existe ningún equipo con el slug 'unknown'")
         ->assertFailed();
 });

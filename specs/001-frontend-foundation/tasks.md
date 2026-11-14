@@ -60,7 +60,7 @@ Rama: `feat/001-language`.
        `wayfinder`), y falla si una clave de `t()` no está en `lang/es.json` o si no es un literal de texto. Se
        comprueba que falla con una clave inventada y con una clave en una variable, y se quitan esos casos antes del
        commit.
-5. [ ] **Backend.** Las 34 marcas `TODO(i18n)` pasan a `__()`, con sus textos en `lang/es.json`. También la
+5. [x] **Backend.** Las 34 marcas `TODO(i18n)` pasan a `__()`, con sus textos en `lang/es.json`. También la
        notificación `TeamInvitation` y el nombre del team personal (`CreateNewUser`). Los tests existentes que comparan
        esos textos siguen pasando. Además:
     - «Usted ha abandonado el equipo» pasa a «Ha abandonado el equipo» (D-098), en `lang/es.json` y en su test.

@@ -19,7 +19,7 @@ class ReconcileBalancesCommand extends Command
         $fix = (bool) $this->option('fix');
 
         if ($slug !== null && ! Team::where('slug', $slug)->exists()) {
-            $this->error("No existe ningún team con el slug '{$slug}'. Revisa el valor de --team."); // TODO(i18n)
+            $this->error(__("No team has the slug ':slug'. Check the --team value.", ['slug' => $slug]));
 
             return self::FAILURE;
         }

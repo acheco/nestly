@@ -36,7 +36,7 @@ final class DeleteUserAction
 
             if ($reasons !== []) {
                 throw ValidationException::withMessages([
-                    'account' => 'No puedes eliminar tu cuenta todavía: '.implode('; ', $reasons).'.', // TODO(i18n)
+                    'account' => __('You cannot delete your account yet: :reasons.', ['reasons' => implode('; ', $reasons)]),
                 ]);
             }
 
@@ -53,19 +53,19 @@ final class DeleteUserAction
 
         // Not scoped to a team or to active rows: the foreign keys don't distinguish them either.
         if (Account::where('owner_id', $user->id)->exists()) {
-            $reasons[] = 'tienes cuentas privadas'; // TODO(i18n)
+            $reasons[] = __('you have private accounts');
         }
 
         if (RecurringExpense::where('created_by', $user->id)->exists()) {
-            $reasons[] = 'creaste gastos recurrentes'; // TODO(i18n)
+            $reasons[] = __('you created recurring expenses');
         }
 
         if (Transaction::where('created_by', $user->id)->exists()) {
-            $reasons[] = 'registraste movimientos'; // TODO(i18n)
+            $reasons[] = __('you recorded transactions');
         }
 
         if ($this->isOnlyOwnerOfSharedTeam($user)) {
-            $reasons[] = 'eres el único owner de un team compartido'; // TODO(i18n)
+            $reasons[] = __('you are the only owner of a shared team');
         }
 
         return $reasons;

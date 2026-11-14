@@ -68,6 +68,24 @@ test('invitation email for unknown users uses login route', function () {
     $this->assertStringContainsString('inicie sesión', mb_strtolower(implode(' ', $mail->introLines)));
 });
 
+// D-098: usted, without the pronoun when the verb is enough.
+test('invitation email subject is in Spanish', function () {
+    $owner = User::factory()->create();
+    $team = Team::factory()->create(['name' => 'Familia']);
+
+    $team->members()->attach($owner, ['role' => TeamRole::Owner->value]);
+
+    $invitation = TeamInvitation::factory()->create([
+        'team_id' => $team->id,
+        'email' => 'unknown@example.com',
+        'invited_by' => $owner->id,
+    ]);
+
+    $mail = (new TeamInvitationNotification($invitation))->toMail((object) []);
+
+    expect($mail->subject)->toBe('Ha sido invitado a unirse a Familia');
+});
+
 test('team invitations can be created by admins', function () {
     Notification::fake();
 

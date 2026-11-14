@@ -57,18 +57,18 @@ class DeleteTransferAction
             $isAdmin = $user->teamRole($team)?->isAtLeast(TeamRole::Admin) ?? false;
 
             if (! $isCreator && ! $ownsInvolvedAccount && ! $isAdmin) {
-                throw new AuthorizationException('No tienes permiso para eliminar esta transferencia.'); // TODO(i18n)
+                throw new AuthorizationException(__('You are not allowed to delete this transfer.'));
             }
 
             if ($fromAccount->archived) {
                 throw ValidationException::withMessages([
-                    'account_id' => 'No se puede borrar una transferencia de una cuenta origen archivada, primero active la cuenta.', // TODO(i18n)
+                    'account_id' => __('A transfer from an archived source account cannot be deleted. Reactivate the account first.'),
                 ]);
             }
 
             if ($toAccount->archived) {
                 throw ValidationException::withMessages([
-                    'account_id' => 'No se puede borrar una transferencia hacia una cuenta destino archivada, primero active la cuenta.', // TODO(i18n)
+                    'account_id' => __('A transfer to an archived destination account cannot be deleted. Reactivate the account first.'),
                 ]);
             }
 
