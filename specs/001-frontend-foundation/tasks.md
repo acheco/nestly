@@ -106,7 +106,7 @@ Rama: `feat/001-visual-identity`.
 2. [x] **Radios y fuentes.** Revisar qué clase de radio usa cada componente de `components/ui` y fijar los radios del
        plan. Inter y JetBrains Mono con `bunny()` en lugar de Instrument Sans, y la utilidad `font-amount`. Sin test
        automático: revisión visual en el PR.
-3. [ ] **Colores fuera de `app.css`.** `app.ts` pasa `var(--primary)` a la barra de progreso. En `app.blade.php` se
+3. [x] **Colores fuera de `app.css`.** `app.ts` pasa `var(--primary)` a la barra de progreso. En `app.blade.php` se
        quita solo el bloque `<style>` en línea; el `<script>` que pone la clase `dark` se mantiene.
 4. [ ] **Apariencia.** Tests (Pest feature): con la cookie `appearance=dark`, `<html>` trae la clase `dark`; con
        `light`, no la trae. Excepción a "tests primero": pasan desde el principio, porque la lógica ya existe, y

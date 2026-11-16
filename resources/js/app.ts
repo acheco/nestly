@@ -23,7 +23,8 @@ void createInertiaApp({
         }
     },
     progress: {
-        color: '#4B5563',
+        // Spec 001, R4: no colors outside app.css; follows the active theme.
+        color: 'var(--primary)',
     },
 });
 
