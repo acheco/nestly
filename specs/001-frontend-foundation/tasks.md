@@ -92,7 +92,7 @@ Rama: `feat/001-language`.
 
 Rama: `feat/001-visual-identity`.
 
-1. [ ] **Tokens y contraste.**
+1. [x] **Tokens y contraste.**
     - El test de contraste (Vitest) lee los tokens de R4 de `app.css` en los dos temas y comprueba cada par de R5 con
       su umbral, más `bg` sobre `danger`. Solo acepta valores `#RRGGBB`: si un token falta o tiene otro formato, falla
       con un mensaje que nombra el token, separado de las aserciones de contraste.
