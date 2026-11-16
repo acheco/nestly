@@ -17,8 +17,13 @@ export default defineConfig({
                   input: ['resources/css/app.css', 'resources/js/app.ts'],
                   refresh: true,
                   fonts: [
-                      bunny('Instrument Sans', {
+                      // Spec 001, R4: Inter for the interface, JetBrains
+                      // Mono for amounts (the font-amount utility).
+                      bunny('Inter', {
                           weights: [400, 500, 600],
+                      }),
+                      bunny('JetBrains Mono', {
+                          weights: [500],
                       }),
                   ],
               }),

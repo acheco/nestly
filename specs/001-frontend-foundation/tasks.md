@@ -103,7 +103,7 @@ Rama: `feat/001-visual-identity`.
     - En el mismo commit: el mapeo a las variables de shadcn del plan, los tokens nuevos de Tailwind (`income` y
       `expense` incluidos), el borrado de los `--chart-*` y el estilo de compatibilidad de bordes con
       `var(--border)`.
-2. [ ] **Radios y fuentes.** Revisar qué clase de radio usa cada componente de `components/ui` y fijar los radios del
+2. [x] **Radios y fuentes.** Revisar qué clase de radio usa cada componente de `components/ui` y fijar los radios del
        plan. Inter y JetBrains Mono con `bunny()` en lugar de Instrument Sans, y la utilidad `font-amount`. Sin test
        automático: revisión visual en el PR.
 3. [ ] **Colores fuera de `app.css`.** `app.ts` pasa `var(--primary)` a la barra de progreso. En `app.blade.php` se

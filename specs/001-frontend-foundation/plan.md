@@ -163,6 +163,17 @@ En `resources/css/app.css`, la tabla de R4 se define como variables propias (`--
 - El estilo de compatibilidad de bordes pasa de `--color-gray-200` a `var(--border)`.
 - **Radios:** `--radius-md: 6px` (botones e inputs), `--radius-lg` y `--radius-xl: 10px` (tarjetas) y
   `--radius-2xl: 16px` (contenedores). Antes se revisa qué clase de radio usa cada componente de `components/ui`.
+    - **Contenedor:** superficie que agrupa tarjetas o contenido completo: el panel principal y los diálogos.
+      Popover, dropdown, select y tooltip son controles flotantes y llevan 6 px (`rounded-md`). El toast lleva 10 px,
+      como una tarjeta (`--radius`, que solo usa `Sonner.vue`).
+    - **Componentes de `components/ui` modificados** (añadido el 2026-11-16, tarea 3.2). Hay que volver a aplicarlos si
+      se actualizan con el CLI de shadcn:
+        - `sidebar/SidebarInset.vue`: `md:peer-data-[variant=inset]:rounded-xl` → `rounded-2xl`, porque es el panel
+          principal (`AppSidebar` usa `variant="inset"`).
+        - `dialog/DialogContent.vue`: `rounded-lg` → `rounded-2xl` en el contenedor del diálogo (no en el botón de
+          cerrar).
+        - `dialog/DialogScrollContent.vue`: `sm:rounded-lg` → `sm:rounded-2xl` en el contenedor del diálogo (no en el
+          botón de cerrar).
 - **Fuentes:** `bunny('Inter', { weights: [400, 500, 600] })` y `bunny('JetBrains Mono', { weights: [500] })` en
   `vite.config.ts`, en lugar de Instrument Sans. Una utilidad `font-amount` aplica JetBrains Mono con
   `tabular-nums`.

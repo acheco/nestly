@@ -9,13 +9,19 @@
 
 @theme inline {
     --font-sans:
-        Instrument Sans, ui-sans-serif, system-ui, sans-serif,
-        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-        'Noto Color Emoji';
+        Inter, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
-    --radius-lg: var(--radius);
-    --radius-md: calc(var(--radius) - 2px);
-    --radius-sm: calc(var(--radius) - 4px);
+    /*
+      Radii (spec 001, R4): 6px buttons, inputs and floating controls
+      (popover, dropdown, select, tooltip), 10px cards, 16px containers
+      (main panel and dialogs; see plan 001, phase 3).
+    */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 10px;
+    --radius-xl: 10px;
+    --radius-2xl: 16px;
 
     --color-background: var(--background);
     --color-foreground: var(--foreground);
@@ -90,10 +96,17 @@
     body,
     html {
         --font-sans:
-            'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
-            'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-            'Noto Color Emoji';
+            Inter, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+            'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     }
+}
+
+/* Amounts (spec 001, R4): JetBrains Mono 500 with aligned digits. */
+@utility font-amount {
+    font-family:
+        'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
 }
 
 /*
@@ -117,7 +130,8 @@
     --nestly-danger: #c93b44;
     --nestly-success: #1a7f4e;
     --nestly-warning: #9a6700;
-    --radius: 0.5rem;
+    /* Only the toast uses it (Sonner.vue): a notification, sized as a card. */
+    --radius: 10px;
 }
 
 .dark {
