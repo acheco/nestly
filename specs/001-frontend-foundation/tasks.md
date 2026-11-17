@@ -112,7 +112,7 @@ Rama: `feat/001-visual-identity`.
        `light`, no la trae. Excepción a "tests primero": pasan desde el principio, porque la lógica ya existe, y
        protegen R7 de cambios futuros. Mutation check: con `@class` de `app.blade.php` sin la condición de la cookie,
        los tests fallan.
-5. [ ] **Nota en `docs/Design_System_Tokens_CSS.md`.** Una nota al principio que remite a D-090 en
+5. [x] **Nota en `docs/Design_System_Tokens_CSS.md`.** Una nota al principio que remite a D-090 en
        `specs/foundation/decisions.md` (D-071), con el formato de las notas que ya tienen los otros docs. El documento
        no se reescribe.
 
