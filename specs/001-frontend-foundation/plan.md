@@ -199,6 +199,9 @@ En `resources/css/app.css`, la tabla de R4 se define como variables propias (`--
 - La lógica ya existe. Lo nuevo son los tests (Pest feature): con la cookie `appearance=dark`, `<html>` trae la clase
   `dark`; con `light`, no la trae.
 - `settings/Appearance.vue` se revisa con los tokens nuevos en los dos temas.
+- _Nota posterior:_ la lógica del cliente no estaba completa: leía localStorage y deshacía el tema de la cookie al
+  arrancar. Lo corrige `fix(001): read the appearance only from the cookie (R7)`: la cookie es la única fuente en
+  servidor y cliente, y un valor desconocido cuenta como `system` (`tests/Browser/AppearanceTest.php`).
 
 ### Fase 4 · Formato de dinero y fechas (R8)
 

@@ -48,12 +48,22 @@ const mediaQuery = () => {
     return window.matchMedia('(prefers-color-scheme: dark)');
 };
 
-const getStoredAppearance = () => {
-    if (typeof window === 'undefined') {
-        return null;
+// Spec 001, R7: the cookie is the only source of the appearance. The server renders `<html>`
+// from it, so reading anything else here would undo that render once the app boots.
+const isAppearance = (value: unknown): value is Appearance =>
+    value === 'light' || value === 'dark' || value === 'system';
+
+const getStoredAppearance = (): Appearance => {
+    if (typeof document === 'undefined') {
+        return 'system';
     }
 
-    return localStorage.getItem('appearance') as Appearance | null;
+    const value = document.cookie
+        .split('; ')
+        .find((cookie) => cookie.startsWith('appearance='))
+        ?.slice('appearance='.length);
+
+    return isAppearance(value) ? value : 'system';
 };
 
 const prefersDark = (): boolean => {
@@ -65,9 +75,7 @@ const prefersDark = (): boolean => {
 };
 
 const handleSystemThemeChange = () => {
-    const currentAppearance = getStoredAppearance();
-
-    updateTheme(currentAppearance || 'system');
+    updateTheme(getStoredAppearance());
 };
 
 export function initializeTheme(): void {
@@ -75,9 +83,7 @@ export function initializeTheme(): void {
         return;
     }
 
-    // Initialize theme from saved preference or default to system...
-    const savedAppearance = getStoredAppearance();
-    updateTheme(savedAppearance || 'system');
+    updateTheme(getStoredAppearance());
 
     // Set up system theme change listener...
     mediaQuery()?.addEventListener('change', handleSystemThemeChange);
@@ -87,13 +93,7 @@ const appearance = ref<Appearance>('system');
 
 export function useAppearance(): UseAppearanceReturn {
     onMounted(() => {
-        const savedAppearance = localStorage.getItem(
-            'appearance',
-        ) as Appearance | null;
-
-        if (savedAppearance) {
-            appearance.value = savedAppearance;
-        }
+        appearance.value = getStoredAppearance();
     });
 
     const resolvedAppearance = computed<ResolvedAppearance>(() => {
@@ -107,10 +107,6 @@ export function useAppearance(): UseAppearanceReturn {
     function updateAppearance(value: Appearance) {
         appearance.value = value;
 
-        // Store in localStorage for client-side persistence...
-        localStorage.setItem('appearance', value);
-
-        // Store in cookie for SSR...
         setCookie('appearance', value);
 
         updateTheme(value);
