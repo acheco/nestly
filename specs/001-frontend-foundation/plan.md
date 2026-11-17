@@ -226,6 +226,12 @@ En `resources/css/app.css`, la tabla de R4 se define como variables propias (`--
   redondeo dan `-0.00`. En los negativos reales el signo sigue siendo el de `Intl`, como pide R8. Mínimos:
   Chrome/Edge 106, Firefox 116 y Safari 15.4; por debajo, `Intl.NumberFormat` lanza `RangeError` con esa opción (ver
   "Navegadores soportados por la v1.0" en `specs/backlog.md`).
+- _Nota posterior:_ `formatRelativeDate` devuelve siempre la mayúscula inicial (`Hoy`, `Ayer`, `Hace 3 días`): en la
+  v1.0 las fechas solo se muestran solas. Una fecha posterior a hoy se muestra como fecha absoluta, nunca "Mañana",
+  porque los miembros de un team pueden estar en zonas horarias distintas y el "hoy" de uno puede ser el "mañana" de
+  otro. Vitest corre con `TZ=America/Santo_Domingo` (`test.env` en `vite.config.ts`), para que un fallo de hora local
+  aparezca también en el CI, que corre en UTC. No contradice R8: los tests pasan en cualquier zona, porque "hoy" y
+  `now` siempre se pasan como argumento; `TZ` solo está para que un fallo de hora local salga a la luz.
 
 ### Fase 5 · Página de muestra (R6)
 

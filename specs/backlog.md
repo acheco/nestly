@@ -159,6 +159,16 @@ Para la revisión de alcance del 30 nov. La v1.0 no fija qué navegadores admite
 a `Intl.NumberFormat.format()`. Los dos son de Intl.NumberFormat v3: Chrome/Edge 106, Firefox 116, Safari 15.4. Por
 debajo, `signDisplay: 'negative'` lanza `RangeError`. Hay que decidir el mínimo y si se fija en el build.
 
+## Entradas inválidas en los helpers de formato
+
+Los helpers de la spec 001 no validan lo que reciben, porque la spec no define qué hacer con una entrada inválida.
+Comprobado en Node 26:
+
+- `formatMoney('abc', 'DOP')` devuelve `RD$NaN`.
+- `formatRelativeDate` con un string que no sea `YYYY-MM-DD` lanza `RangeError: Invalid time value`.
+
+Pendiente de decidir qué hacer en cada caso.
+
 ## Dependabot
 
 Dependabot vigila únicamente GitHub Actions; evaluar añadir composer y npm (respetando el pin de Playwright de D-097).

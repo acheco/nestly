@@ -55,6 +55,8 @@ export default defineConfig({
     test: {
         include: ['tests/js/**/*.test.ts'],
         environment: 'node',
+        // A non-UTC zone (the users' own) so a local-time bug fails here and in CI (UTC) alike.
+        env: { TZ: 'America/Santo_Domingo' },
         alias: {
             '@': fileURLToPath(new URL('./resources/js', import.meta.url)),
         },
