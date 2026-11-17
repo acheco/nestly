@@ -152,6 +152,13 @@ el idioma de la página es español). Se dejan para después de v1.0. Lista de u
 - «breadcrumb» (`aria-label`): `breadcrumb/Breadcrumb.vue`.
 - «Loading» (`aria-label`): `spinner/Spinner.vue`.
 
+## Navegadores soportados por la v1.0
+
+Para la revisión de alcance del 30 nov. La v1.0 no fija qué navegadores admite (no hay `build.target` ni
+`browserslist`), pero el código ya exige un mínimo de 2022: `formatMoney` usa `signDisplay: 'negative'` y pasa strings
+a `Intl.NumberFormat.format()`. Los dos son de Intl.NumberFormat v3: Chrome/Edge 106, Firefox 116, Safari 15.4. Por
+debajo, `signDisplay: 'negative'` lanza `RangeError`. Hay que decidir el mínimo y si se fija en el build.
+
 ## Dependabot
 
 Dependabot vigila únicamente GitHub Actions; evaluar añadir composer y npm (respetando el pin de Playwright de D-097).

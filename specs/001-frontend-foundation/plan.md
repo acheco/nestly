@@ -222,6 +222,10 @@ En `resources/css/app.css`, la tabla de R4 se define como variables propias (`--
     - con `America/Santo_Domingo`, la fecha de ayer a las 21:00 hora local se muestra "Ayer".
 - `accounts/Index.vue`, el esqueleto de la spec 002, deja su `Intl.NumberFormat('en-US')` y usa `formatMoney`
   (D-093), aunque todavía no muestre nada.
+- _Nota posterior:_ `formatMoney` usa `signDisplay: 'negative'` para no mostrar "-RD$0.00" cuando una resta o un
+  redondeo dan `-0.00`. En los negativos reales el signo sigue siendo el de `Intl`, como pide R8. Mínimos:
+  Chrome/Edge 106, Firefox 116 y Safari 15.4; por debajo, `Intl.NumberFormat` lanza `RangeError` con esa opción (ver
+  "Navegadores soportados por la v1.0" en `specs/backlog.md`).
 
 ### Fase 5 · Página de muestra (R6)
 
