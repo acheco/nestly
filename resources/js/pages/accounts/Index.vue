@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { Account } from '@/types/accounts';
 import type { Team } from '@/types';
+import { formatMoney } from '@/lib/money';
 import { index } from '@/routes/accounts';
 import { computed } from 'vue';
 
@@ -31,10 +32,8 @@ const archived = computed(() => {
     return props.accounts.filter((a) => a.archived);
 });
 
-const money = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: props.currency,
-});
+// The team's currency for now; spec 002 formats each account with its own (D-084).
+const money = (amount: string): string => formatMoney(amount, props.currency);
 </script>
 
 <template></template>

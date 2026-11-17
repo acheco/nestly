@@ -132,7 +132,7 @@ Rama: `feat/001-formatting`.
 2. [x] **Fechas.** Tests (Vitest): "Hoy", "Ayer", "Hace N días" de 2 a 6 días, la fecha absoluta desde 7, la
        mayúscula inicial y, con `America/Santo_Domingo`, la fecha de ayer a las 21:00 hora local como "Ayer". Después,
        `todayIn` y `formatRelativeDate` en `resources/js/lib/dates.ts`.
-3. [ ] **`accounts/Index.vue`.** Deja su `Intl.NumberFormat('en-US')` y usa `formatMoney` (D-093).
+3. [x] **`accounts/Index.vue`.** Deja su `Intl.NumberFormat('en-US')` y usa `formatMoney` (D-093).
 
 **PR:** la salida de los tests de la tarea 1 en el CI (Node 22), que confirma que `Intl` acepta strings decimales.
 

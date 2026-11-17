@@ -152,6 +152,12 @@ el idioma de la página es español). Se dejan para después de v1.0. Lista de u
 - «breadcrumb» (`aria-label`): `breadcrumb/Breadcrumb.vue`.
 - «Loading» (`aria-label`): `spinner/Spinner.vue`.
 
+## Textos de la app en `<script>` sin traducir
+
+- El breadcrumb de `pages/accounts/Index.vue` (`title: 'Accounts'`) no pasa por `t()`.
+- La guarda de traducciones (`tests/js/untranslatedText.test.ts`) solo revisa plantillas, así que se le escapan los
+  strings visibles que están en `<script>` (breadcrumbs, títulos, toasts). Pendiente de decidir cómo cubrirlo.
+
 ## Navegadores soportados por la v1.0
 
 Para la revisión de alcance del 30 nov. La v1.0 no fija qué navegadores admite (no hay `build.target` ni
