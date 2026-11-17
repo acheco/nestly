@@ -108,7 +108,7 @@ Rama: `feat/001-visual-identity`.
        automático: revisión visual en el PR.
 3. [x] **Colores fuera de `app.css`.** `app.ts` pasa `var(--primary)` a la barra de progreso. En `app.blade.php` se
        quita solo el bloque `<style>` en línea; el `<script>` que pone la clase `dark` se mantiene.
-4. [ ] **Apariencia.** Tests (Pest feature): con la cookie `appearance=dark`, `<html>` trae la clase `dark`; con
+4. [x] **Apariencia.** Tests (Pest feature): con la cookie `appearance=dark`, `<html>` trae la clase `dark`; con
        `light`, no la trae. Excepción a "tests primero": pasan desde el principio, porque la lógica ya existe, y
        protegen R7 de cambios futuros. Mutation check: con `@class` de `app.blade.php` sin la condición de la cookie,
        los tests fallan.
