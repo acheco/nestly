@@ -9,13 +9,19 @@
 
 @theme inline {
     --font-sans:
-        Instrument Sans, ui-sans-serif, system-ui, sans-serif,
-        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-        'Noto Color Emoji';
+        Inter, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
 
-    --radius-lg: var(--radius);
-    --radius-md: calc(var(--radius) - 2px);
-    --radius-sm: calc(var(--radius) - 4px);
+    /*
+      Radii (spec 001, R4): 6px buttons, inputs and floating controls
+      (popover, dropdown, select, tooltip), 10px cards, 16px containers
+      (main panel and dialogs; see plan 001, phase 3).
+    */
+    --radius-sm: 4px;
+    --radius-md: 6px;
+    --radius-lg: 10px;
+    --radius-xl: 10px;
+    --radius-2xl: 16px;
 
     --color-background: var(--background);
     --color-foreground: var(--foreground);
@@ -45,11 +51,18 @@
     --color-input: var(--input);
     --color-ring: var(--ring);
 
-    --color-chart-1: var(--chart-1);
-    --color-chart-2: var(--chart-2);
-    --color-chart-3: var(--chart-3);
-    --color-chart-4: var(--chart-4);
-    --color-chart-5: var(--chart-5);
+    /* Nestly tokens with no shadcn equivalent (spec 001, R4). */
+    --color-text-subtle: var(--nestly-text-subtle);
+    --color-primary-hover: var(--nestly-primary-hover);
+    --color-primary-soft: var(--nestly-primary-soft);
+    --color-primary-text: var(--nestly-primary-text);
+    --color-success: var(--nestly-success);
+    --color-warning: var(--nestly-warning);
+    --color-info: var(--nestly-primary-text);
+
+    /* Amounts: income and expense point at success and danger (R4). */
+    --color-income: var(--nestly-success);
+    --color-expense: var(--nestly-danger);
 
     --color-sidebar: var(--sidebar-background);
     --color-sidebar-foreground: var(--sidebar-foreground);
@@ -75,7 +88,7 @@
     ::before,
     ::backdrop,
     ::file-selector-button {
-        border-color: var(--color-gray-200, currentColor);
+        border-color: var(--border, currentColor);
     }
 }
 
@@ -83,83 +96,98 @@
     body,
     html {
         --font-sans:
-            'Instrument Sans', ui-sans-serif, system-ui, sans-serif,
-            'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol',
-            'Noto Color Emoji';
+            Inter, ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
+            'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
     }
 }
 
+/* Amounts (spec 001, R4): JetBrains Mono 500 with aligned digits. */
+@utility font-amount {
+    font-family:
+        'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-weight: 500;
+    font-variant-numeric: tabular-nums;
+}
+
+/*
+  Design tokens (spec 001, R4; D-090). This is the only file with color
+  values. Every pair is checked against WCAG 2.2 AA (R5, D-095) by
+  tests/js/contrast.test.ts, which only accepts #RRGGBB here.
+*/
 :root {
-    --background: hsl(0 0% 100%);
-    --foreground: hsl(0 0% 3.9%);
-    --card: hsl(0 0% 100%);
-    --card-foreground: hsl(0 0% 3.9%);
-    --popover: hsl(0 0% 100%);
-    --popover-foreground: hsl(0 0% 3.9%);
-    --primary: hsl(0 0% 9%);
-    --primary-foreground: hsl(0 0% 98%);
-    --secondary: hsl(0 0% 92.1%);
-    --secondary-foreground: hsl(0 0% 9%);
-    --muted: hsl(0 0% 96.1%);
-    --muted-foreground: hsl(0 0% 45.1%);
-    --accent: hsl(0 0% 96.1%);
-    --accent-foreground: hsl(0 0% 9%);
-    --destructive: hsl(0 84.2% 60.2%);
-    --destructive-foreground: hsl(0 0% 98%);
-    --border: hsl(0 0% 92.8%);
-    --input: hsl(0 0% 89.8%);
-    --ring: hsl(0 0% 3.9%);
-    --chart-1: hsl(12 76% 61%);
-    --chart-2: hsl(173 58% 39%);
-    --chart-3: hsl(197 37% 24%);
-    --chart-4: hsl(43 74% 66%);
-    --chart-5: hsl(27 87% 67%);
-    --radius: 0.5rem;
-    --sidebar-background: hsl(0 0% 98%);
-    --sidebar-foreground: hsl(240 5.3% 26.1%);
-    --sidebar-primary: hsl(0 0% 10%);
-    --sidebar-primary-foreground: hsl(0 0% 98%);
-    --sidebar-accent: hsl(0 0% 94%);
-    --sidebar-accent-foreground: hsl(0 0% 30%);
-    --sidebar-border: hsl(0 0% 91%);
-    --sidebar-ring: hsl(217.2 91.2% 59.8%);
-    --sidebar: hsl(0 0% 98%);
+    --nestly-bg: #ffffff;
+    --nestly-surface: #f6f7f9;
+    --nestly-border: #e3e5ea;
+    --nestly-input-border: #878d99;
+    --nestly-text: #0e0f12;
+    --nestly-text-muted: #5c626e;
+    --nestly-text-subtle: #6b717c;
+    --nestly-primary: #3d6bee;
+    --nestly-primary-hover: #2f5bd8;
+    --nestly-primary-foreground: #ffffff;
+    --nestly-primary-soft: #e8eeff;
+    --nestly-primary-text: #2f5bd8;
+    --nestly-danger: #c93b44;
+    --nestly-success: #1a7f4e;
+    --nestly-warning: #9a6700;
+    /* Only the toast uses it (Sonner.vue): a notification, sized as a card. */
+    --radius: 10px;
 }
 
 .dark {
-    --background: hsl(0 0% 3.9%);
-    --foreground: hsl(0 0% 98%);
-    --card: hsl(0 0% 3.9%);
-    --card-foreground: hsl(0 0% 98%);
-    --popover: hsl(0 0% 3.9%);
-    --popover-foreground: hsl(0 0% 98%);
-    --primary: hsl(0 0% 98%);
-    --primary-foreground: hsl(0 0% 9%);
-    --secondary: hsl(0 0% 14.9%);
-    --secondary-foreground: hsl(0 0% 98%);
-    --muted: hsl(0 0% 16.08%);
-    --muted-foreground: hsl(0 0% 63.9%);
-    --accent: hsl(0 0% 14.9%);
-    --accent-foreground: hsl(0 0% 98%);
-    --destructive: hsl(0 84% 60%);
-    --destructive-foreground: hsl(0 0% 98%);
-    --border: hsl(0 0% 14.9%);
-    --input: hsl(0 0% 14.9%);
-    --ring: hsl(0 0% 83.1%);
-    --chart-1: hsl(220 70% 50%);
-    --chart-2: hsl(160 60% 45%);
-    --chart-3: hsl(30 80% 55%);
-    --chart-4: hsl(280 65% 60%);
-    --chart-5: hsl(340 75% 55%);
-    --sidebar-background: hsl(0 0% 7%);
-    --sidebar-foreground: hsl(0 0% 95.9%);
-    --sidebar-primary: hsl(360, 100%, 100%);
-    --sidebar-primary-foreground: hsl(0 0% 100%);
-    --sidebar-accent: hsl(0 0% 15.9%);
-    --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
-    --sidebar-border: hsl(0 0% 15.9%);
-    --sidebar-ring: hsl(217.2 91.2% 59.8%);
-    --sidebar: hsl(240 5.9% 10%);
+    --nestly-bg: #0e0f12;
+    --nestly-surface: #16181d;
+    --nestly-border: #2a2e36;
+    --nestly-input-border: #636975;
+    --nestly-text: #eceef2;
+    --nestly-text-muted: #9ba1ac;
+    --nestly-text-subtle: #7d838e;
+    --nestly-primary: #3d6bee;
+    --nestly-primary-hover: #2f5bd8;
+    --nestly-primary-foreground: #ffffff;
+    --nestly-primary-soft: #1c2541;
+    --nestly-primary-text: #8aa8ff;
+    --nestly-danger: #e5636b;
+    --nestly-success: #4cc38a;
+    --nestly-warning: #d29922;
+}
+
+/*
+  shadcn variables point at the tokens (plan 001, phase 3). The selector
+  repeats .dark so that var() resolves again inside a .dark element.
+*/
+:root,
+.dark {
+    --background: var(--nestly-bg);
+    --foreground: var(--nestly-text);
+    --card: var(--nestly-surface);
+    --card-foreground: var(--nestly-text);
+    --popover: var(--nestly-surface);
+    --popover-foreground: var(--nestly-text);
+    --primary: var(--nestly-primary);
+    --primary-foreground: var(--nestly-primary-foreground);
+    --secondary: var(--nestly-surface);
+    --secondary-foreground: var(--nestly-text);
+    --muted: var(--nestly-surface);
+    --muted-foreground: var(--nestly-text-muted);
+    --accent: var(--nestly-primary-soft);
+    --accent-foreground: var(--nestly-primary-text);
+    --destructive: var(--nestly-danger);
+    /* White on dark danger is below 4.5:1, so text on danger is bg (plan). */
+    --destructive-foreground: var(--nestly-bg);
+    /* Cards and separators only: below 3:1, never on controls (R5). */
+    --border: var(--nestly-border);
+    --input: var(--nestly-input-border);
+    --ring: var(--nestly-primary);
+    --sidebar: var(--nestly-surface);
+    --sidebar-background: var(--nestly-surface);
+    --sidebar-foreground: var(--nestly-text);
+    --sidebar-primary: var(--nestly-primary);
+    --sidebar-primary-foreground: var(--nestly-primary-foreground);
+    --sidebar-accent: var(--nestly-primary-soft);
+    --sidebar-accent-foreground: var(--nestly-primary-text);
+    --sidebar-border: var(--nestly-border);
+    --sidebar-ring: var(--nestly-primary);
 }
 
 @layer base {

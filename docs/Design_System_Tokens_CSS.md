@@ -2,6 +2,11 @@
 version: "2.2"
 ---
 
+**Nota:** este documento ya no define la identidad visual de Nestly. La vigente es la de la spec 001 (tokens de color,
+fuentes y radios de R4, en `resources/css/app.css`, con el contraste de R5 comprobado por `tests/js/contrast.test.ts`,
+con las capturas de `specs/001-frontend-foundation/design/` como referencia visual); ver D-090 en
+`specs/foundation/decisions.md`.
+
 **Nota de versión 2.2:** alineado con el resto de la documentación del
 remake de portafolio. Dos ajustes de fondo: (1) se confirma esta paleta
 (azul/verde/ámbar sobre fondo oscuro) como la identidad visual vigente

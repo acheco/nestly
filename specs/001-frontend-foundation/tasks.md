@@ -92,7 +92,7 @@ Rama: `feat/001-language`.
 
 Rama: `feat/001-visual-identity`.
 
-1. [ ] **Tokens y contraste.**
+1. [x] **Tokens y contraste.**
     - El test de contraste (Vitest) lee los tokens de R4 de `app.css` en los dos temas y comprueba cada par de R5 con
       su umbral, más `bg` sobre `danger`. Solo acepta valores `#RRGGBB`: si un token falta o tiene otro formato, falla
       con un mensaje que nombra el token, separado de las aserciones de contraste.
@@ -103,16 +103,16 @@ Rama: `feat/001-visual-identity`.
     - En el mismo commit: el mapeo a las variables de shadcn del plan, los tokens nuevos de Tailwind (`income` y
       `expense` incluidos), el borrado de los `--chart-*` y el estilo de compatibilidad de bordes con
       `var(--border)`.
-2. [ ] **Radios y fuentes.** Revisar qué clase de radio usa cada componente de `components/ui` y fijar los radios del
+2. [x] **Radios y fuentes.** Revisar qué clase de radio usa cada componente de `components/ui` y fijar los radios del
        plan. Inter y JetBrains Mono con `bunny()` en lugar de Instrument Sans, y la utilidad `font-amount`. Sin test
        automático: revisión visual en el PR.
-3. [ ] **Colores fuera de `app.css`.** `app.ts` pasa `var(--primary)` a la barra de progreso. En `app.blade.php` se
+3. [x] **Colores fuera de `app.css`.** `app.ts` pasa `var(--primary)` a la barra de progreso. En `app.blade.php` se
        quita solo el bloque `<style>` en línea; el `<script>` que pone la clase `dark` se mantiene.
-4. [ ] **Apariencia.** Tests (Pest feature): con la cookie `appearance=dark`, `<html>` trae la clase `dark`; con
+4. [x] **Apariencia.** Tests (Pest feature): con la cookie `appearance=dark`, `<html>` trae la clase `dark`; con
        `light`, no la trae. Excepción a "tests primero": pasan desde el principio, porque la lógica ya existe, y
        protegen R7 de cambios futuros. Mutation check: con `@class` de `app.blade.php` sin la condición de la cookie,
        los tests fallan.
-5. [ ] **Nota en `docs/Design_System_Tokens_CSS.md`.** Una nota al principio que remite a D-090 en
+5. [x] **Nota en `docs/Design_System_Tokens_CSS.md`.** Una nota al principio que remite a D-090 en
        `specs/foundation/decisions.md` (D-071), con el formato de las notas que ya tienen los otros docs. El documento
        no se reescribe.
 
