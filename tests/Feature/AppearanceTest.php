@@ -25,3 +25,15 @@ it('sets the dark class on <html> from the appearance cookie', function (string 
     'dark' => ['dark', true],
     'light' => ['light', false],
 ]);
+
+// Spec 001, R7: the client treats an unknown cookie value as "system", so the server must
+// too. Otherwise the inline script skips the system check and the theme flips after boot.
+it('treats an unknown appearance cookie as system', function () {
+    $this->withoutVite();
+
+    $this->withUnencryptedCookie('appearance', 'sepia')
+        ->get(route('login'))
+        ->assertOk()
+        ->assertSee("const appearance = 'system';", false)
+        ->assertDontSee('sepia', false);
+});

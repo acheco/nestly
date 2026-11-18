@@ -199,6 +199,9 @@ En `resources/css/app.css`, la tabla de R4 se define como variables propias (`--
 - La lógica ya existe. Lo nuevo son los tests (Pest feature): con la cookie `appearance=dark`, `<html>` trae la clase
   `dark`; con `light`, no la trae.
 - `settings/Appearance.vue` se revisa con los tokens nuevos en los dos temas.
+- _Nota posterior:_ la lógica del cliente no estaba completa: leía localStorage y deshacía el tema de la cookie al
+  arrancar. Lo corrige `fix(001): read the appearance only from the cookie (R7)`: la cookie es la única fuente en
+  servidor y cliente, y un valor desconocido cuenta como `system` (`tests/Browser/AppearanceTest.php`).
 
 ### Fase 4 · Formato de dinero y fechas (R8)
 
@@ -219,6 +222,16 @@ En `resources/css/app.css`, la tabla de R4 se define como variables propias (`--
     - con `America/Santo_Domingo`, la fecha de ayer a las 21:00 hora local se muestra "Ayer".
 - `accounts/Index.vue`, el esqueleto de la spec 002, deja su `Intl.NumberFormat('en-US')` y usa `formatMoney`
   (D-093), aunque todavía no muestre nada.
+- _Nota posterior:_ `formatMoney` usa `signDisplay: 'negative'` para no mostrar "-RD$0.00" cuando una resta o un
+  redondeo dan `-0.00`. En los negativos reales el signo sigue siendo el de `Intl`, como pide R8. Mínimos:
+  Chrome/Edge 106, Firefox 116 y Safari 15.4; por debajo, `Intl.NumberFormat` lanza `RangeError` con esa opción (ver
+  "Navegadores soportados por la v1.0" en `specs/backlog.md`).
+- _Nota posterior:_ `formatRelativeDate` devuelve siempre la mayúscula inicial (`Hoy`, `Ayer`, `Hace 3 días`): en la
+  v1.0 las fechas solo se muestran solas. Una fecha posterior a hoy se muestra como fecha absoluta, nunca "Mañana",
+  porque los miembros de un team pueden estar en zonas horarias distintas y el "hoy" de uno puede ser el "mañana" de
+  otro. Vitest corre con `TZ=America/Santo_Domingo` (`test.env` en `vite.config.ts`), para que un fallo de hora local
+  aparezca también en el CI, que corre en UTC. No contradice R8: los tests pasan en cualquier zona, porque "hoy" y
+  `now` siempre se pasan como argumento; `TZ` solo está para que un fallo de hora local salga a la luz.
 
 ### Fase 5 · Página de muestra (R6)
 
