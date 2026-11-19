@@ -140,9 +140,10 @@ Rama: `feat/001-formatting`.
 
 Rama: `feat/001-showcase`.
 
-1. [ ] **Ruta solo en `local`.** Test (Pest feature): en `testing`, `GET /dev/showcase` responde 404. Después, la ruta
-       registrada solo en `local` y `pages/dev/Showcase.vue` vacía. Mutation check: con la ruta registrada sin la
-       condición de entorno, el test falla.
+1. [x] **Ruta solo en `local` y `testing` (D-102).** Test (Pest feature): en `testing`, `GET /dev/showcase` responde
+       200; en `production` no se registra. Después, la ruta registrada solo en `local` y `testing` y
+       `pages/dev/Showcase.vue` vacía. Mutation check: con la ruta registrada sin la condición de entorno, el test
+       falla.
 2. [ ] **Contenido.** Botones (todas las variantes y estados), tarjetas, montos positivos y negativos en DOP y USD con
        `formatMoney`, inputs con y sin error, los cuatro tipos de toast y un selector de tema.
 

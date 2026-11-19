@@ -482,6 +482,16 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
     - **Riesgo aceptado:** el campo `tools` del frontmatter solo admite nombres de herramienta; la documentación de subagentes de Claude Code no admite patrones como `Bash(git diff:*)` (una entrada que no resuelve a una herramienta impide lanzar el subagente). La restricción de `Bash` del `reviewer` a comandos de lectura de git es solo una instrucción en `reviewer.md`. Si hiciera falta forzarla, el mecanismo documentado es un hook `PreToolUse` en el frontmatter del subagente; requeriría una decisión nueva.
     - `CLAUDE.md` describe el flujo en Workflow.
 
+### D-102 · Entornos de la página de muestra
+- **Fecha:** 2026-11-19
+- **Estado:** aprobada.
+- **Contexto:** R6 pedía que `/dev/showcase` existiera solo en `local`. Así, la ruta no se puede probar: en `testing` no existe, y el único test posible ("responde 404") pasa en verde antes de implementar nada.
+- **Decisión:** la ruta se registra en `routes/web.php` solo si `app()->environment(['local', 'testing'])`. En `production` y en cualquier otro entorno no se registra y responde 404.
+- **Consecuencias:**
+    - Un test de feature comprueba que en `testing` renderiza la página, y otro, recargando `web.php` con el entorno en `production`, que la ruta no existe.
+    - Wayfinder genera la ruta cuando corre en local (también en el build del CI, porque `.env.example` usa `APP_ENV=local`): `routes/dev/index.ts` y una entrada en `actions/Inertia/Controller.ts`, porque `Route::inertia` usa ese controlador. Ningún archivo del frontend la importa.
+    - `pages/dev/Showcase.vue` entra en el bundle de producción como chunk inalcanzable.
+
 ---
 
 ## Pendientes

@@ -185,7 +185,9 @@ El token `text` no sirve sobre `primary`: da 3.99 en oscuro y 4.14 en claro. Por
 
 - Una página solo para desarrollo muestra botones (todas las variantes y estados), tarjetas, montos positivos y
   negativos en DOP y USD, inputs con y sin error, y los cuatro tipos de toast, en los dos temas.
-- Fuera del entorno `local` la ruta no existe y responde 404. _(Pest feature)_
+- La ruta existe solo en los entornos `local` y `testing`; en `production` y en cualquier otro no se registra y
+  responde 404 (D-102). _(Pest feature: en `testing` renderiza la página; con el entorno en `production` la ruta no
+  existe.)_
 - Aceptación: se compara con las capturas de `design/` en los dos temas y en móvil. _(Manual)_
 
 ### R7 · Apariencia

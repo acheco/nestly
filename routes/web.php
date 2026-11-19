@@ -50,4 +50,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('invitations/{invitation}', [TeamInvitationController::class, 'decline'])->name('invitations.decline');
 });
 
+// Spec 001, R6 (D-102): the dev showcase exists only in local and testing. Checked when this
+// file loads, so in production and any other environment the route is never registered.
+if (app()->environment(['local', 'testing'])) {
+    Route::inertia('dev/showcase', 'dev/Showcase')
+        ->middleware(['auth', 'verified'])
+        ->name('dev.showcase');
+}
+
 require __DIR__.'/settings.php';
