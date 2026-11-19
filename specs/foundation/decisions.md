@@ -492,6 +492,15 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
     - Wayfinder genera la ruta cuando corre en local (también en el build del CI, porque `.env.example` usa `APP_ENV=local`): `routes/dev/index.ts` y una entrada en `actions/Inertia/Controller.ts`, porque `Route::inertia` usa ese controlador. Ningún archivo del frontend la importa.
     - `pages/dev/Showcase.vue` entra en el bundle de producción como chunk inalcanzable.
 
+### D-103 · Alcance visual de la página de muestra
+- **Fecha:** 2026-11-19
+- **Estado:** aprobada.
+- **Contexto:** R6 pide comparar la página de muestra con las capturas de `specs/001-frontend-foundation/design/` en los dos temas y en móvil. Tres partes de esa comparación dependen de tareas posteriores: los colores por tipo de toast (7.1), la navegación móvil (6.4) y el foco visible (7.6). Adelantarlas obligaría a implementar dos veces los estilos de Sonner o a romper el orden de fases.
+- **Decisión:** la 5.2 muestra los cuatro tipos de toast, la vista móvil y los estados de foco tal como están. Su aprobación visual excluye esas tres partes, que se comparan al cerrar 7.1, 6.4 y 7.6.
+- **Consecuencias:**
+    - El PR de la fase 5 lista las tres exclusiones en su paso manual.
+    - Al planear la 7.1 se revisa si hace falta mover el `<Toaster>` a la raíz: tras la fase 6 solo quedará en un layout.
+
 ---
 
 ## Pendientes
