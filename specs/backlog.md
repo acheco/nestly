@@ -137,8 +137,6 @@ spec que muestre fechas de movimientos.
     - Entorno: Windows 11 con Smart App Control activado y Playwright 1.61.1 (D-097). En CI (Linux) no se ha visto.
     - Mientras tanto: lanzar la suite y `composer ci:check` con límite de tiempo, y matar el árbol de procesos si se
       cuelga.
-- **`test-runner` no encuentra Pint en Windows:** `vendor/bin/pint --test` falla con "'vendor' is not recognized as an
-  internal or external command" (2026-11-19). Probar a invocarlo con `php vendor/bin/pint`.
 
 ## Textos de shadcn sin traducir (después de v1.0)
 

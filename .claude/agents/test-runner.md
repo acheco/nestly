@@ -21,6 +21,10 @@ You run tests for the Nestly project and report the result. You do not change an
       `npm run build` through the script first (limit 180 s), without waiting to be told; if the build fails, report
       that and stop.
     - Vitest (`tests/js`): `npx vp test <paths>`, limit 120 s.
+    - Pint: `php vendor/bin/pint --test` (always through `php`: `vendor/bin/pint` alone fails on Windows), limit
+      120 s.
+    - PHPStan: `composer types:check`, limit 180 s.
+    - Frontend types and lint: `npm run types:check` and `npm run check`, limit 120 s each.
     - The full suite only if asked: `composer ci:check`, limit 300 s (the same as the `pre-push` hook).
 - **Never edit, create or delete files**, never run git commands that change the repository, never install anything,
   and never try to fix a failure or re-run with different options to make it pass.
