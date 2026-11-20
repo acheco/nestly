@@ -235,11 +235,11 @@ En `resources/css/app.css`, la tabla de R4 se define como variables propias (`--
 
 ### Fase 5 · Página de muestra (R6)
 
-- Ruta `GET /dev/showcase`, registrada solo cuando `app()->environment('local')`, que renderiza
-  `dev/Showcase.vue`. Fuera de `local` la ruta no existe y responde 404.
+- Ruta `GET /dev/showcase`, registrada solo cuando `app()->environment(['local', 'testing'])`, que renderiza
+  `dev/Showcase.vue`. En `production` (y en cualquier otro entorno) no se registra y responde 404 (D-102).
 - La página muestra botones (todas las variantes y estados), tarjetas, montos positivos y negativos en DOP y USD con
   `formatMoney`, inputs con y sin error y los cuatro tipos de toast, con un selector de tema.
-- Test (Pest feature): en `testing` la ruta responde 404.
+- Test (Pest feature): en `testing` la ruta responde 200; en `production` no se registra (D-102).
 - Aceptación manual: comparación con las capturas de `design/` en los dos temas y en móvil.
 
 ### Fase 6 · Navegación, restos del starter kit e Inicio (R9, R11)

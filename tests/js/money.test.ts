@@ -16,6 +16,12 @@ describe('formatMoney()', () => {
         );
     });
 
+    // The showcase balances (pages/dev/Showcase.vue); the browser test copies these strings.
+    it('formats the showcase balances', () => {
+        expect(formatMoney('45230.50', 'DOP')).toBe('RD$45,230.50');
+        expect(formatMoney('-1240.00', 'USD')).toBe('-US$1,240.00');
+    });
+
     it('keeps the sign that Intl produces for negative amounts', () => {
         expect(formatMoney('-1234.5', 'DOP')).toBe('-RD$1,234.50');
         expect(formatMoney('-1234.5', 'USD')).toBe('-US$1,234.50');

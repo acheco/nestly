@@ -116,6 +116,109 @@ export const readThemeTokens = (
 export const readShadcnMapping = (css: string): Record<string, string> =>
     readDeclarations(css, SHADCN_MAPPING_SELECTOR);
 
+/**
+ * The `--nestly-*` token behind a variable of app.css (`--popover`,
+ * `--color-success`, …), following `var()` chains through the `:root, .dark`
+ * block and `@theme inline`. Undefined when the chain does not end in a token.
+ */
+export const resolveToken = (
+    css: string,
+    variable: string,
+): string | undefined => {
+    const mapping = {
+        ...readDeclarations(css, '@theme inline'),
+        ...readShadcnMapping(css),
+    };
+    let current = variable;
+
+    for (let step = 0; step < 10; step++) {
+        const target = /^var\((--[\w-]+)\)$/.exec(mapping[current] ?? '')?.[1];
+
+        if (target === undefined) {
+            return undefined;
+        }
+
+        if (target.startsWith('--nestly-')) {
+            return target.slice('--nestly-'.length);
+        }
+
+        current = target;
+    }
+
+    return undefined;
+};
+
+const toLinear = (channel: number): number =>
+    channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+
+const fromLinear = (channel: number): number =>
+    channel <= 0.0031308
+        ? 12.92 * channel
+        : 1.055 * channel ** (1 / 2.4) - 0.055;
+
+const toOklab = (hex: string): [number, number, number] => {
+    const [red, green, blue] = [1, 3, 5].map((offset) =>
+        toLinear(parseInt(hex.slice(offset, offset + 2), 16) / 255),
+    ) as [number, number, number];
+    const l = Math.cbrt(
+        0.4122214708 * red + 0.5363325363 * green + 0.0514459929 * blue,
+    );
+    const m = Math.cbrt(
+        0.2119034982 * red + 0.6806995451 * green + 0.1073969566 * blue,
+    );
+    const s = Math.cbrt(
+        0.0883024619 * red + 0.2817188376 * green + 0.6299787005 * blue,
+    );
+
+    return [
+        0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+        1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
+        0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s,
+    ];
+};
+
+const fromOklab = ([lightness, a, b]: [number, number, number]): string => {
+    const l = (lightness + 0.3963377774 * a + 0.2158037573 * b) ** 3;
+    const m = (lightness - 0.1055613458 * a - 0.0638541728 * b) ** 3;
+    const s = (lightness - 0.0894841775 * a - 1.291485548 * b) ** 3;
+
+    return (
+        '#' +
+        [
+            4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s,
+            -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s,
+            -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s,
+        ]
+            .map((channel) =>
+                Math.round(Math.min(1, Math.max(0, fromLinear(channel))) * 255)
+                    .toString(16)
+                    .padStart(2, '0'),
+            )
+            .join('')
+    );
+};
+
+/**
+ * CSS `color-mix(in oklab, first percent%, second)` of two `#RRGGBB` colors,
+ * as `#RRGGBB` (both opaque, so the result is opaque too).
+ */
+export const mixOklab = (
+    first: string,
+    percent: number,
+    second: string,
+): string => {
+    const [a, b] = [toOklab(first), toOklab(second)];
+    const weight = percent / 100;
+
+    return fromOklab(
+        a.map((value, index) => value * weight + b[index]! * (1 - weight)) as [
+            number,
+            number,
+            number,
+        ],
+    );
+};
+
 /** WCAG 2.x relative luminance of a `#RRGGBB` color. */
 export const relativeLuminance = (hex: string): number => {
     const [red, green, blue] = [1, 3, 5].map((offset) => {

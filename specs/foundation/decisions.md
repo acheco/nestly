@@ -482,6 +482,25 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
     - **Riesgo aceptado:** el campo `tools` del frontmatter solo admite nombres de herramienta; la documentación de subagentes de Claude Code no admite patrones como `Bash(git diff:*)` (una entrada que no resuelve a una herramienta impide lanzar el subagente). La restricción de `Bash` del `reviewer` a comandos de lectura de git es solo una instrucción en `reviewer.md`. Si hiciera falta forzarla, el mecanismo documentado es un hook `PreToolUse` en el frontmatter del subagente; requeriría una decisión nueva.
     - `CLAUDE.md` describe el flujo en Workflow.
 
+### D-102 · Entornos de la página de muestra
+- **Fecha:** 2026-11-19
+- **Estado:** aprobada.
+- **Contexto:** R6 pedía que `/dev/showcase` existiera solo en `local`. Así, la ruta no se puede probar: en `testing` no existe, y el único test posible ("responde 404") pasa en verde antes de implementar nada.
+- **Decisión:** la ruta se registra en `routes/web.php` solo si `app()->environment(['local', 'testing'])`. En `production` y en cualquier otro entorno no se registra y responde 404.
+- **Consecuencias:**
+    - Un test de feature comprueba que en `testing` renderiza la página, y otro, recargando `web.php` con el entorno en `production`, que la ruta no existe.
+    - Wayfinder genera la ruta cuando corre en local (también en el build del CI, porque `.env.example` usa `APP_ENV=local`): `routes/dev/index.ts` y una entrada en `actions/Inertia/Controller.ts`, porque `Route::inertia` usa ese controlador. Ningún archivo del frontend la importa.
+    - `pages/dev/Showcase.vue` entra en el bundle de producción como chunk inalcanzable.
+
+### D-103 · Alcance visual de la página de muestra
+- **Fecha:** 2026-11-19
+- **Estado:** aprobada.
+- **Contexto:** R6 pide comparar la página de muestra con las capturas de `specs/001-frontend-foundation/design/` en los dos temas y en móvil. Tres partes de esa comparación dependen de tareas posteriores: los colores por tipo de toast (7.1), la navegación móvil (6.4) y el foco visible (7.6). Adelantarlas obligaría a implementar dos veces los estilos de Sonner o a romper el orden de fases.
+- **Decisión:** la 5.2 muestra la vista móvil y los estados de foco tal como están. Su aprobación visual excluye esas dos partes, que se comparan al cerrar 6.4 y 7.6. Los colores por tipo de toast salieron de la exclusión: se hicieron en la fase 5 (commit `feat(001): income color and toast colors by type (R4, R6)`), y la comparación visual de la fase 5 sí los incluye.
+- **Consecuencias:**
+    - El PR de la fase 5 lista las dos exclusiones en su paso manual.
+    - A la 7.1 le queda solo mover el `<Toaster>` a la raíz. Al planearla se revisa si hace falta: tras la fase 6 solo quedará en un layout.
+
 ---
 
 ## Pendientes

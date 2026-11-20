@@ -140,10 +140,11 @@ Rama: `feat/001-formatting`.
 
 Rama: `feat/001-showcase`.
 
-1. [ ] **Ruta solo en `local`.** Test (Pest feature): en `testing`, `GET /dev/showcase` responde 404. Después, la ruta
-       registrada solo en `local` y `pages/dev/Showcase.vue` vacía. Mutation check: con la ruta registrada sin la
-       condición de entorno, el test falla.
-2. [ ] **Contenido.** Botones (todas las variantes y estados), tarjetas, montos positivos y negativos en DOP y USD con
+1. [x] **Ruta solo en `local` y `testing` (D-102).** Test (Pest feature): en `testing`, `GET /dev/showcase` responde
+       200; en `production` no se registra. Después, la ruta registrada solo en `local` y `testing` y
+       `pages/dev/Showcase.vue` vacía. Mutation check: con la ruta registrada sin la condición de entorno, el test
+       falla.
+2. [x] **Contenido.** Botones (todas las variantes y estados), tarjetas, montos positivos y negativos en DOP y USD con
        `formatMoney`, inputs con y sin error, los cuatro tipos de toast y un selector de tema.
 
 **PR:** paso manual: comparación con las capturas de `design/` en los dos temas y en móvil.
@@ -178,7 +179,8 @@ Rama: `feat/001-navigation`.
 Rama: `feat/001-errors-a11y`.
 
 1. [ ] **Toaster único.** Test (navegador): un toast se ve en una pantalla de autenticación. Después, el `<Toaster>`
-       sale de `AppSidebarLayout` y pasa al componente raíz, con los tokens de R4 en los cuatro tipos.
+       sale de `AppSidebarLayout` y pasa al componente raíz. Los colores por tipo con los tokens de R4 ya se hicieron
+       en la fase 5 (`feat(001): income color and toast colors by type (R4, R6)`, D-103).
 2. [ ] **Páginas de error.** Tests (Pest feature): 403, 404 y 500 conservan su código y renderizan `errors/Error`; el
        404 de un recurso inexistente y el de un recurso de otro team son idénticos (componente, props y texto), con
        owner como actor (D-073). Después, `handleExceptionsUsing()` en `AppServiceProvider` y `pages/errors/Error.vue`
