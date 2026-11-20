@@ -19,7 +19,10 @@ const emits = defineEmits<{
   "update:open": [open: boolean]
 }>()
 
-const isMobile = useMediaQuery("(max-width: 768px)")
+// Spec 001, R9: the sidebar shows from md (768 px). shadcn shipped "(max-width: 768px)", which
+// made 768 px mobile; 767.98px leaves no gap with Tailwind's md (min-width: 768px) at fractional
+// widths (zoom, display scaling). A shadcn update would overwrite this line: keep it.
+const isMobile = useMediaQuery("(max-width: 767.98px)")
 const openMobile = ref(false)
 
 const open = useVModel(props, "open", emits, {

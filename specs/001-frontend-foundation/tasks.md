@@ -156,7 +156,7 @@ Rama: `feat/001-navigation`.
 1. [x] **Redirección de `/`.** Tests (Pest feature): un invitado va a `login`; un usuario con sesión va a `dashboard`
        de su team actual; un usuario sin team actual va a `dashboard` de su team personal. Después, la closure que
        sustituye a `Route::inertia('/', 'Welcome')`.
-2. [ ] **Lista de entradas y sidebar.** Primero el test (navegador): a 768 px, el sidebar muestra Inicio y no tiene
+2. [x] **Lista de entradas y sidebar.** Primero el test (navegador): a 768 px, el sidebar muestra Inicio y no tiene
        enlaces al repositorio ni a la documentación del starter kit. Falla hoy por esos enlaces. Después,
        `resources/js/lib/navigation.ts` con Inicio en la barra (D-096), y `AppSidebar` la usa y deja de usar
        `NavFooter`.

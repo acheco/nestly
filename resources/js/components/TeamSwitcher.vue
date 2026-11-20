@@ -77,7 +77,9 @@ const switchTeam = (team: Team) => {
 };
 
 onMounted(() => {
-    mediaQuery = window.matchMedia('(max-width: 767px)');
+    // Spec 001, R9: the same mobile breakpoint as the sidebar (components/ui/sidebar/SidebarProvider.vue),
+    // 767.98px so no fractional width falls between it and Tailwind's md (min-width: 768px).
+    mediaQuery = window.matchMedia('(max-width: 767.98px)');
     updateIsMobile();
     mediaQuery.addEventListener('change', updateIsMobile);
 });
