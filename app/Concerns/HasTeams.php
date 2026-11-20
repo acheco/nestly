@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\URL;
+use LogicException;
 
 trait HasTeams
 {
@@ -74,6 +75,31 @@ trait HasTeams
         return $this->ownedTeams()
             ->where('teams.is_personal', true)
             ->first();
+    }
+
+    /**
+     * The team whose dashboard is the user's home (spec 001, R11): the current team, or the
+     * personal one when there is no current team. Used by "/", by Fortify's "/dashboard" and
+     * by the Fortify responses (RedirectsToCurrentTeam).
+     *
+     * Every user has a personal team, so this never runs out of teams:
+     * - it is created with the user, in the same transaction, by CreateNewUser (isPersonal: true),
+     *   and by UserFactory::configure() in tests and seeds;
+     * - a personal team cannot be deleted (TeamPolicy::delete, via DeleteTeamRequest), nor left
+     *   (TeamPolicy::leave);
+     * - its owner cannot be removed or have their role changed, and nobody can be made owner,
+     *   because TeamRole::canManage() never accepts Owner (TeamPolicy::removeMember and
+     *   updateMember, D-089); there is no ownership transfer;
+     * - deleting the account deletes the user itself (DeleteUserAction).
+     * The guarantee lives in the policies, checked before ChangeTeamMemberRoleAction and
+     * RemoveTeamMemberAction run; no database constraint enforces it, and spec 003
+     * (anonymization) may change it. Breaking it is a bug, hence the LogicException.
+     */
+    public function homeTeam(): Team
+    {
+        return $this->currentTeam
+            ?? $this->personalTeam()
+            ?? throw new LogicException("User {$this->getKey()} has no current or personal team.");
     }
 
     /**

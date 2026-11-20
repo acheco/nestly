@@ -153,7 +153,7 @@ Rama: `feat/001-showcase`.
 
 Rama: `feat/001-navigation`.
 
-1. [ ] **Redirección de `/`.** Tests (Pest feature): un invitado va a `login`; un usuario con sesión va a `dashboard`
+1. [x] **Redirección de `/`.** Tests (Pest feature): un invitado va a `login`; un usuario con sesión va a `dashboard`
        de su team actual; un usuario sin team actual va a `dashboard` de su team personal. Después, la closure que
        sustituye a `Route::inertia('/', 'Welcome')`.
 2. [ ] **Lista de entradas y sidebar.** Primero el test (navegador): a 768 px, el sidebar muestra Inicio y no tiene
