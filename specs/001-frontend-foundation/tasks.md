@@ -144,7 +144,7 @@ Rama: `feat/001-showcase`.
        200; en `production` no se registra. Después, la ruta registrada solo en `local` y `testing` y
        `pages/dev/Showcase.vue` vacía. Mutation check: con la ruta registrada sin la condición de entorno, el test
        falla.
-2. [ ] **Contenido.** Botones (todas las variantes y estados), tarjetas, montos positivos y negativos en DOP y USD con
+2. [x] **Contenido.** Botones (todas las variantes y estados), tarjetas, montos positivos y negativos en DOP y USD con
        `formatMoney`, inputs con y sin error, los cuatro tipos de toast y un selector de tema.
 
 **PR:** paso manual: comparación con las capturas de `design/` en los dos temas y en móvil.
