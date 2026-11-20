@@ -43,12 +43,27 @@ const accounts = [
     },
 ];
 
-// The amounts tested in tests/js/money.test.ts, so the browser test can reuse their output.
-const amounts = [
-    { amount: '999999999999.99', currency: 'DOP' },
-    { amount: '999999999999.99', currency: 'USD' },
-    { amount: '-1234.5', currency: 'DOP' },
-    { amount: '-1234.5', currency: 'USD' },
+// A balance keeps the normal color and turns red only when negative; a transaction is green
+// (income) or red (expense). text-income and text-expense come from --color-income and
+// --color-expense (resources/css/app.css:63-65). No "+" sign: formatMoney does not add it.
+// The balances are tested in tests/js/money.test.ts, so the browser test reuses their output.
+const amountRows = [
+    {
+        key: 'balance',
+        label: t('Balance'),
+        amounts: [
+            { amount: '45230.50', currency: 'DOP', tone: '' },
+            { amount: '-1240.00', currency: 'USD', tone: 'text-expense' },
+        ],
+    },
+    {
+        key: 'transaction',
+        label: t('Transaction'),
+        amounts: [
+            { amount: '62000.00', currency: 'DOP', tone: 'text-income' },
+            { amount: '-3450.00', currency: 'DOP', tone: 'text-expense' },
+        ],
+    },
 ];
 
 const isNegative = (amount: string): boolean => amount.startsWith('-');
@@ -138,16 +153,24 @@ const toasts = [
         <section class="space-y-4">
             <Heading variant="small" :title="t('Amounts')" />
 
-            <ul class="space-y-2">
-                <li
-                    v-for="item in amounts"
+            <div
+                v-for="row in amountRows"
+                :key="row.key"
+                :data-test="`amounts-${row.key}`"
+                class="flex flex-wrap items-baseline gap-6"
+            >
+                <span class="text-muted-foreground w-28 text-sm">{{
+                    row.label
+                }}</span>
+                <span
+                    v-for="item in row.amounts"
                     :key="`${item.currency}${item.amount}`"
                     class="font-amount text-lg"
-                    :class="{ 'text-expense': isNegative(item.amount) }"
+                    :class="item.tone"
                 >
                     {{ formatMoney(item.amount, item.currency) }}
-                </li>
-            </ul>
+                </span>
+            </div>
         </section>
 
         <section class="max-w-sm space-y-4">

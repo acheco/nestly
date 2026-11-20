@@ -4,8 +4,10 @@ import { fileURLToPath } from 'node:url';
 import { afterAll, describe, expect, it } from 'vite-plus/test';
 import {
     contrastRatio,
+    mixOklab,
     readShadcnMapping,
     readThemeTokens,
+    resolveToken,
     SHADCN_MAPPING_SELECTOR,
 } from './support/themeCss';
 
@@ -182,4 +184,82 @@ describe('shadcn variables point at the R4 tokens', () => {
             `${variable} maps to "${actual}", expected ${expected}`,
         ).toBe(expected);
     });
+});
+
+// Spec 001, R4/R6 (D-103): the success, error and warning toasts get a soft but
+// opaque background, color-mix(in oklab, <token> N%, var(--popover)), set in
+// components/ui/sonner/Sonner.vue. The expressions are read from that file and
+// recomputed with the app.css tokens, so changing the percentage or the token
+// there is checked here. The toast text keeps the normal color and needs 4.5:1.
+describe('toast backgrounds', () => {
+    const sonner = readFileSync(
+        fileURLToPath(
+            new URL(
+                '../../resources/js/components/ui/sonner/Sonner.vue',
+                import.meta.url,
+            ),
+        ),
+        'utf8',
+    );
+
+    const backgrounds = [
+        ...sonner.matchAll(
+            /'--(success|error|warning)-bg':\s*'color-mix\(in oklab, var\((--[\w-]+)\) (\d+)%, var\((--[\w-]+)\)\)'/g,
+        ),
+    ].map(([, type, accent, percent, base]) => ({
+        type: type!,
+        accent: resolveToken(css, accent!),
+        percent: Number(percent),
+        base: resolveToken(css, base!),
+        text: resolveToken(
+            css,
+            new RegExp(
+                String.raw`'--${type}-text':\s*'var\((--[\w-]+)\)'`,
+            ).exec(sonner)?.[1] ?? '',
+        ),
+    }));
+
+    it('mixes a token into the background of success, error and warning, over a token text', () => {
+        expect(backgrounds.map(({ type }) => type).sort()).toEqual([
+            'error',
+            'success',
+            'warning',
+        ]);
+
+        for (const { type, accent, base, text } of backgrounds) {
+            expect(
+                [accent, base, text],
+                `${type}: every variable must resolve to a --nestly-* token`,
+            ).not.toContain(undefined);
+        }
+    });
+
+    const cases = themes.flatMap(({ theme, tokens }) =>
+        backgrounds.map((background) => ({ ...background, theme, tokens })),
+    );
+
+    it.each(cases)(
+        '$theme: text on the $type toast needs 4.5:1',
+        ({ theme, tokens, type, accent, percent, base, text }) => {
+            const [front, mixed, under] = [
+                tokens[text ?? ''],
+                tokens[accent ?? ''],
+                tokens[base ?? ''],
+            ];
+
+            if (!isHex(front) || !isHex(mixed) || !isHex(under)) {
+                expect.fail(
+                    `${type} toast (${theme}): a token is not #RRGGBB, see the R4 tokens test`,
+                );
+            }
+
+            const background = mixOklab(mixed, percent, under);
+            const ratio = contrastRatio(front, background);
+
+            expect(
+                ratio,
+                `${type} toast (${theme}): ${text} on ${background} (${accent} ${percent}% over ${base}) is ${ratio.toFixed(2)}:1, needs ${TEXT}:1`,
+            ).toBeGreaterThanOrEqual(TEXT);
+        },
+    );
 });

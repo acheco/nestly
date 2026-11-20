@@ -24,10 +24,13 @@ it('shows the showcase sections, amounts and toasts', function () {
         ->assertSee('Montos')
         ->assertSee('Campos')
         ->assertSee('Notificaciones')
+        // Scoped to the amount rows: the cards show the same balances.
+        ->assertSeeIn('[data-test="amounts-balance"]', 'Saldo')
+        ->assertSeeIn('[data-test="amounts-transaction"]', 'Transacción')
         // Copied from the Vitest expectations, so Chromium must format like Node:
-        // tests/js/money.test.ts:9 and tests/js/money.test.ts:21.
-        ->assertSee('RD$999,999,999,999.99')
-        ->assertSee('-US$1,234.50');
+        // tests/js/money.test.ts:21 and tests/js/money.test.ts:22.
+        ->assertSeeIn('[data-test="amounts-balance"]', 'RD$45,230.50')
+        ->assertSeeIn('[data-test="amounts-balance"]', '-US$1,240.00');
 
     $page->click('[data-test="toast-success"]')->assertSee('Los cambios se guardaron.');
     $page->click('[data-test="toast-error"]')->assertSee('No se pudieron guardar los cambios.');

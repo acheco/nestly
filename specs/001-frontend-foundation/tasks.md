@@ -179,7 +179,8 @@ Rama: `feat/001-navigation`.
 Rama: `feat/001-errors-a11y`.
 
 1. [ ] **Toaster único.** Test (navegador): un toast se ve en una pantalla de autenticación. Después, el `<Toaster>`
-       sale de `AppSidebarLayout` y pasa al componente raíz, con los tokens de R4 en los cuatro tipos.
+       sale de `AppSidebarLayout` y pasa al componente raíz. Los colores por tipo con los tokens de R4 ya se hicieron
+       en la fase 5 (`feat(001): income color and toast colors by type (R4, R6)`, D-103).
 2. [ ] **Páginas de error.** Tests (Pest feature): 403, 404 y 500 conservan su código y renderizan `errors/Error`; el
        404 de un recurso inexistente y el de un recurso de otro team son idénticos (componente, props y texto), con
        owner como actor (D-073). Después, `handleExceptionsUsing()` en `AppServiceProvider` y `pages/errors/Error.vue`
