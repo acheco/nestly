@@ -17,6 +17,9 @@ beforeEach(function () {
     $this->team = Team::factory()->create(['name' => 'Familia']);
     $this->team->members()->attach($this->user, ['role' => TeamRole::Owner->value]);
     $this->user->forceFill(['current_team_id' => $this->team->id])->save();
+    // UserFactory's switchTeam() caches the personal team as currentTeam, and the browser
+    // server runs in this process with this same instance: drop it so Familia is current.
+    $this->user->unsetRelation('currentTeam');
 
     $this->actingAs($this->user);
 });
@@ -24,6 +27,17 @@ beforeEach(function () {
 it('shows the home screen in Spanish', function () {
     visit(route('dashboard', $this->team))
         ->assertTitle(appTabTitle('Inicio'))
+        ->assertNoJavaScriptErrors();
+});
+
+// R11: the home screen shows the team and links to its management, without placeholder blocks.
+// The assertions are scoped to the page content because the sidebar's TeamSwitcher also shows the name.
+it('shows the team name and a link to its settings on the home screen', function () {
+    visit(route('dashboard', $this->team))
+        ->assertSeeIn('[data-test="home-team-name"]', 'Familia')
+        ->assertSeeIn('[data-test="home-team-settings"]', 'Ajustes del equipo')
+        ->assertAttribute('[data-test="home-team-settings"]', 'href', route('teams.edit', $this->team, false))
+        ->assertNotPresent('[data-slot="sidebar-inset"] svg pattern')
         ->assertNoJavaScriptErrors();
 });
 

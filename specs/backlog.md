@@ -142,7 +142,8 @@ spec que muestre fechas de movimientos.
       con normalidad en menos de 11 s: en el primer caso, los tests de uno en uno; en los otros dos, el mismo
       comando.
     - El mismo día, dos veces seguidas más: `NavigationTest.php` completo (10 tests, límite de 120 s), con el
-      mismo síntoma y código de salida 124. Entre medias, y después, el mismo comando pasó en unos 8 s, tanto
+      mismo síntoma y código de salida 124. Entre medias, y después, el mismo comando pasó en unos 8 s en total
+      (unos 7 s según Pest), tanto
       lanzado desde PowerShell como desde Bash, así que el shell que lanza el script no parece influir.
     - Entorno: Windows 11 con Smart App Control activado y Playwright 1.61.1 (D-097). En CI (Linux) no se ha visto.
     - Mientras tanto: lanzar la suite y `composer ci:check` con límite de tiempo, y matar el árbol de procesos si se
@@ -150,10 +151,10 @@ spec que muestre fechas de movimientos.
 - **`currentTeam` cargado en los tests de navegador:** `UserFactory::configure()` llama a `switchTeam()` con el team
   personal, que deja `currentTeam` cargado en el modelo. El servidor de Pest browser corre en el mismo proceso y
   usa esa misma instancia, así que un `forceFill(['current_team_id' => …])->save()` posterior no cambia el team
-  actual que ve la app. `NavigationTest` lo corrige con `unsetRelation('currentTeam')` (spec 001, tarea 6.4).
-  `AppScreensTest`, `AppearanceTest` y `ShowcaseTest` usan el mismo patrón sin corregirlo. Hoy no les afecta,
-  porque no comprueban el team actual, pero un test nuevo que lo haga fallará igual. Opciones: corregir los tres
-  tests, o un helper en `tests/Pest.php` que cambie el team con `switchTeam()`.
+  actual que ve la app. `NavigationTest` lo corrige con `unsetRelation('currentTeam')` (spec 001, tarea 6.4), y
+  `AppScreensTest` también (tarea 6.5). `AppearanceTest` y `ShowcaseTest` usan el mismo patrón sin corregirlo. Hoy
+  no les afecta, porque no comprueban el team actual, pero un test nuevo que lo haga fallará igual. Opciones:
+  corregir los dos tests, o un helper en `tests/Pest.php` que cambie el team con `switchTeam()`.
 
 ## Textos de shadcn sin traducir (después de v1.0)
 
@@ -174,6 +175,13 @@ el idioma de la página es español). Se dejan para después de v1.0. Lista de u
 - El breadcrumb de `pages/accounts/Index.vue` (`title: 'Accounts'`) no pasa por `t()`.
 - La guarda de traducciones (`tests/js/untranslatedText.test.ts`) solo revisa plantillas, así que se le escapan los
   strings visibles que están en `<script>` (breadcrumbs, títulos, toasts). Pendiente de decidir cómo cubrirlo.
+
+## Inicio sin `<h1>` (spec 001, tarea 7.7)
+
+Inicio muestra el nombre del team con `Heading.vue`, que pinta un `<h2>`, así que la página no tiene `<h1>`. La regla
+de axe `page-has-heading-one` es `moderate` (`best-practice`, axe v4.10.3) y `assertNoAccessibilityIssues()` con su
+nivel por defecto, `1`, solo cuenta `critical` y `serious`, así que no salta. Se decide en la 7.7: dar un `<h1>` a las
+páginas (por ejemplo, un nivel configurable en `Heading.vue`) o dejarlo como está.
 
 ## Navegadores soportados por la v1.0
 

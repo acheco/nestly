@@ -167,9 +167,10 @@ Rama: `feat/001-navigation`.
        `aria-current="page"`, Tab y Enter en cada entrada, "Más" se abre y se cierra con teclado, y el final del
        contenido queda visible. Después, la cabecera móvil, `components/BottomNav.vue` y el `Sheet` de "Más" (resto de
        entradas, Ajustes y cerrar sesión).
-5. [ ] **Inicio.** `Dashboard.vue` deja `PlaceholderPattern`, muestra el nombre del team, mantiene
+5. [x] **Inicio.** `Dashboard.vue` deja `PlaceholderPattern`, muestra el nombre del team, mantiene
        `PendingInvitationsModal` y enlaza a `teams.edit`. Después borra `components/PlaceholderPattern.vue` (con su
-       `git grep`) y su excepción en `untranslatedText.test.ts`. Sin test automático: revisión visual en el PR.
+       `git grep`) y su excepción en `untranslatedText.test.ts`. Test (navegador) en `AppScreensTest`: nombre del
+       equipo y enlace a `teams.edit`. Revisión visual en el PR.
 
 **PR:**
 

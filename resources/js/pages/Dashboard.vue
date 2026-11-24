@@ -1,9 +1,12 @@
 <script setup lang="ts">
-import { Head } from '@inertiajs/vue3';
+import { Head, usePage } from '@inertiajs/vue3';
+import { computed } from 'vue';
+import Heading from '@/components/Heading.vue';
 import PendingInvitationsModal from '@/components/PendingInvitationsModal.vue';
-import PlaceholderPattern from '@/components/PlaceholderPattern.vue';
+import TextLink from '@/components/TextLink.vue';
 import { t } from '@/lib/i18n';
 import { dashboard } from '@/routes';
+import { edit as editTeam } from '@/routes/teams';
 import type { DashboardInvitation, Team } from '@/types';
 
 defineProps<{
@@ -22,6 +25,10 @@ defineOptions({
         ],
     }),
 });
+
+// EnsureTeamMembership switches the current team to the one in the URL, so this is the team being viewed.
+const page = usePage();
+const currentTeam = computed(() => page.props.currentTeam);
 </script>
 
 <template>
@@ -32,30 +39,16 @@ defineOptions({
         :invitations="pendingInvitations"
     />
 
-    <div
-        class="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4"
-    >
-        <div class="grid auto-rows-min gap-4 md:grid-cols-3">
-            <div
-                class="border-sidebar-border/70 dark:border-sidebar-border relative aspect-video overflow-hidden rounded-xl border"
+    <!-- R11: the empty home shows the team and links to its management; it announces no future features. -->
+    <div v-if="currentTeam" class="flex flex-1 flex-col p-4">
+        <Heading data-test="home-team-name" :title="currentTeam.name" />
+        <div>
+            <TextLink
+                data-test="home-team-settings"
+                :href="editTeam(currentTeam.slug)"
             >
-                <PlaceholderPattern />
-            </div>
-            <div
-                class="border-sidebar-border/70 dark:border-sidebar-border relative aspect-video overflow-hidden rounded-xl border"
-            >
-                <PlaceholderPattern />
-            </div>
-            <div
-                class="border-sidebar-border/70 dark:border-sidebar-border relative aspect-video overflow-hidden rounded-xl border"
-            >
-                <PlaceholderPattern />
-            </div>
-        </div>
-        <div
-            class="border-sidebar-border/70 dark:border-sidebar-border relative min-h-[100vh] flex-1 rounded-xl border md:min-h-min"
-        >
-            <PlaceholderPattern />
+                {{ t('Team settings') }}
+            </TextLink>
         </div>
     </div>
 </template>
