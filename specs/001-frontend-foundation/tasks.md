@@ -163,7 +163,7 @@ Rama: `feat/001-navigation`.
 3. [x] **Borrar los restos del starter kit.** Los seis archivos de R11 que ya no se usan y el caso `Welcome` de
        `app.ts`. `PlaceholderPattern.vue` pasa a la 6.5, porque `Dashboard.vue` todavía lo usa. Antes de borrar cada
        archivo, el `git grep` que prueba que nada lo importa.
-4. [ ] **Móvil.** Primero los tests de navegador: a 767 px se ve la barra y no el sidebar, y a 768 px al revés;
+4. [x] **Móvil.** Primero los tests de navegador: a 767 px se ve la barra y no el sidebar, y a 768 px al revés;
        `aria-current="page"`, Tab y Enter en cada entrada, "Más" se abre y se cierra con teclado, y el final del
        contenido queda visible. Después, la cabecera móvil, `components/BottomNav.vue` y el `Sheet` de "Más" (resto de
        entradas, Ajustes y cerrar sesión).
@@ -199,7 +199,8 @@ Rama: `feat/001-errors-a11y`.
        capa base de `app.css` y las variantes `motion-reduce:`.
 7. [ ] **Foco no tapado y tamaño de objetivos.** Tests (navegador): en ancho móvil, cada elemento enfocado queda por
        encima de la barra inferior (2.4.11); pestañas y botones táctiles de al menos 24×24 px (2.5.8);
-       `assertNoAccessibilityIssues` en las páginas de la 001. Después, los ajustes que hagan falta.
+       `assertNoAccessibilityIssues` en las páginas de la 001; el botón de cierre del `Sheet` de "Más" se anuncia en
+       español (WCAG 3.1.2). Después, los ajustes que hagan falta.
 
 **PR:**
 

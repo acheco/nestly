@@ -436,7 +436,7 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
     - delete → «eliminar» (nunca «borrar»); remove → «quitar» (sacar algo de donde está: un miembro de un equipo, una llave de acceso de una cuenta);
     - transactions → «transacciones» (nunca «movimientos»);
     - passkey → «llave de acceso»; two-factor authentication → «autenticación de dos factores»; recovery code → «código de recuperación»;
-    - Dashboard → «Inicio» (D-096); Settings → «Ajustes»; Profile → «Perfil»; Security → «Seguridad»; Teams → «Equipos»; Appearance → «Apariencia»;
+    - Dashboard → «Inicio» (D-096); More → «Más» (D-096); Settings → «Ajustes»; Profile → «Perfil»; Security → «Seguridad»; Teams → «Equipos»; Appearance → «Apariencia»;
     - temas: «Claro», «Oscuro», «Sistema»;
     - roles: Owner → «Propietario», Admin → «Administrador», Member → «Miembro», Viewer → «Lector».
 - **Consecuencias:**

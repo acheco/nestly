@@ -134,9 +134,26 @@ spec que muestre fechas de movimientos.
       terminar a los 5 min, con el proceso `playwright run-server` vivo y ningún Chromium; y un test suelto de la suite
       sin `visit()` seguía sin terminar a los 120 s. El cuelgue ocurre al arrancar Playwright, antes de abrir el
       navegador.
+    - 2026-11-23, tres veces, siempre al lanzar varios tests de navegador a la vez y nunca con un test suelto:
+      `NavigationTest.php` completo (límite de 300 s), cinco archivos de `tests/Browser` juntos (240 s) y
+      `NavigationTest.php --filter="sidebar at 768 px"` (90 s; el filtro arranca el archivo entero). Ninguna dejó
+      salida de Pest. En las tres, `run-tests.ps1` informó de que había matado 6 procesos y que no quedaba ninguno.
+      En las dos primeras devolvió 124; en la tercera no se guardó el código de salida. Los reintentos terminaron
+      con normalidad en menos de 11 s: en el primer caso, los tests de uno en uno; en los otros dos, el mismo
+      comando.
+    - El mismo día, dos veces seguidas más: `NavigationTest.php` completo (10 tests, límite de 120 s), con el
+      mismo síntoma y código de salida 124. Entre medias, y después, el mismo comando pasó en unos 8 s, tanto
+      lanzado desde PowerShell como desde Bash, así que el shell que lanza el script no parece influir.
     - Entorno: Windows 11 con Smart App Control activado y Playwright 1.61.1 (D-097). En CI (Linux) no se ha visto.
     - Mientras tanto: lanzar la suite y `composer ci:check` con límite de tiempo, y matar el árbol de procesos si se
       cuelga.
+- **`currentTeam` cargado en los tests de navegador:** `UserFactory::configure()` llama a `switchTeam()` con el team
+  personal, que deja `currentTeam` cargado en el modelo. El servidor de Pest browser corre en el mismo proceso y
+  usa esa misma instancia, así que un `forceFill(['current_team_id' => …])->save()` posterior no cambia el team
+  actual que ve la app. `NavigationTest` lo corrige con `unsetRelation('currentTeam')` (spec 001, tarea 6.4).
+  `AppScreensTest`, `AppearanceTest` y `ShowcaseTest` usan el mismo patrón sin corregirlo. Hoy no les afecta,
+  porque no comprueban el team actual, pero un test nuevo que lo haga fallará igual. Opciones: corregir los tres
+  tests, o un helper en `tests/Pest.php` que cambie el team con `switchTeam()`.
 
 ## Textos de shadcn sin traducir (después de v1.0)
 

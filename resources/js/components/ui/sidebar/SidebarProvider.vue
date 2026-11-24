@@ -42,8 +42,10 @@ function setOpenMobile(value: boolean) {
 }
 
 // Helper to toggle the sidebar.
+// Spec 001, R9: below md the sidebar is never shown (the bottom bar replaces it), so the toggle,
+// and with it Ctrl+B, does nothing on mobile. A shadcn update would overwrite this line: keep it.
 function toggleSidebar() {
-  return isMobile.value ? setOpenMobile(!openMobile.value) : setOpen(!open.value)
+  return isMobile.value ? undefined : setOpen(!open.value)
 }
 
 useEventListener("keydown", (event: KeyboardEvent) => {
