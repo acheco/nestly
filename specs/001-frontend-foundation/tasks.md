@@ -153,21 +153,24 @@ Rama: `feat/001-showcase`.
 
 Rama: `feat/001-navigation`.
 
-1. [ ] **Redirección de `/`.** Tests (Pest feature): un invitado va a `login`; un usuario con sesión va a `dashboard`
+1. [x] **Redirección de `/`.** Tests (Pest feature): un invitado va a `login`; un usuario con sesión va a `dashboard`
        de su team actual; un usuario sin team actual va a `dashboard` de su team personal. Después, la closure que
        sustituye a `Route::inertia('/', 'Welcome')`.
-2. [ ] **Lista de entradas y sidebar.** Primero el test (navegador): a 768 px, el sidebar muestra Inicio y no tiene
+2. [x] **Lista de entradas y sidebar.** Primero el test (navegador): a 768 px, el sidebar muestra Inicio y no tiene
        enlaces al repositorio ni a la documentación del starter kit. Falla hoy por esos enlaces. Después,
        `resources/js/lib/navigation.ts` con Inicio en la barra (D-096), y `AppSidebar` la usa y deja de usar
        `NavFooter`.
-3. [ ] **Borrar los restos del starter kit.** Los siete archivos de R11 y el caso `Welcome` de `app.ts`. Antes de
-       borrar cada archivo, el `git grep` que prueba que nada lo importa.
-4. [ ] **Móvil.** Primero los tests de navegador: a 767 px se ve la barra y no el sidebar, y a 768 px al revés;
+3. [x] **Borrar los restos del starter kit.** Los seis archivos de R11 que ya no se usan y el caso `Welcome` de
+       `app.ts`. `PlaceholderPattern.vue` pasa a la 6.5, porque `Dashboard.vue` todavía lo usa. Antes de borrar cada
+       archivo, el `git grep` que prueba que nada lo importa.
+4. [x] **Móvil.** Primero los tests de navegador: a 767 px se ve la barra y no el sidebar, y a 768 px al revés;
        `aria-current="page"`, Tab y Enter en cada entrada, "Más" se abre y se cierra con teclado, y el final del
        contenido queda visible. Después, la cabecera móvil, `components/BottomNav.vue` y el `Sheet` de "Más" (resto de
        entradas, Ajustes y cerrar sesión).
-5. [ ] **Inicio.** `Dashboard.vue` deja `PlaceholderPattern`, muestra el nombre del team, mantiene
-       `PendingInvitationsModal` y enlaza a `teams.edit`. Sin test automático: revisión visual en el PR.
+5. [x] **Inicio.** `Dashboard.vue` deja `PlaceholderPattern`, muestra el nombre del team, mantiene
+       `PendingInvitationsModal` y enlaza a `teams.edit`. Después borra `components/PlaceholderPattern.vue` (con su
+       `git grep`) y su excepción en `untranslatedText.test.ts`. Test (navegador) en `AppScreensTest`: nombre del
+       equipo y enlace a `teams.edit`. Revisión visual en el PR.
 
 **PR:**
 
@@ -197,7 +200,8 @@ Rama: `feat/001-errors-a11y`.
        capa base de `app.css` y las variantes `motion-reduce:`.
 7. [ ] **Foco no tapado y tamaño de objetivos.** Tests (navegador): en ancho móvil, cada elemento enfocado queda por
        encima de la barra inferior (2.4.11); pestañas y botones táctiles de al menos 24×24 px (2.5.8);
-       `assertNoAccessibilityIssues` en las páginas de la 001. Después, los ajustes que hagan falta.
+       `assertNoAccessibilityIssues` en las páginas de la 001; el botón de cierre del `Sheet` de "Más" se anuncia en
+       español (WCAG 3.1.2). Después, los ajustes que hagan falta.
 
 **PR:**
 

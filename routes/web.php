@@ -9,7 +9,14 @@ use App\Http\Middleware\EnsureTeamMembership;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
-Route::inertia('/', 'Welcome')->name('home');
+// Spec 001, R11: "/" is not a page. Guests go to the login; signed-in users to their home team.
+Route::get('/', function (Request $request) {
+    $user = $request->user();
+
+    return $user === null
+        ? to_route('login')
+        : to_route('dashboard', ['current_team' => $user->homeTeam()->slug]);
+})->name('home');
 
 Route::prefix('{current_team}')
     ->middleware(['auth', 'verified', EnsureTeamMembership::class])
@@ -40,10 +47,7 @@ Route::prefix('{current_team}')
 Route::middleware(['auth', 'verified'])->group(function () {
     // Fortify's fallback redirect after email verification steps has no team in its path.
     Route::get('dashboard', function (Request $request) {
-        $user = $request->user();
-        $team = $user->currentTeam ?? $user->personalTeam();
-
-        return to_route('dashboard', ['current_team' => $team->slug]);
+        return to_route('dashboard', ['current_team' => $request->user()->homeTeam()->slug]);
     });
 
     Route::post('invitations/{invitation}/accept', [TeamInvitationController::class, 'accept'])->name('invitations.accept');

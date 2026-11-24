@@ -12,28 +12,17 @@ const root = fileURLToPath(new URL('../../resources/js', import.meta.url));
 // shadcn-vue vendor code, translated after v1.0 (specs/backlog.md).
 const excludedFolders = ['components/ui/'];
 
-// Each exception says why. Task 6.3 deletes these files and removes them here.
-const excludedFiles: Record<string, string> = {
-    'pages/Welcome.vue': 'deleted in phase 6 (R11)',
-    'components/AppHeader.vue': 'deleted in phase 6 (R11)',
-    'layouts/app/AppHeaderLayout.vue': 'deleted in phase 6 (R11)',
-    'components/NavFooter.vue': 'deleted in phase 6 (R11)',
-    'components/PlaceholderPattern.vue': 'deleted in phase 6 (R11)',
-};
-
 const scannedFiles = (
     readdirSync(root, { recursive: true, encoding: 'utf8' }) as string[]
 )
     .map((path) => path.replaceAll('\\', '/'))
     .filter((path) => path.endsWith('.vue'))
     .filter((path) => !excludedFolders.some((dir) => path.startsWith(dir)))
-    .filter((path) => !Object.hasOwn(excludedFiles, path))
     .sort();
 
 describe('untranslated text in resources/js templates', () => {
-    it('scans the app templates and skips the excluded ones', () => {
+    it('scans the app templates and skips the excluded folders', () => {
         expect(scannedFiles).toContain('pages/teams/Edit.vue');
-        expect(scannedFiles).not.toContain('pages/Welcome.vue');
         expect(
             scannedFiles.filter((path) => path.startsWith('components/ui/')),
         ).toEqual([]);

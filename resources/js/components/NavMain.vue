@@ -28,7 +28,14 @@ const { isCurrentUrl } = useCurrentUrl();
                     :is-active="isCurrentUrl(item.href)"
                     :tooltip="item.title"
                 >
-                    <Link :href="item.href">
+                    <!-- Spec 001, R9: the active entry carries aria-current. -->
+                    <Link
+                        :href="item.href"
+                        :aria-current="
+                            isCurrentUrl(item.href) ? 'page' : undefined
+                        "
+                        data-test="nav-main-entry"
+                    >
                         <component :is="item.icon" />
                         <span>{{ item.title }}</span>
                     </Link>
