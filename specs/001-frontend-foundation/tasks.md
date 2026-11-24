@@ -160,14 +160,16 @@ Rama: `feat/001-navigation`.
        enlaces al repositorio ni a la documentación del starter kit. Falla hoy por esos enlaces. Después,
        `resources/js/lib/navigation.ts` con Inicio en la barra (D-096), y `AppSidebar` la usa y deja de usar
        `NavFooter`.
-3. [ ] **Borrar los restos del starter kit.** Los siete archivos de R11 y el caso `Welcome` de `app.ts`. Antes de
-       borrar cada archivo, el `git grep` que prueba que nada lo importa.
+3. [x] **Borrar los restos del starter kit.** Los seis archivos de R11 que ya no se usan y el caso `Welcome` de
+       `app.ts`. `PlaceholderPattern.vue` pasa a la 6.5, porque `Dashboard.vue` todavía lo usa. Antes de borrar cada
+       archivo, el `git grep` que prueba que nada lo importa.
 4. [ ] **Móvil.** Primero los tests de navegador: a 767 px se ve la barra y no el sidebar, y a 768 px al revés;
        `aria-current="page"`, Tab y Enter en cada entrada, "Más" se abre y se cierra con teclado, y el final del
        contenido queda visible. Después, la cabecera móvil, `components/BottomNav.vue` y el `Sheet` de "Más" (resto de
        entradas, Ajustes y cerrar sesión).
 5. [ ] **Inicio.** `Dashboard.vue` deja `PlaceholderPattern`, muestra el nombre del team, mantiene
-       `PendingInvitationsModal` y enlaza a `teams.edit`. Sin test automático: revisión visual en el PR.
+       `PendingInvitationsModal` y enlaza a `teams.edit`. Después borra `components/PlaceholderPattern.vue` (con su
+       `git grep`) y su excepción en `untranslatedText.test.ts`. Sin test automático: revisión visual en el PR.
 
 **PR:**
 
