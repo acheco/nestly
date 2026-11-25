@@ -181,9 +181,7 @@ Rama: `feat/001-navigation`.
 
 Rama: `feat/001-errors-a11y`.
 
-1. [ ] **Toaster único.** Test (navegador): un toast se ve en una pantalla de autenticación. Después, el `<Toaster>`
-       sale de `AppSidebarLayout` y pasa al componente raíz. Los colores por tipo con los tokens de R4 ya se hicieron
-       en la fase 5 (`feat(001): income color and toast colors by type (R4, R6)`, D-103).
+1. [—] ~~Toaster único.~~ Eliminada por D-104: el `<Toaster>` se queda en `AppSidebarLayout`.
 2. [ ] **Páginas de error.** Tests (Pest feature): 403, 404 y 500 conservan su código y renderizan `errors/Error`; el
        404 de un recurso inexistente y el de un recurso de otro team son idénticos (componente, props y texto), con
        owner como actor (D-073). Después, `handleExceptionsUsing()` en `AppServiceProvider` y `pages/errors/Error.vue`
@@ -193,8 +191,10 @@ Rama: `feat/001-errors-a11y`.
        comentario que remite a la tabla.
 4. [ ] **503.** Test (Pest feature): con la app en mantenimiento, la respuesta es la vista estática en español con
        código 503. Después, `resources/views/errors/503.blade.php`.
-5. [ ] **419.** Test (Pest feature): un 419 redirige atrás con el flash del toast de sesión expirada. Después, el caso
-       en el callback.
+5. [ ] **419.** Tests (Pest feature): un 419 desde el login redirige atrás con `status` de sesión expirada, y uno desde
+       una pantalla de la app redirige atrás con el flash del toast (D-104). Después, el caso en el callback. También
+       decide cómo avisar en las pantallas de autenticación que no muestran `status` (Register, ResetPassword,
+       ConfirmPassword, TwoFactorChallenge).
 6. [ ] **Foco visible y movimiento reducido.** Tests (navegador): con Tab, cada elemento enfocado muestra el anillo;
        con `prefers-reduced-motion: reduce`, toasts, "Más" y diálogos sin animación. Después, `:focus-visible` en la
        capa base de `app.css` y las variantes `motion-reduce:`.

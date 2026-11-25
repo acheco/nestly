@@ -278,10 +278,9 @@ En `resources/css/app.css`, la tabla de R4 se define como variables propias (`--
 
 **Toasts**
 
-- El `<Toaster>` sale de `AppSidebarLayout` y pasa a un único punto montado en todos los layouts: un componente raíz
-  que envuelve las páginas en `createInertiaApp`. Así también aparece en los layouts de autenticación.
+- El `<Toaster>` se queda en `AppSidebarLayout`. Las pantallas de autenticación no muestran toasts: sus mensajes van
+  en línea, con el patrón `status` (D-104).
 - Los cuatro tipos usan los tokens de R4. Los errores de validación y los 422 siguen en su campo.
-- Test (navegador): un toast se ve en una pantalla de autenticación.
 
 **Páginas de error**
 
@@ -291,7 +290,10 @@ En `resources/css/app.css`, la tabla de R4 se define como variables propias (`--
   de `share()` ni de la base de datos. Si renderizarlo lanza una excepción, se devuelve `errors/500-static.blade.php`.
 - 503: `resources/views/errors/503.blade.php`, estática y en español, con los colores de R4 en línea y un comentario
   que remite a la tabla. Lo mismo para la vista del fallback del 500.
-- 419: en el callback, redirigir atrás con un flash `toast` de sesión expirada, que muestra `flashToast.ts`.
+- 419: en el callback, redirigir atrás con el aviso de sesión expirada: con `status` si la página anterior es de
+  autenticación, y con un flash `toast`, que muestra `flashToast.ts`, si es de la app (D-104). La 7.5 decide cómo
+  avisar en las pantallas de autenticación que no muestran `status` (Register, ResetPassword, ConfirmPassword,
+  TwoFactorChallenge).
 - En `local` y `testing` se mantiene la traza: el callback devuelve `null` en esos entornos, y los tests que lo
   necesitan fuerzan el entorno.
 - Tests (Pest feature):
@@ -300,7 +302,7 @@ En `resources/css/app.css`, la tabla de R4 se define como variables propias (`--
       (D-073);
     - el 500 con un fallo simulado del render cae a la vista estática;
     - el 503 con la app en mantenimiento;
-    - el 419 redirige con el toast.
+    - el 419 redirige con `status` desde una pantalla de autenticación y con el toast desde una de la app.
 
 **Accesibilidad (R12)**
 
