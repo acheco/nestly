@@ -501,6 +501,17 @@ Formato: cada decisión tiene ID, fecha, contexto breve, decisión y consecuenci
     - El PR de la fase 5 lista las dos exclusiones en su paso manual.
     - A la 7.1 le queda solo mover el `<Toaster>` a la raíz. Al planearla se revisa si hace falta: tras la fase 6 solo quedará en un layout.
 
+### D-104 · Sin toasts en las pantallas de autenticación
+- **Fecha:** 2026-11-24
+- **Estado:** aprobada.
+- **Contexto:** R10 pedía un único `<Toaster>` en todos los layouts, incluidos los de autenticación, y un 419 que redirige atrás con un toast. En login y logout el feedback es el cambio de pantalla, y los mensajes de autenticación (estado de Fortify) ya se muestran en línea en la propia página. Tras la fase 6, el `<Toaster>` solo vive en `AppSidebarLayout`. D-103 dejó pendiente revisar la 7.1 al planearla.
+- **Decisión:** las pantallas de autenticación no muestran toasts; sus mensajes van en línea, con el patrón `status` (hoy lo muestran Login, ForgotPassword y VerifyEmail; la 7.5 decide cómo cubrir las demás pantallas). El `<Toaster>` se queda en `AppSidebarLayout`. Un 419 muestra "sesión expirada" en línea si termina en una pantalla de autenticación, y como toast si termina en una pantalla de la app.
+- **Consecuencias:**
+    - R10 cambia: se quita "incluidos los de autenticación" y su test de navegador; la línea del 419 sigue esta decisión. También cambia la línea de alcance "Toasts en todos los layouts" (`spec.md`, alcance) y la tabla de verificación ("Toaster en autenticación").
+    - La tarea 7.1 se marca como eliminada, sin renumerar la fase 7; la 7.5 incluye el caso del login.
+    - Un layout futuro que necesite toasts los añade con esta decisión a la vista.
+    - Constitución: sin cambios.
+
 ---
 
 ## Pendientes

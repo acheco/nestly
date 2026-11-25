@@ -34,7 +34,7 @@ D-086 está aplicada antes de empezar la implementación: el CI corre en PHP 8.5
 - La apariencia (claro, oscuro, sistema) con los tokens nuevos.
 - Los helpers de formato de dinero y fechas.
 - La estructura de navegación: sidebar en escritorio y barra inferior en móvil.
-- Toasts en todos los layouts y páginas de error.
+- Toasts en las pantallas de la app (D-104) y páginas de error.
 - La limpieza de los restos del starter kit y el estado vacío de Inicio.
 - Los criterios de accesibilidad de todo lo anterior.
 - La configuración de Vitest y de los tests de navegador.
@@ -249,8 +249,8 @@ El token `text` no sirve sobre `primary`: da 3.99 en oscuro y 4.14 en claro. Por
 
 **Toasts**
 
-- Un único `<Toaster>` funciona en todos los layouts, incluidos los de autenticación. _(Navegador: un toast se ve en
-  una pantalla de autenticación.)_
+- Un único `<Toaster>`, en `AppSidebarLayout`. Las pantallas de autenticación no muestran toasts: sus mensajes van en
+  línea, con el patrón `status` (D-104).
 - Tipos success, error, info y warning, con los tokens de R4.
 - Los errores de validación y las reglas de negocio con 422 (D-014) se siguen mostrando en su campo. El toast de error
   es solo para errores sin campo.
@@ -266,7 +266,9 @@ El token `text` no sirve sobre `primary`: da 3.99 en oscuro y 4.14 en claro. Por
   falla, cae a una vista Blade estática. _(Pest feature: un test simula el fallo.)_
 - 503: se queda en Blade, estática, traducida y con los colores de los tokens, porque en modo mantenimiento la app no
   arranca. _(Pest feature con la app en mantenimiento)_
-- 419: no muestra página de error; redirige atrás con un toast de sesión expirada. _(Pest feature)_
+- 419: no muestra página de error; redirige atrás con el aviso de sesión expirada: en línea (`status`) si termina en
+  una pantalla de autenticación, y como toast si termina en una pantalla de la app (D-104). _(Pest feature, los dos
+  casos)_
 - En `local` y `testing` se sigue viendo la traza del error, salvo en los tests que fuerzan el entorno.
 
 ### R11 · Restos del starter kit e Inicio
@@ -303,7 +305,7 @@ Cada criterio se prueba en el nivel más barato posible:
 | ------------------- | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Funciones puras     | Vitest (`vp test`)         | `t()` y sus reemplazos, claves sin traducir, formato de dinero, fechas relativas                                                                                                   |
 | HTTP                | Pest feature               | `<html lang>`, paridad de `lang/es`, tema sin parpadeo, redirección de `/`, códigos y props de error, 404 idéntico, 419, 500 con fallback, 503, página de muestra fuera de `local` |
-| Layout o JavaScript | Pest + pest-plugin-browser | Cambio en `md`, `aria-current`, teclado, `:focus-visible`, `prefers-reduced-motion`, foco no tapado, 24×24 px, Toaster en autenticación                                            |
+| Layout o JavaScript | Pest + pest-plugin-browser | Cambio en `md`, `aria-current`, teclado, `:focus-visible`, `prefers-reduced-motion`, foco no tapado, 24×24 px                                                                      |
 | Visual              | Manual                     | Comparación con `design/`, correos con `MAIL_MAILER=log`                                                                                                                           |
 
 - Vitest ya viene dentro de vite-plus: no es una dependencia nueva.
